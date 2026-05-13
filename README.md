@@ -4,7 +4,7 @@
 
 > *The people who shape us shouldn't have to disappear.*
 
-Personal project (2025). Shadow Shelf is a full-stack AI app that builds a **personal cognitive clone** by learning how someone communicates, decides, and shows personality—through ongoing **voice and text** sessions.
+Personal project (2026). Shadow Shelf is a full-stack AI app that builds a **personal cognitive clone** by learning how someone communicates, decides, and shows personality—through ongoing **voice and text** sessions.
 
 **Architecture:** a **training phase** (structured dialogue with continuous LLM-based personality extraction) and a **clone phase** (personality-conditioned chat with **ElevenLabs** speech synthesis so the clone can sound like you).
 
