@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Personality {
+  id                  String    @id @default(uuid())
+  name                String?
+  sessions            Int       @default(0)
+  communication_style String    @default("{\"tone\":[],\"vocabulary\":[],\"sentence_patterns\":[],\"explanation_style\":\"\"}")
+  thinking_patterns   String    @default("{\"decision_framework\":[],\"values\":[],\"opinions\":[],\"contrarian_positions\":[]}")
+  emotional_profile   String    @default("{\"passion_topics\":[],\"frustration_triggers\":[],\"humor_style\":\"\",\"empathy_markers\":[]}")
+  knowledge_domains   String    @default("[]")
+  training_examples   String    @default("[]")
+  voice_id            String?
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+  messages            Message[]
+  memories            Memory[]
+}
+
+model Message {
+  id            String      @id @default(uuid())
+  personalityId String
+  personality   Personality @relation(fields: [personalityId], references: [id], onDelete: Cascade)
+  role          String      // "user" or "assistant"
+  content       String
+  mode          String      // "train" or "clone"
+  created_at    DateTime    @default(now())
+}
+
+model Memory {
+  id            String      @id @default(uuid())
+  personalityId String
+  personality   Personality @relation(fields: [personalityId], references: [id], onDelete: Cascade)
+  content       String
+  embedding     String      // JSON array of floats for Vector RAG
+  created_at    DateTime    @default(now())
+}
