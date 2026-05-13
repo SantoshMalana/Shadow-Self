@@ -1,146 +1,127 @@
-# ◈ Shadow Shelf
+# Shadow Shelf
 
-**Cognitive Legacy Platform — MVP**
+**Cognitive Legacy Platform**
 
-> *"The people who shape us shouldn't have to disappear."*
+> *The people who shape us shouldn't have to disappear.*
 
-Shadow Shelf is a full-stack AI application that creates a personal cognitive clone by learning an individual's communication style, decision patterns, and personality through daily voice and text interactions.
+Personal project (2025). Shadow Shelf is a full-stack AI app that builds a **personal cognitive clone** by learning how someone communicates, decides, and shows personality—through ongoing **voice and text** sessions.
 
----
-
-## What It Does
-
-**Two-phase architecture:**
-
-1. **Training Mode** — You answer daily questions. The AI extracts your tone, values, opinions, vocabulary, and thinking style. Your personality profile builds visually in real-time.
-
-2. **Clone Mode** — Anyone can now talk to your clone — text or voice — and it responds in your exact style, with your actual opinions, as you.
+**Architecture:** a **training phase** (structured dialogue with continuous LLM-based personality extraction) and a **clone phase** (personality-conditioned chat with **ElevenLabs** speech synthesis so the clone can sound like you).
 
 ---
 
-## Tech Stack
+## Features
 
-| Layer | Tech |
-|---|---|
-| Frontend | Next.js 15 (App Router) + TypeScript |
-| Styling | Tailwind CSS |
-| LLM Inference | Ollama (Phi-3 Mini) — runs locally |
-| Voice Input | OpenAI Whisper API |
-| Voice Output | ElevenLabs Voice Cloning API |
-| Personality Store | JSON flat file (upgradeable to DB) |
+- **Training mode** — Daily-style questions; the system refines tone, values, opinions, vocabulary, and thinking style. Profile feedback in the UI.
+- **Clone mode** — Visitors chat with the clone in your style; optional voice input (Whisper) and voice output (ElevenLabs).
 
 ---
 
-## Getting Started
+## Tech stack
 
-### Prerequisites
+| Layer | Technology |
+| --- | --- |
+| App | [Next.js](https://nextjs.org) 16 (App Router), React 19, TypeScript |
+| UI | Tailwind CSS 4 |
+| LLM | [Ollama](https://ollama.com) — **Phi-3 Mini** (`phi3:mini`), local inference |
+| Speech-to-text | OpenAI **Whisper** API |
+| Text-to-speech | **ElevenLabs** API |
+| Data | **Prisma** 5 + **SQLite** (personality, messages, memories) |
 
-- [Node.js 18+](https://nodejs.org)
-- [Ollama](https://ollama.com) installed and running locally
+---
 
-### 1. Install Ollama & Pull Model
+## Prerequisites
+
+- [Node.js](https://nodejs.org) 18+
+- [Ollama](https://ollama.com) installed and running
+
+---
+
+## Setup
+
+### 1. Ollama and model
 
 ```bash
-# Install Ollama from https://ollama.com
-# Then pull the model:
 ollama pull phi3:mini
-
-# Start Ollama server
 ollama serve
 ```
 
-### 2. Clone & Install
+### 2. Install dependencies
 
 ```bash
 cd shadow-shelf
 npm install
 ```
 
-### 3. Set Environment Variables
+### 3. Environment variables
+
+Create `.env.local` in the project root (this file is gitignored):
+
+```env
+DATABASE_URL="file:./prisma/dev.db"
+OPENAI_API_KEY=your_openai_key
+ELEVENLABS_API_KEY=your_elevenlabs_key
+```
+
+- **OpenAI** — used for Whisper transcription (voice → text).
+- **ElevenLabs** — used for speech synthesis (clone voice output).
+
+Core text chat with Ollama can run **without** API keys; voice features need the keys above.
+
+### 4. Database
 
 ```bash
-cp .env.local .env.local
+npx prisma migrate dev
 ```
 
-Edit `.env.local`:
-```env
-ELEVENLABS_API_KEY=your_key_here   # For voice output
-OPENAI_API_KEY=your_key_here       # For voice transcription (Whisper)
-```
-
-- Get ElevenLabs key: https://elevenlabs.io
-- Get OpenAI key: https://platform.openai.com
-
-> **Note:** Voice features (mic → text, text → speech) require API keys. The core chat works with just Ollama running locally — no keys needed.
-
-### 4. Run
+### 5. Run the dev server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## Pages
+## Routes
 
-| Route | Purpose |
-|---|---|
-| `/` | Landing page |
-| `/train` | Training mode — build the clone |
-| `/clone` | Clone mode — talk to the clone |
-
----
-
-## Voice Clone Setup (Optional)
-
-For the full demo experience:
-1. Record 3 minutes of yourself speaking naturally
-2. Upload to [ElevenLabs Voice Cloning](https://elevenlabs.io/voice-lab)
-3. Copy your Voice ID
-4. In Training Mode, update `personality.json` → set `voice_id` to your ElevenLabs voice ID
-5. Enable voice in Clone Mode — the clone will speak in your actual voice
+| Path | Purpose |
+| --- | --- |
+| `/` | Landing |
+| `/train` | Training — build / refine the profile |
+| `/clone` | Clone — talk to the cognitive clone |
 
 ---
 
-## Project Structure
+## Voice clone (optional)
+
+1. Record a few minutes of natural speech.
+2. Create a voice in [ElevenLabs Voice Lab](https://elevenlabs.io/voice-lab).
+3. Save the **Voice ID** on your personality record (via the app / API as implemented).
+4. Use voice controls in Clone mode for TTS in that voice.
+
+---
+
+## Project layout
 
 ```
 shadow-shelf/
 ├── app/
-│   ├── page.tsx              # Landing page
-│   ├── train/page.tsx        # Training mode
-│   ├── clone/page.tsx        # Clone mode
+│   ├── page.tsx
+│   ├── train/page.tsx
+│   ├── clone/page.tsx
 │   └── api/
-│       ├── chat/route.ts     # Ollama inference
-│       ├── transcribe/       # Whisper STT
-│       ├── synthesize/       # ElevenLabs TTS
-│       └── personality/      # Personality CRUD
+│       ├── chat/           # Ollama streaming chat
+│       ├── personality/    # Profile CRUD
+│       ├── memory/         # Long-term memory snippets
+│       ├── transcribe/     # Whisper STT
+│       ├── synthesize/     # ElevenLabs TTS
+│       └── health/
 ├── components/
-│   ├── ChatBubble.tsx
-│   ├── VoiceInput.tsx
-│   ├── PersonalityStats.tsx
-│   └── CloneAvatar.tsx
-├── lib/
-│   ├── ollama.ts
-│   ├── personality.ts
-│   ├── prompts.ts
-│   └── questions.ts
-└── data/
-    └── personality.json      # Persisted personality store
+├── lib/                    # ollama, personality, prompts, prisma, …
+├── prisma/
+│   ├── schema.prisma
+│   └── migrations/
+└── data/                   # seed / static assets as used by the app
 ```
-
----
-
-## CV Description
-
-**Shadow Shelf** — Cognitive Legacy Platform | *Personal Project · 2025*
-
-Built a full-stack AI application that creates a personal cognitive clone by learning an individual's communication style, decision patterns, and personality through daily voice and text interactions. Two-phase architecture: a living training phase (continuous LLM-based personality extraction from structured conversation) and a clone phase (personality-injected inference with ElevenLabs voice synthesis).
-
-**Stack:** Next.js 15 · TypeScript · Ollama · Phi-3 Mini · Whisper API · ElevenLabs · Tailwind CSS
-
----
-
-*Built by Santosh*
