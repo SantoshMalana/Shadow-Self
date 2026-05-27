@@ -9,18 +9,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No audio file provided' }, { status: 400 })
     }
 
-    const apiKey = process.env.OPENAI_API_KEY
+    const isGroq = !!process.env.GROQ_API_KEY
+    const apiKey = process.env.OPENAI_API_KEY || process.env.GROQ_API_KEY
+
     if (!apiKey) {
-      return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 })
+      return NextResponse.json({ error: 'OpenAI/Groq API key not configured' }, { status: 500 })
     }
 
-    // Send to OpenAI Whisper API
+    // Send to Whisper API
     const whisperForm = new FormData()
-    whisperForm.append('file', audioFile, 'recording.webm')
-    whisperForm.append('model', 'whisper-1')
+    whisperForm.append('file', audioFile, audioFile.name)
+    whisperForm.append('model', isGroq && !process.env.OPENAI_API_KEY ? 'whisper-large-v3-turbo' : 'whisper-1')
     whisperForm.append('language', 'en')
 
-    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    const endpoint = isGroq && !process.env.OPENAI_API_KEY 
+      ? 'https://api.groq.com/openai/v1/audio/transcriptions' 
+      : 'https://api.openai.com/v1/audio/transcriptions'
+
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`

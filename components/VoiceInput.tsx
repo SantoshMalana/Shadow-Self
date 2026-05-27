@@ -19,7 +19,16 @@ export default function VoiceInput({ onTranscription, mode = 'train', disabled }
     setError(null)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      mediaRecorder.current = new MediaRecorder(stream)
+      
+      // Try to use a format Groq Whisper is more likely to accept
+      let mimeType = 'audio/webm'
+      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+        mimeType = 'audio/webm;codecs=opus'
+      } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+        mimeType = 'audio/mp4'
+      }
+
+      mediaRecorder.current = new MediaRecorder(stream, { mimeType })
       chunks.current = []
 
       mediaRecorder.current.ondataavailable = (e) => {
@@ -29,9 +38,11 @@ export default function VoiceInput({ onTranscription, mode = 'train', disabled }
       mediaRecorder.current.onstop = async () => {
         setTranscribing(true)
         try {
-          const blob = new Blob(chunks.current, { type: 'audio/webm' })
+          const blob = new Blob(chunks.current, { type: mimeType })
           const formData = new FormData()
-          formData.append('audio', blob, 'recording.webm')
+          // Groq Whisper sometimes rejects "recording.webm", but accepts it if we just name it .wav or .m4a so ffmpeg handles it
+          const fileExtension = mimeType.includes('mp4') ? 'm4a' : 'wav'
+          formData.append('audio', blob, `recording.${fileExtension}`)
 
           const res = await fetch('/api/transcribe', { method: 'POST', body: formData })
           const data = await res.json()
@@ -46,7 +57,7 @@ export default function VoiceInput({ onTranscription, mode = 'train', disabled }
         }
       }
 
-      mediaRecorder.current.start()
+      mediaRecorder.current.start(200) // Collect data every 200ms
       setRecording(true)
     } catch (err: any) {
       setError('Microphone access denied')
@@ -67,19 +78,31 @@ export default function VoiceInput({ onTranscription, mode = 'train', disabled }
         onTouchStart={startRecording}
         onTouchEnd={stopRecording}
         disabled={disabled || transcribing}
-        className={`
-          p-2 rounded-lg transition-all
-          ${recording ? 'bg-red-500/20 text-red-500' : 'text-text-secondary hover:text-text-primary hover:bg-surface'}
-          ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-        `}
+        style={{
+          padding: '8px',
+          borderRadius: '8px',
+          border: 'none',
+          background: recording ? 'rgba(239,68,68,0.15)' : 'transparent',
+          color: recording ? '#ef4444' : '#666',
+          cursor: disabled || transcribing ? 'not-allowed' : 'pointer',
+          opacity: disabled || transcribing ? 0.5 : 1,
+          fontSize: '20px',
+          transition: 'all 0.15s ease',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
         title={recording ? 'Listening… release to send' : transcribing ? 'Transcribing…' : 'Hold to speak'}
       >
-        <span className="text-xl">
-          {transcribing ? '⟳' : recording ? '⏹' : '🎙'}
-        </span>
+        {transcribing ? '⟳' : recording ? '⏹' : '🎙'}
       </button>
       {error && (
-        <div className="absolute bottom-full mb-2 w-max px-2 py-1 bg-red-500/10 text-red-500 text-xs rounded">
+        <div style={{
+          position: 'absolute', bottom: '100%', marginBottom: '8px',
+          whiteSpace: 'nowrap', padding: '4px 8px',
+          background: 'rgba(239,68,68,0.1)', color: '#ef4444',
+          fontSize: '11px', borderRadius: '4px'
+        }}>
           {error}
         </div>
       )}

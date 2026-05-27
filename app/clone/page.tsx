@@ -35,6 +35,14 @@ export default function ClonePage() {
   const [activating, setActivating] = useState(true)
   const [fadeOut, setFadeOut] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const unlockedRef = useRef(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      audioRef.current = new Audio()
+    }
+  }, [])
 
   useEffect(() => {
     let alive = true
@@ -55,7 +63,8 @@ export default function ClonePage() {
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
-  const speakText = async (text: string, voiceId: string) => {
+  const speakText = async (text: string, voiceId?: string) => {
+    if (!audioRef.current) return
     try {
       setSpeaking(true)
       const res = await fetch('/api/synthesize', {
@@ -65,15 +74,26 @@ export default function ClonePage() {
       if (!res.ok) throw new Error('Synthesis failed')
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
-      const audio = new Audio(url)
+      
+      const audio = audioRef.current
+      audio.src = url
       audio.onended = () => { setSpeaking(false); URL.revokeObjectURL(url) }
       audio.onerror = () => setSpeaking(false)
+      
       await audio.play()
     } catch { setSpeaking(false) }
   }
 
   const sendMessage = async (text: string) => {
-    if (!text.trim() || loading) return
+    if (!text.trim() || loading || activating) return
+    
+    // Unlock audio immediately on user interaction
+    if (audioRef.current && !unlockedRef.current) {
+      audioRef.current.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA'
+      audioRef.current.play().catch(() => {})
+      unlockedRef.current = true
+    }
+
     const userMsg: Message = { role: 'user', content: text }
     setMessages(prev => [...prev, userMsg])
     setInput('')
@@ -87,8 +107,8 @@ export default function ClonePage() {
       if (data.error) throw new Error(data.error)
       const reply = data.response
       setMessages(prev => [...prev, { role: 'assistant', content: reply }])
-      if (voiceEnabled && personality?.voice_id) {
-        await speakText(reply, personality.voice_id)
+      if (voiceEnabled) {
+        speakText(reply, personality?.voice_id)
       }
     } catch (err: any) {
       setMessages(prev => [...prev, { role: 'assistant', content: `⚠ ${err.message}` }])

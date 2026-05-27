@@ -46,7 +46,17 @@ export default function TrainPage() {
   const [currentQuestion, setCurrentQuestion] = useState('')
   const [nameInput, setNameInput] = useState('')
   const [nameSet, setNameSet] = useState(false)
+  const [speaking, setSpeaking] = useState(false)
+  const [voiceEnabled, setVoiceEnabled] = useState(true)
   const chatEndRef = useRef<HTMLDivElement>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const unlockedRef = useRef(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      audioRef.current = new Audio()
+    }
+  }, [])
 
   useEffect(() => {
     fetch('/api/personality').then(r => r.json()).then(data => {
@@ -57,11 +67,35 @@ export default function TrainPage() {
       }
       const q = getDailyQuestion(data.sessions || 0)
       setCurrentQuestion(q)
-      setMessages([{ role: 'assistant', content: `Let's train your clone. Here's your first question:\n\n"${q}"` }])
+      const initialMessage = `Let's train your clone. Here's your first question:\n\n"${q}"`;
+      setMessages([{ role: 'assistant', content: initialMessage }])
+      // Don't auto-speak on load — wait for user interaction to avoid autoplay block
     })
   }, [])
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
+
+  const speakText = async (text: string, voiceId?: string) => {
+    if (!audioRef.current) return
+    try {
+      setSpeaking(true)
+      const res = await fetch('/api/synthesize', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, voiceId })
+      })
+      if (!res.ok) throw new Error('Synthesis failed')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      
+      const audio = audioRef.current
+      audio.src = url
+      audio.onended = () => { setSpeaking(false); URL.revokeObjectURL(url) }
+      audio.onerror = () => setSpeaking(false)
+      
+      // Ensure audio is unlocked
+      await audio.play()
+    } catch { setSpeaking(false) }
+  }
 
   const saveName = async () => {
     if (!nameInput.trim()) return
@@ -73,11 +107,21 @@ export default function TrainPage() {
     setPersonality(prev => prev ? { ...prev, name: nameInput.trim() } : prev)
     const q = getDailyQuestion(0)
     setCurrentQuestion(q)
-    setMessages([{ role: 'assistant', content: `Great, ${nameInput.trim()}. Let's begin.\n\n"${q}"` }])
+    const responseMsg = `Great, ${nameInput.trim()}. Let's begin.\n\n"${q}"`;
+    setMessages([{ role: 'assistant', content: responseMsg }])
+    if (voiceEnabled) speakText(responseMsg)
   }
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || loading) return
+    
+    // Unlock audio immediately on user interaction
+    if (audioRef.current && !unlockedRef.current) {
+      audioRef.current.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA'
+      audioRef.current.play().catch(() => {})
+      unlockedRef.current = true
+    }
+
     const userMsg: Message = { role: 'user', content: text }
     setMessages(prev => [...prev, userMsg])
     setInput('')
@@ -93,6 +137,10 @@ export default function TrainPage() {
       const updated = await fetch('/api/personality').then(r => r.json())
       setPersonality(updated)
       setCurrentQuestion(getDailyQuestion(updated.sessions || 0))
+      
+      if (voiceEnabled) {
+        speakText(data.response, updated.voice_id)
+      }
     } catch (err: any) {
       setMessages(prev => [...prev, { role: 'assistant', content: `⚠ ${err.message || 'Is Ollama running?'}` }])
     } finally { setLoading(false) }
@@ -119,6 +167,21 @@ export default function TrainPage() {
           <span style={{ color: '#888', fontWeight: '500', fontSize: '13px' }}>Training Mode</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button
+            id="voice-toggle-btn"
+            onClick={() => setVoiceEnabled(v => !v)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '6px 12px', borderRadius: '6px', fontSize: '12px',
+              background: voiceEnabled ? '#1a1a1a' : 'transparent',
+              border: `1px solid ${voiceEnabled ? '#333' : '#1a1a1a'}`,
+              color: voiceEnabled ? '#e0e0e0' : '#555',
+              cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            {voiceEnabled ? '🔊 Voice On' : '🔇 Voice Off'}
+          </button>
           {personality && (
             <span style={{ fontSize: '12px', color: '#444' }}>
               {personality.sessions} sessions · {completeness}% complete
