@@ -90,8 +90,8 @@ model Message {
 }
 
 // ─── Memory ────────────────────────────────────────────────────────────────────
-// RAG memory with real pgvector embeddings (1536 dims for text-embedding-3-small).
-// Vector similarity search done in SQL, not JavaScript.
+/// The vector dimension must match the embedding model's output exactly.
+/// We are using Google AI Studio (gemini-embedding-2) truncated to 768 dimensions.
 // Content is sanitized before storage to prevent stored injection (§4 gap).
 
 model Memory {
