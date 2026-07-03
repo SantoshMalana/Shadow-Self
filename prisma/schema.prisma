@@ -1,43 +1,148 @@
+// Shadow Shelf — Production Schema
+// Stage 0: Personal companion MVP
+//
+// Key design decisions:
+// - User.id matches Supabase auth.users.id (set on signup, not auto-generated)
+// - pgvector (1536 dims) for real vector similarity search, replacing JSON-string embeddings
+// - pgcrypto for server-side UUID generation via gen_random_uuid()
+// - PersonalityProfile is versioned (keeps last N snapshots for rollback)
+// - Cascade deletes on all FK → User for hard deletion support (Task 10)
+// - Snake_case table/column names via @@map/@map (Postgres convention)
+
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [pgvector(map: "vector", schema: "extensions"), pgcrypto(schema: "extensions")]
 }
 
-model Personality {
-  id                  String    @id @default(uuid())
-  name                String?
-  sessions            Int       @default(0)
-  communication_style String    @default("{\"tone\":[],\"vocabulary\":[],\"sentence_patterns\":[],\"explanation_style\":\"\"}")
-  thinking_patterns   String    @default("{\"decision_framework\":[],\"values\":[],\"opinions\":[],\"contrarian_positions\":[]}")
-  emotional_profile   String    @default("{\"passion_topics\":[],\"frustration_triggers\":[],\"humor_style\":\"\",\"empathy_markers\":[]}")
-  knowledge_domains   String    @default("[]")
-  training_examples   String    @default("[]")
-  voice_id            String?
-  created_at          DateTime  @default(now())
-  updated_at          DateTime  @updatedAt
+// ─── User ──────────────────────────────────────────────────────────────────────
+// Linked to Supabase auth.users by UUID. Stores app-specific profile data.
+// The id is NOT auto-generated — it's set to match the Supabase auth user ID on signup.
+
+model User {
+  id        String   @id @db.Uuid
+  email     String   @unique
+  name      String?
+  depthRung Int      @default(1) @map("depth_rung") // Trust depth 1–5 (§5 of spec)
+  daysKnown Int      @default(0) @map("days_known")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   messages            Message[]
   memories            Memory[]
+  personalityProfiles PersonalityProfile[]
+  consentEntries      ConsentLedger[]
+  feedbacks           Feedback[]
+
+  @@map("users")
 }
+
+// ─── PersonalityProfile ────────────────────────────────────────────────────────
+// Versioned — keeps last N snapshots for rollback (§4 gap: versioning/rollback).
+// Replaces the MVP's singleton Personality model.
+// Uses native Json columns instead of JSON-encoded strings.
+
+model PersonalityProfile {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId             String   @map("user_id") @db.Uuid
+  version            Int      @default(1)
+  sessions           Int      @default(0)
+  communicationStyle Json?    @map("communication_style") // { tone[], vocabulary[], sentence_patterns[], explanation_style }
+  thinkingPatterns   Json?    @map("thinking_patterns") // { decision_framework[], values[], opinions[], contrarian_positions[] }
+  emotionalProfile   Json?    @map("emotional_profile") // { passion_topics[], frustration_triggers[], humor_style, empathy_markers[] }
+  knowledgeDomains   Json?    @map("knowledge_domains") // string[]
+  trainingExamples   Json?    @map("training_examples") // string[]
+  voiceId            String?  @map("voice_id")
+  isActive           Boolean  @default(true) @map("is_active")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, version])
+  @@index([userId, isActive])
+  @@map("personality_profiles")
+}
+
+// ─── Message ───────────────────────────────────────────────────────────────────
+// Chat messages. Mode expanded from train/clone to include onboarding and companion.
+// turn_goal tracks the AI's determined goal for this turn (§5 determine_turn_goal).
 
 model Message {
-  id            String      @id @default(uuid())
-  personalityId String
-  personality   Personality @relation(fields: [personalityId], references: [id], onDelete: Cascade)
-  role          String      // "user" or "assistant"
-  content       String
-  mode          String      // "train" or "clone"
-  created_at    DateTime    @default(now())
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  role      String // "user" or "assistant"
+  content   String
+  mode      String // "onboarding", "companion", "train", "clone"
+  turnGoal  String?  @map("turn_goal")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feedbacks Feedback[]
+
+  @@index([userId, createdAt])
+  @@map("messages")
 }
 
+// ─── Memory ────────────────────────────────────────────────────────────────────
+// RAG memory with real pgvector embeddings (1536 dims for text-embedding-3-small).
+// Vector similarity search done in SQL, not JavaScript.
+// Content is sanitized before storage to prevent stored injection (§4 gap).
+
 model Memory {
-  id            String      @id @default(uuid())
-  personalityId String
-  personality   Personality @relation(fields: [personalityId], references: [id], onDelete: Cascade)
-  content       String
-  embedding     String      // JSON array of floats for Vector RAG
-  created_at    DateTime    @default(now())
+  id        String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String                         @map("user_id") @db.Uuid
+  content   String
+  embedding Unsupported("vector(1536)")?
+  category  String?
+  createdAt DateTime                       @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("memories")
+}
+
+// ─── ConsentLedger ─────────────────────────────────────────────────────────────
+// Immutable, append-only log of per-stream consent decisions.
+// Streams: "voice", "text", "memory", "personality"
+// Supports the consent UI in Task 11.
+
+model ConsentLedger {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  stream    String // "voice", "text", "memory", "personality"
+  consented Boolean
+  ipAddress String?  @map("ip_address")
+  timestamp DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, stream])
+  @@map("consent_ledger")
+}
+
+// ─── Feedback ──────────────────────────────────────────────────────────────────
+// Thumbs up/down + optional correction text on each response (§4 gap: feedback UI).
+// Powers the RLHF correction loop.
+
+model Feedback {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  messageId      String   @map("message_id") @db.Uuid
+  rating         String // "up" or "down"
+  correctionText String?  @map("correction_text")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([messageId])
+  @@map("feedback")
 }

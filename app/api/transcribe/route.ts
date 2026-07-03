@@ -5,8 +5,8 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData()
     const audioFile = formData.get('audio') as File
 
-    if (!audioFile) {
-      return NextResponse.json({ error: 'No audio file provided' }, { status: 400 })
+    if (!audioFile || audioFile.size === 0) {
+      return NextResponse.json({ error: 'No audio file provided or file is empty' }, { status: 400 })
     }
 
     const isGroq = !!process.env.GROQ_API_KEY

@@ -1,19 +1,34 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
-
-const inter = Inter({ subsets: ['latin'] })
+import { getAuthUser } from '@/lib/auth'
+import SignOutButton from '@/components/SignOutButton'
 
 export const metadata: Metadata = {
   title: 'Shadow Shelf',
   description: 'Cognitive Legacy Platform',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const user = await getAuthUser(false) // Don't require auth here, just check
+
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-[var(--bg)] text-[var(--text-primary)] antialiased selection:bg-[#3d3d3d] selection:text-white`}>
-        {children}
+      <body className="font-sans bg-[var(--bg)] text-[var(--text-primary)] antialiased selection:bg-[#3d3d3d] selection:text-white">
+        {user && (
+          <nav className="fixed top-0 left-0 w-full p-4 flex justify-end items-center gap-4 z-50 pointer-events-none">
+            <div className="bg-neutral-900/80 backdrop-blur-md border border-neutral-800 rounded-full px-4 py-2 flex items-center gap-6 pointer-events-auto">
+              <a href="/train" className="text-sm text-neutral-400 hover:text-white transition-colors">Onboarding</a>
+              <a href="/clone" className="text-sm text-neutral-400 hover:text-white transition-colors">Clone Chat</a>
+              <a href="/profile" className="text-sm text-neutral-400 hover:text-white transition-colors">Profile</a>
+              <a href="/settings" className="text-sm text-neutral-400 hover:text-white transition-colors">Settings</a>
+              <div className="w-px h-4 bg-neutral-800" />
+              <div className="scale-90 origin-right"><SignOutButton /></div>
+            </div>
+          </nav>
+        )}
+        <main className={user ? 'pt-16' : ''}>
+          {children}
+        </main>
       </body>
     </html>
   )

@@ -1,106 +1,94 @@
 import { prisma } from './prisma'
-import { chat } from './ollama'
-
-// Singleton personality ID — one user for now, easy to extend later
-const DEFAULT_NAME = ''
+import { generateChat } from './llm'
 
 export interface PersonalityStore {
   id?: string
-  name: string
-  voice_id: string
-  created_at: string
-  updated_at?: string
+  userId?: string
+  voiceId: string
+  createdAt?: string
+  updatedAt?: string
   sessions: number
-  communication_style: {
+  communicationStyle: {
     tone: string[]
     vocabulary: string[]
-    sentence_patterns: string[]
-    explanation_style: string
+    sentencePatterns: string[]
+    explanationStyle: string
   }
-  thinking_patterns: {
-    decision_framework: string[]
+  thinkingPatterns: {
+    decisionFramework: string[]
     values: string[]
     opinions: string[]
-    contrarian_positions: string[]
+    contrarianPositions: string[]
   }
-  emotional_profile: {
-    passion_topics: string[]
-    frustration_triggers: string[]
-    humor_style: string
-    empathy_markers: string[]
+  emotionalProfile: {
+    passionTopics: string[]
+    frustrationTriggers: string[]
+    humorStyle: string
+    empathyMarkers: string[]
   }
-  knowledge_domains: string[]
-  conversation_history: { role: string; content: string; timestamp: string }[]
-  training_examples: { question: string; answer: string; traits: any }[]
+  knowledgeDomains: string[]
+  trainingExamples: { question: string; answer: string; traits: any }[]
 }
 
-export const defaultPersonality: Omit<PersonalityStore, 'id' | 'created_at' | 'updated_at'> = {
-  name: DEFAULT_NAME,
-  voice_id: '',
+const defaultPersonality: Omit<PersonalityStore, 'id' | 'userId' | 'createdAt' | 'updatedAt'> = {
+  voiceId: '',
   sessions: 0,
-  communication_style: {
+  communicationStyle: {
     tone: [],
     vocabulary: [],
-    sentence_patterns: [],
-    explanation_style: ''
+    sentencePatterns: [],
+    explanationStyle: ''
   },
-  thinking_patterns: {
-    decision_framework: [],
+  thinkingPatterns: {
+    decisionFramework: [],
     values: [],
     opinions: [],
-    contrarian_positions: []
+    contrarianPositions: []
   },
-  emotional_profile: {
-    passion_topics: [],
-    frustration_triggers: [],
-    humor_style: '',
-    empathy_markers: []
+  emotionalProfile: {
+    passionTopics: [],
+    frustrationTriggers: [],
+    humorStyle: '',
+    empathyMarkers: []
   },
-  knowledge_domains: [],
-  conversation_history: [],
-  training_examples: []
+  knowledgeDomains: [],
+  trainingExamples: []
 }
-
-// ─── Helpers ───────────────────────────────────────────────────────────────
 
 function deserialize(row: any): PersonalityStore {
   return {
     id: row.id,
-    name: row.name ?? '',
-    voice_id: row.voice_id ?? '',
+    userId: row.userId,
+    voiceId: row.voiceId ?? '',
     sessions: row.sessions ?? 0,
-    created_at: row.created_at?.toISOString() ?? new Date().toISOString(),
-    updated_at: row.updated_at?.toISOString() ?? new Date().toISOString(),
-    communication_style: JSON.parse(row.communication_style),
-    thinking_patterns: JSON.parse(row.thinking_patterns),
-    emotional_profile: JSON.parse(row.emotional_profile),
-    knowledge_domains: JSON.parse(row.knowledge_domains),
-    training_examples: JSON.parse(row.training_examples),
-    // conversation_history lives in Message table — return empty here;
-    // callers that need messages fetch them from /api/chat directly
-    conversation_history: []
+    createdAt: row.createdAt?.toISOString(),
+    updatedAt: row.createdAt?.toISOString(), // fallback
+    communicationStyle: row.communicationStyle as any || defaultPersonality.communicationStyle,
+    thinkingPatterns: row.thinkingPatterns as any || defaultPersonality.thinkingPatterns,
+    emotionalProfile: row.emotionalProfile as any || defaultPersonality.emotionalProfile,
+    knowledgeDomains: row.knowledgeDomains as any || defaultPersonality.knowledgeDomains,
+    trainingExamples: row.trainingExamples as any || defaultPersonality.trainingExamples,
   }
 }
 
-// ─── Core CRUD ─────────────────────────────────────────────────────────────
-
-export async function getPersonality(): Promise<PersonalityStore> {
-  let row = await prisma.personality.findFirst({
-    orderBy: { created_at: 'asc' }
+export async function getPersonality(userId: string): Promise<PersonalityStore> {
+  let row = await prisma.personalityProfile.findFirst({
+    where: { userId, isActive: true },
+    orderBy: { version: 'desc' }
   })
 
   if (!row) {
-    // Seed default personality on first run
-    row = await prisma.personality.create({
+    row = await prisma.personalityProfile.create({
       data: {
-        name: DEFAULT_NAME,
-        voice_id: '',
+        userId,
+        version: 1,
         sessions: 0,
-        communication_style: JSON.stringify(defaultPersonality.communication_style),
-        thinking_patterns: JSON.stringify(defaultPersonality.thinking_patterns),
-        emotional_profile: JSON.stringify(defaultPersonality.emotional_profile),
-        knowledge_domains: JSON.stringify(defaultPersonality.knowledge_domains),
-        training_examples: JSON.stringify(defaultPersonality.training_examples)
+        voiceId: '',
+        communicationStyle: defaultPersonality.communicationStyle as any,
+        thinkingPatterns: defaultPersonality.thinkingPatterns as any,
+        emotionalProfile: defaultPersonality.emotionalProfile as any,
+        knowledgeDomains: defaultPersonality.knowledgeDomains as any,
+        trainingExamples: defaultPersonality.trainingExamples as any
       }
     })
   }
@@ -108,25 +96,30 @@ export async function getPersonality(): Promise<PersonalityStore> {
   return deserialize(row)
 }
 
-export async function savePersonality(data: PersonalityStore): Promise<void> {
-  const id = data.id ?? (await getPersonality()).id!
-
-  await prisma.personality.update({
-    where: { id },
+export async function savePersonality(userId: string, data: PersonalityStore): Promise<void> {
+  const current = await getPersonality(userId)
+  
+  // Create a new version
+  await prisma.personalityProfile.create({
     data: {
-      name: data.name,
-      voice_id: data.voice_id,
+      userId,
+      version: (current as any).version ? (current as any).version + 1 : 2, // Ideally we track version in deserialize
       sessions: data.sessions,
-      communication_style: JSON.stringify(data.communication_style),
-      thinking_patterns: JSON.stringify(data.thinking_patterns),
-      emotional_profile: JSON.stringify(data.emotional_profile),
-      knowledge_domains: JSON.stringify(data.knowledge_domains),
-      training_examples: JSON.stringify(data.training_examples)
+      voiceId: data.voiceId,
+      communicationStyle: data.communicationStyle as any,
+      thinkingPatterns: data.thinkingPatterns as any,
+      emotionalProfile: data.emotionalProfile as any,
+      knowledgeDomains: data.knowledgeDomains as any,
+      trainingExamples: data.trainingExamples as any
     }
   })
-}
 
-// ─── Trait Extraction ──────────────────────────────────────────────────────
+  // Deactivate old versions
+  await prisma.personalityProfile.updateMany({
+    where: { userId, id: { not: current.id } },
+    data: { isActive: false }
+  })
+}
 
 export async function extractTraits(
   question: string,
@@ -153,13 +146,14 @@ Answer: ${answer}
 Return only valid JSON:`
 
   try {
-    const result = await chat([], extractionPrompt)
+    const result = await generateChat([], extractionPrompt)
     const jsonMatch = result.match(/\{[\s\S]*\}/)
     if (!jsonMatch) return existing
 
     const traits = JSON.parse(jsonMatch[0])
     return mergeTraits(existing, traits, question, answer)
-  } catch {
+  } catch (err) {
+    console.error("Extract traits error:", err)
     return existing
   }
 }
@@ -173,60 +167,57 @@ function mergeTraits(
   return {
     ...existing,
     sessions: existing.sessions + 1,
-    updated_at: new Date().toISOString(),
-    communication_style: {
-      ...existing.communication_style,
+    communicationStyle: {
+      ...existing.communicationStyle,
       tone: [...new Set([
-        ...existing.communication_style.tone,
+        ...existing.communicationStyle.tone,
         newTraits.tone
       ].filter(Boolean))].slice(-10),
       vocabulary: [...new Set([
-        ...existing.communication_style.vocabulary,
+        ...existing.communicationStyle.vocabulary,
         ...(newTraits.vocabulary || [])
       ])].slice(-50),
-      explanation_style: newTraits.thinking_style || existing.communication_style.explanation_style
+      explanationStyle: newTraits.thinking_style || existing.communicationStyle.explanationStyle
     },
-    thinking_patterns: {
-      ...existing.thinking_patterns,
+    thinkingPatterns: {
+      ...existing.thinkingPatterns,
       values: [...new Set([
-        ...existing.thinking_patterns.values,
+        ...existing.thinkingPatterns.values,
         ...(newTraits.values || [])
       ])].slice(-30),
       opinions: [
-        ...existing.thinking_patterns.opinions,
+        ...existing.thinkingPatterns.opinions,
         ...(newTraits.opinions || [])
       ].slice(-50)
     },
-    emotional_profile: {
-      ...existing.emotional_profile,
-      passion_topics: [...new Set([
-        ...existing.emotional_profile.passion_topics,
-        ...(newTraits.passion_topics || [])
+    emotionalProfile: {
+      ...existing.emotionalProfile,
+      passionTopics: [...new Set([
+        ...existing.emotionalProfile.passionTopics,
+        ...(newTraits.passionTopics || [])
       ])].slice(-20)
     },
-    knowledge_domains: [...new Set([
-      ...existing.knowledge_domains,
-      ...(newTraits.knowledge_domains || [])
+    knowledgeDomains: [...new Set([
+      ...existing.knowledgeDomains,
+      ...(newTraits.knowledgeDomains || [])
     ])].slice(-20),
-    training_examples: [
-      ...existing.training_examples,
+    trainingExamples: [
+      ...existing.trainingExamples,
       { question, answer, traits: newTraits }
     ].slice(-100)
   }
 }
 
-// ─── Completeness Score ────────────────────────────────────────────────────
-
 export function getCloneCompleteness(personality: PersonalityStore): number {
   let score = 0
-  const { communication_style, thinking_patterns, emotional_profile, knowledge_domains } = personality
+  const { communicationStyle, thinkingPatterns, emotionalProfile, knowledgeDomains } = personality
 
-  score += Math.min(communication_style.tone.length * 5, 20)
-  score += Math.min(communication_style.vocabulary.length * 1, 15)
-  score += Math.min(thinking_patterns.values.length * 3, 20)
-  score += Math.min(thinking_patterns.opinions.length * 1, 15)
-  score += Math.min(emotional_profile.passion_topics.length * 3, 15)
-  score += Math.min(knowledge_domains.length * 3, 15)
+  score += Math.min(communicationStyle.tone.length * 5, 20)
+  score += Math.min(communicationStyle.vocabulary.length * 1, 15)
+  score += Math.min(thinkingPatterns.values.length * 3, 20)
+  score += Math.min(thinkingPatterns.opinions.length * 1, 15)
+  score += Math.min(emotionalProfile.passionTopics.length * 3, 15)
+  score += Math.min(knowledgeDomains.length * 3, 15)
 
   return Math.min(score, 100)
 }

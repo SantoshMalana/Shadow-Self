@@ -3,7 +3,7 @@ import { useState, useRef } from 'react'
 
 interface VoiceInputProps {
   onTranscription: (text: string) => void
-  mode?: 'train' | 'clone'
+  mode?: 'train' | 'clone' | 'onboarding'
   disabled?: boolean
 }
 
@@ -39,6 +39,9 @@ export default function VoiceInput({ onTranscription, mode = 'train', disabled }
         setTranscribing(true)
         try {
           const blob = new Blob(chunks.current, { type: mimeType })
+          if (blob.size === 0) {
+            throw new Error('Recording too short')
+          }
           const formData = new FormData()
           // Groq Whisper sometimes rejects "recording.webm", but accepts it if we just name it .wav or .m4a so ffmpeg handles it
           const fileExtension = mimeType.includes('mp4') ? 'm4a' : 'wav'

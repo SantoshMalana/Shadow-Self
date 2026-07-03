@@ -5,24 +5,41 @@ import ChatBubble from '@/components/ChatBubble'
 import VoiceInput from '@/components/VoiceInput'
 import PersonalityStats from '@/components/PersonalityStats'
 import { getDailyQuestion } from '@/lib/questions'
+import { getUserState, updateUserName } from '@/app/actions/user'
 
-interface Message { role: 'user' | 'assistant'; content: string }
+interface Message { 
+  role: 'user' | 'assistant'
+  content: string 
+  turnGoal?: string
+}
+
 interface Personality {
-  name: string; sessions: number; updated_at?: string;
-  communication_style: { tone: string[]; vocabulary: string[]; sentence_patterns: string[]; explanation_style: string }
-  thinking_patterns: { decision_framework: string[]; values: string[]; opinions: string[]; contrarian_positions: string[] }
-  emotional_profile: { passion_topics: string[]; frustration_triggers: string[]; humor_style: string; empathy_markers: string[] }
-  knowledge_domains: string[]
+  name?: string
+  sessions: number
+  updated_at?: string
+  voiceId?: string
+  communication_style: any
+  thinking_patterns: any
+  emotional_profile: any
+  knowledge_domains: any
 }
 
 function getCompleteness(p: Personality): number {
   let score = 0
-  score += Math.min(p.communication_style.tone.length * 5, 20)
-  score += Math.min(p.communication_style.vocabulary.length, 15)
-  score += Math.min(p.thinking_patterns.values.length * 3, 20)
-  score += Math.min(p.thinking_patterns.opinions.length, 15)
-  score += Math.min(p.emotional_profile.passion_topics.length * 3, 15)
-  score += Math.min(p.knowledge_domains.length * 3, 15)
+  if (p.communication_style) {
+    score += Math.min((p.communication_style.tone?.length || 0) * 5, 20)
+    score += Math.min(p.communication_style.vocabulary?.length || 0, 15)
+  }
+  if (p.thinking_patterns) {
+    score += Math.min((p.thinking_patterns.values?.length || 0) * 3, 20)
+    score += Math.min(p.thinking_patterns.opinions?.length || 0, 15)
+  }
+  if (p.emotional_profile) {
+    score += Math.min((p.emotional_profile.passion_topics?.length || 0) * 3, 15)
+  }
+  if (p.knowledge_domains) {
+    score += Math.min(p.knowledge_domains.length * 3, 15)
+  }
   return Math.min(score, 100)
 }
 
@@ -43,6 +60,10 @@ export default function TrainPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [personality, setPersonality] = useState<Personality | null>(null)
+  
+  // User state
+  const [userState, setUserState] = useState<{ id: string, name: string | null, depthRung: number, daysKnown: number } | null>(null)
+  
   const [currentQuestion, setCurrentQuestion] = useState('')
   const [nameInput, setNameInput] = useState('')
   const [nameSet, setNameSet] = useState(false)
@@ -59,18 +80,38 @@ export default function TrainPage() {
   }, [])
 
   useEffect(() => {
-    fetch('/api/personality').then(r => r.json()).then(data => {
-      setPersonality(data)
-      if (data.name && data.name.length > 0) {
-        setNameSet(true)
-        setNameInput(data.name)
+    async function loadData() {
+      try {
+        // 1. Fetch User State
+        const user = await getUserState()
+        setUserState(user)
+        if (user.name) {
+          setNameSet(true)
+          setNameInput(user.name)
+        }
+
+        // 2. Fetch Personality (for stats)
+        try {
+          const pData = await fetch('/api/personality').then(r => r.json())
+          if (!pData.error) {
+            setPersonality(pData)
+            const q = getDailyQuestion(pData.sessions || 0)
+            setCurrentQuestion(q)
+            const initialMessage = `Let's continue onboarding. Here's your first question:\n\n"${q}"`
+            setMessages([{ role: 'assistant', content: initialMessage, turnGoal: 'establish_baseline' }])
+          }
+        } catch (e) {
+          // Ignore API errors if backend isn't ready
+          const q = getDailyQuestion(0)
+          setCurrentQuestion(q)
+          const initialMessage = `Let's begin onboarding. Here's your first question:\n\n"${q}"`
+          setMessages([{ role: 'assistant', content: initialMessage, turnGoal: 'establish_baseline' }])
+        }
+      } catch (err) {
+        console.error("Failed to fetch user state", err)
       }
-      const q = getDailyQuestion(data.sessions || 0)
-      setCurrentQuestion(q)
-      const initialMessage = `Let's train your clone. Here's your first question:\n\n"${q}"`;
-      setMessages([{ role: 'assistant', content: initialMessage }])
-      // Don't auto-speak on load — wait for user interaction to avoid autoplay block
-    })
+    }
+    loadData()
   }, [])
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
@@ -92,23 +133,22 @@ export default function TrainPage() {
       audio.onended = () => { setSpeaking(false); URL.revokeObjectURL(url) }
       audio.onerror = () => setSpeaking(false)
       
-      // Ensure audio is unlocked
       await audio.play()
     } catch { setSpeaking(false) }
   }
 
   const saveName = async () => {
     if (!nameInput.trim()) return
-    await fetch('/api/personality', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: nameInput.trim() })
-    })
+    
+    // Update User table via server action
+    const updatedUser = await updateUserName(nameInput.trim())
+    setUserState(updatedUser)
     setNameSet(true)
-    setPersonality(prev => prev ? { ...prev, name: nameInput.trim() } : prev)
+    
     const q = getDailyQuestion(0)
     setCurrentQuestion(q)
-    const responseMsg = `Great, ${nameInput.trim()}. Let's begin.\n\n"${q}"`;
-    setMessages([{ role: 'assistant', content: responseMsg }])
+    const responseMsg = `Great, ${updatedUser.name}. Let's begin.\n\n"${q}"`
+    setMessages([{ role: 'assistant', content: responseMsg, turnGoal: 'establish_baseline' }])
     if (voiceEnabled) speakText(responseMsg)
   }
 
@@ -126,23 +166,40 @@ export default function TrainPage() {
     setMessages(prev => [...prev, userMsg])
     setInput('')
     setLoading(true)
+    
     try {
       const res = await fetch('/api/chat', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [...messages, userMsg], mode: 'train', question: currentQuestion })
+        body: JSON.stringify({ messages: [...messages, userMsg], mode: 'onboarding', question: currentQuestion })
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
-      setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
-      const updated = await fetch('/api/personality').then(r => r.json())
-      setPersonality(updated)
-      setCurrentQuestion(getDailyQuestion(updated.sessions || 0))
+      
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: data.response, 
+        turnGoal: data.turnGoal // Backend provides this now (or is mocked)
+      }])
+      
+      // Attempt to refresh user state (trust depth might have increased)
+      const refreshedUser = await getUserState()
+      setUserState(refreshedUser)
+
+      try {
+        const updated = await fetch('/api/personality').then(r => r.json())
+        if (!updated.error) {
+          setPersonality(updated)
+          setCurrentQuestion(getDailyQuestion(updated.sessions || 0))
+        }
+      } catch (e) {
+        // Backend not ready
+      }
       
       if (voiceEnabled) {
-        speakText(data.response, updated.voice_id)
+        speakText(data.response, personality?.voiceId)
       }
     } catch (err: any) {
-      setMessages(prev => [...prev, { role: 'assistant', content: `⚠ ${err.message || 'Is Ollama running?'}` }])
+      setMessages(prev => [...prev, { role: 'assistant', content: `⚠ ${err.message || 'API Error'}` }])
     } finally { setLoading(false) }
   }
 
@@ -164,7 +221,7 @@ export default function TrainPage() {
             ← Back
           </Link>
           <span style={{ color: '#222' }}>|</span>
-          <span style={{ color: '#888', fontWeight: '500', fontSize: '13px' }}>Training Mode</span>
+          <span style={{ color: '#888', fontWeight: '500', fontSize: '13px' }}>Onboarding & Calibration</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <button
@@ -182,9 +239,9 @@ export default function TrainPage() {
           >
             {voiceEnabled ? '🔊 Voice On' : '🔇 Voice Off'}
           </button>
-          {personality && (
+          {userState && (
             <span style={{ fontSize: '12px', color: '#444' }}>
-              {personality.sessions} sessions · {completeness}% complete
+              Level {userState.depthRung} Depth
             </span>
           )}
           {personality?.updated_at && (
@@ -202,7 +259,7 @@ export default function TrainPage() {
               Who are we cloning?
             </h2>
             <p style={{ color: '#666', marginBottom: '32px', fontSize: '14px' }}>
-              Enter the name of the person being trained.
+              Confirm your name to begin the onboarding process.
             </p>
             <div style={{ display: 'flex', gap: '10px' }}>
               <input
@@ -248,8 +305,42 @@ export default function TrainPage() {
             display: 'flex', flexDirection: 'column', gap: '20px',
             overflowY: 'auto'
           }} className="hidden lg:flex">
-            <div style={{ fontSize: '11px', color: '#333', letterSpacing: '0.08em' }}>CLONE PROFILE</div>
-            {personality && <PersonalityStats personality={personality} completeness={completeness} />}
+            
+            {/* Trust Depth Visualization */}
+            {userState && (
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ fontSize: '11px', color: '#888', letterSpacing: '0.08em', marginBottom: '12px' }}>
+                  TRUST DEPTH
+                </div>
+                <div style={{ background: '#111', border: '1px solid #222', borderRadius: '8px', padding: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <span style={{ fontSize: '18px', fontWeight: '600', color: '#f0f0f0' }}>Level {userState.depthRung}</span>
+                    <span style={{ fontSize: '12px', color: '#555' }}>/ 5</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    {[1, 2, 3, 4, 5].map(level => (
+                      <div key={level} style={{
+                        flex: 1, height: '4px', borderRadius: '2px',
+                        background: level <= userState.depthRung ? '#fff' : '#222'
+                      }} />
+                    ))}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#666', marginTop: '12px', lineHeight: '1.5' }}>
+                    {userState.depthRung === 1 && "Surface-level facts and basic communication style."}
+                    {userState.depthRung === 2 && "Values, opinions, and core beliefs."}
+                    {userState.depthRung === 3 && "Emotional triggers and nuanced reactions."}
+                    {userState.depthRung >= 4 && "Deep behavioral cloning and instinctual logic."}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div style={{ fontSize: '11px', color: '#333', letterSpacing: '0.08em', marginTop: '8px' }}>CLONE PROFILE</div>
+            {personality ? (
+              <PersonalityStats personality={personality} completeness={completeness} />
+            ) : (
+              <div style={{ color: '#555', fontSize: '13px' }}>Backend starting up...</div>
+            )}
             <div style={{ marginTop: 'auto' }}>
               <Link href="/clone" style={{
                 display: 'block', textAlign: 'center', padding: '10px',
@@ -272,11 +363,11 @@ export default function TrainPage() {
                   key={i}
                   role={msg.role}
                   content={msg.content}
-                  mode="train"
-                  isQuestion={msg.role === 'assistant' && msg.content.includes("question")}
+                  mode="onboarding"
+                  turnGoal={msg.turnGoal}
                 />
               ))}
-              {loading && <ChatBubble role="assistant" content="" mode="train" isTyping />}
+              {loading && <ChatBubble role="assistant" content="" mode="onboarding" isTyping />}
               <div ref={chatEndRef} />
             </div>
 
@@ -306,7 +397,7 @@ export default function TrainPage() {
                   }}
                 />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                  <VoiceInput onTranscription={sendMessage} mode="train" disabled={loading} />
+                  <VoiceInput onTranscription={sendMessage} mode="onboarding" disabled={loading} />
                   <button
                     id="train-send-btn"
                     onClick={() => sendMessage(input)}

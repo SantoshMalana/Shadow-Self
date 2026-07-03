@@ -80,39 +80,26 @@ export default function HomePage() {
           and emotional depth. Train it while you're here.
         </p>
 
-        {/* Offline warning */}
-        {ollamaRunning === false && (
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: '8px',
-            padding: '10px 16px', borderRadius: '8px',
-            background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
-            marginBottom: '24px', fontSize: '13px', color: '#f87171'
-          }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} />
-            Ollama offline — run <code style={{ fontFamily: 'monospace', margin: '0 4px', color: '#fca5a5' }}>ollama serve</code> to start
-          </div>
-        )}
-
         {/* CTAs */}
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <Link href="/train" style={{
+          <Link href="/signup" style={{
             display: 'inline-flex', alignItems: 'center', gap: '8px',
             padding: '14px 28px', borderRadius: '12px',
             background: '#f0f0f0', color: '#0a0a0a',
             fontWeight: '600', fontSize: '15px', textDecoration: 'none',
             transition: 'background 0.15s ease'
           }}>
-            Start Training
+            Create your Clone
             <span>→</span>
           </Link>
-          <Link href="/clone" style={{
+          <Link href="/login" style={{
             display: 'inline-flex', alignItems: 'center', gap: '8px',
             padding: '14px 28px', borderRadius: '12px',
             background: 'transparent', color: '#f0f0f0',
             fontWeight: '500', fontSize: '15px', textDecoration: 'none',
             border: '1px solid #222', transition: 'border-color 0.15s ease'
           }}>
-            Talk to Clone
+            Sign In
           </Link>
         </div>
       </section>
