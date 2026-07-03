@@ -3,7 +3,7 @@ import { withKeyRotation } from './api-balancer'
 
 export async function getEmbedding(text: string): Promise<number[]> {
   const keysString = process.env.EMBEDDING_API_KEY
-  
+
   if (!keysString || keysString === 'your-embedding-api-key') {
     console.error(
       '[Embeddings] EMBEDDING_API_KEY is not set. Returning a zero-signal ' +
@@ -17,17 +17,14 @@ export async function getEmbedding(text: string): Promise<number[]> {
     keysString,
     async (key) => {
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${key}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent?key=${key}`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'models/text-embedding-004',
-            content: {
-              parts: [{ text }]
-            }
+            model: 'models/gemini-embedding-2',
+            content: { parts: [{ text }] },
+            taskType: 'RETRIEVAL_DOCUMENT',
           }),
         }
       )
@@ -41,6 +38,6 @@ export async function getEmbedding(text: string): Promise<number[]> {
       const data = await response.json()
       return data.embedding.values
     },
-    'Google AI Studio (Embeddings)'
+    'Google AI Studio (gemini-embedding-2)'
   )
 }
