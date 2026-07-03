@@ -10,36 +10,47 @@ export async function POST(req: NextRequest) {
     }
 
     const isGroq = !!process.env.GROQ_API_KEY
-    const apiKey = process.env.OPENAI_API_KEY || process.env.GROQ_API_KEY
+    const apiKeys = process.env.OPENAI_API_KEY || process.env.GROQ_API_KEY
 
-    if (!apiKey) {
+    if (!apiKeys) {
       return NextResponse.json({ error: 'OpenAI/Groq API key not configured' }, { status: 500 })
     }
-
-    // Send to Whisper API
-    const whisperForm = new FormData()
-    whisperForm.append('file', audioFile, audioFile.name)
-    whisperForm.append('model', isGroq && !process.env.OPENAI_API_KEY ? 'whisper-large-v3-turbo' : 'whisper-1')
-    whisperForm.append('language', 'en')
 
     const endpoint = isGroq && !process.env.OPENAI_API_KEY 
       ? 'https://api.groq.com/openai/v1/audio/transcriptions' 
       : 'https://api.openai.com/v1/audio/transcriptions'
 
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`
+    const modelName = isGroq && !process.env.OPENAI_API_KEY ? 'whisper-large-v3-turbo' : 'whisper-1'
+
+    const { withKeyRotation } = await import('@/lib/api-balancer')
+
+    const result = await withKeyRotation(
+      apiKeys,
+      async (key) => {
+        // FormData must be reconstructed on every retry loop because it gets consumed by fetch
+        const whisperForm = new FormData()
+        whisperForm.append('file', audioFile, audioFile.name)
+        whisperForm.append('model', modelName)
+        whisperForm.append('language', 'en')
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${key}`
+          },
+          body: whisperForm
+        })
+
+        if (!response.ok) {
+          const err = await response.text()
+          throw new Error(`Whisper API error: ${response.status} - ${err}`)
+        }
+
+        return await response.json()
       },
-      body: whisperForm
-    })
+      isGroq ? 'Groq (Whisper)' : 'OpenAI (Whisper)'
+    )
 
-    if (!response.ok) {
-      const err = await response.text()
-      throw new Error(`Whisper API error: ${err}`)
-    }
-
-    const result = await response.json()
     return NextResponse.json({ text: result.text })
   } catch (error: any) {
     console.error('Transcription error:', error)

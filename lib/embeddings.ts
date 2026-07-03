@@ -1,33 +1,46 @@
 // lib/embeddings.ts
-export async function getEmbedding(text: string): Promise<number[]> {
-  const apiKey = process.env.EMBEDDING_API_KEY
-  const baseUrl = process.env.EMBEDDING_BASE_URL || 'https://api.openai.com/v1'
-  const model = process.env.EMBEDDING_MODEL || 'text-embedding-3-small'
+import { withKeyRotation } from './api-balancer'
 
-  if (!apiKey || apiKey === 'your-embedding-api-key') {
+export async function getEmbedding(text: string): Promise<number[]> {
+  const keysString = process.env.EMBEDDING_API_KEY
+  
+  if (!keysString || keysString === 'your-embedding-api-key') {
     console.error(
       '[Embeddings] EMBEDDING_API_KEY is not set. Returning a zero-signal ' +
       'mock vector — memory retrieval will NOT return meaningful results ' +
       'until this is fixed. Check .env before assuming RAG is working.'
     )
-    return Array(1536).fill(0.01)
+    return Array(768).fill(0.01)
   }
 
-  const response = await fetch(`${baseUrl}/embeddings`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
+  return withKeyRotation(
+    keysString,
+    async (key) => {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${key}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'models/text-embedding-004',
+            content: {
+              parts: [{ text }]
+            }
+          }),
+        }
+      )
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('[Embeddings] API error — retrieval degraded for this call:', errorText)
+        throw new Error(`Embedding API error: ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data.embedding.values
     },
-    body: JSON.stringify({ input: text, model, dimensions: 1536 }),
-  })
-
-  if (!response.ok) {
-    const errorText = await response.text()
-    console.error('[Embeddings] API error — retrieval degraded for this call:', errorText)
-    throw new Error(`Embedding API error: ${response.status}`)
-  }
-
-  const data = await response.json()
-  return data.data[0].embedding
+    'Google AI Studio (Embeddings)'
+  )
 }
