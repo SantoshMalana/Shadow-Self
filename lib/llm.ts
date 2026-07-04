@@ -11,7 +11,7 @@ import { withKeyRotation } from './api-balancer'
  *
  * Provider quick-reference:
  *   Groq:         LLM_BASE_URL=https://api.groq.com/openai/v1
- *                 LLM_MODEL=llama3-70b-8192
+ *                 LLM_MODEL=openai/gpt-oss-120b
  *   Gemini:       LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
  *                 LLM_MODEL=gemini-2.0-flash
  *   OpenRouter:   LLM_BASE_URL=https://openrouter.ai/api/v1
@@ -22,7 +22,7 @@ import { withKeyRotation } from './api-balancer'
 export async function generateChat(messages: any[], systemPrompt?: string): Promise<string> {
   const llmKeys = process.env.LLM_API_KEY
   const baseUrl = (process.env.LLM_BASE_URL || 'https://api.groq.com/openai/v1').replace(/\/$/, '')
-  const model   = process.env.LLM_MODEL || 'llama3-70b-8192'
+  const model   = process.env.LLM_MODEL || 'openai/gpt-oss-120b'
 
   if (!llmKeys || llmKeys === 'your-llm-api-key') {
     console.log('[LLM] LLM_API_KEY not set — falling back to local Ollama')

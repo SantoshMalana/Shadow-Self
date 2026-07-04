@@ -24,8 +24,7 @@ export async function getEmbedding(text: string): Promise<number[]> {
           body: JSON.stringify({
             model: 'models/gemini-embedding-2',
             content: { parts: [{ text }] },
-            taskType: 'RETRIEVAL_DOCUMENT',
-            outputDimensionality: 768
+            outputDimensionality: 768,
           }),
         }
       )
