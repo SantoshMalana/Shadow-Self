@@ -34,7 +34,6 @@ export default function VoiceInput({ onTranscription, mode = 'train', disabled }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       
-      // Try to use a format Groq Whisper is more likely to accept
       let mimeType = 'audio/webm'
       if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
         mimeType = 'audio/webm;codecs=opus'
@@ -57,7 +56,6 @@ export default function VoiceInput({ onTranscription, mode = 'train', disabled }
             throw new Error('Recording too short')
           }
           const formData = new FormData()
-          // Groq Whisper expects the extension to match the container
           const fileExtension = mimeType.includes('mp4') ? 'm4a' : 'webm'
           formData.append('audio', blob, `recording.${fileExtension}`)
 
@@ -74,7 +72,7 @@ export default function VoiceInput({ onTranscription, mode = 'train', disabled }
         }
       }
 
-      mediaRecorder.current.start(200) // Collect data every 200ms
+      mediaRecorder.current.start(200)
       setRecording(true)
       recordingRef.current = true
     } catch (err: any) {
@@ -90,21 +88,18 @@ export default function VoiceInput({ onTranscription, mode = 'train', disabled }
         onTouchEnd={stopRecording}
         onTouchCancel={stopRecording}
         disabled={disabled || transcribing}
-        className={`p-2.5 rounded-xl border flex items-center justify-center text-xl transition-all duration-300 relative ${
+        className={`w-10 h-10 rounded-sm border flex items-center justify-center text-lg transition-colors duration-200 relative ${
           recording 
-            ? 'bg-red-500/20 border-red-500/50 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.4)] scale-110' 
-            : 'bg-transparent border-transparent text-neutral-500 hover:text-white hover:bg-white/5 hover:border-white/10'
-        } ${disabled || transcribing ? 'opacity-50 cursor-not-allowed hover:bg-transparent hover:border-transparent hover:text-neutral-500' : 'cursor-pointer'}`}
+            ? 'bg-accent-brass border-accent-brass text-[#17161B]' 
+            : 'bg-surface border-[#2A2630] text-text-muted hover:text-text-primary hover:border-text-muted'
+        } ${disabled || transcribing ? 'opacity-50 cursor-not-allowed hover:bg-surface hover:border-[#2A2630] hover:text-text-muted' : 'cursor-pointer'}`}
         title={recording ? 'Listening… release to send' : transcribing ? 'Transcribing…' : 'Hold to speak'}
       >
-        {recording && (
-          <span className="absolute inset-0 rounded-xl bg-red-500/30 animate-ping pointer-events-none" />
-        )}
-        <span className="relative z-10">{transcribing ? '⟳' : recording ? '⏹' : '🎙'}</span>
+        <span className="relative z-10 font-mono">{transcribing ? '⟳' : recording ? '⏹' : '🎙'}</span>
       </button>
       {error && (
-        <div className="absolute bottom-full mb-2 whitespace-nowrap px-2 py-1 bg-red-950/80 text-red-400 text-[11px] rounded-md">
-          {error}
+        <div className="absolute bottom-full mb-3 whitespace-nowrap px-3 py-1.5 bg-[#1C1A21] border border-red-900/50 text-red-400 font-mono text-[10px] uppercase tracking-widest rounded-sm">
+          [ERROR: {error}]
         </div>
       )}
     </div>

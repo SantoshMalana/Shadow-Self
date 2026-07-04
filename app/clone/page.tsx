@@ -127,7 +127,7 @@ export default function ClonePage() {
         speakText(reply, personality?.voice_id)
       }
     } catch (err: any) {
-      setMessages(prev => [...prev, { role: 'assistant', content: `⚠ ${err.message}` }])
+      setMessages(prev => [...prev, { role: 'assistant', content: `[ERROR: ${err.message}]` }])
     } finally { setLoading(false) }
   }
 
@@ -137,24 +137,17 @@ export default function ClonePage() {
   if (personality !== null && (!ready || (personality as any).error)) {
     const errorMsg = (personality as any).error
     return (
-      <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center p-10 font-sans">
-        <div className="text-center max-w-sm">
-          <div className="text-5xl mb-6 opacity-30 text-neutral-500">◈</div>
-          <h2 className={`text-2xl font-medium mb-3 ${errorMsg ? 'text-red-400' : 'text-neutral-200'}`}>
-            {errorMsg ? 'System Error' : 'Clone not ready yet'}
+      <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-10 font-sans selection:bg-accent-cold selection:text-white">
+        <div className="text-center max-w-sm bg-surface p-10 border border-[#2A2630] rounded-sm dynamic-shadow">
+          <div className="text-5xl mb-6 text-accent-cold">◈</div>
+          <h2 className={`font-display text-2xl mb-3 ${errorMsg ? 'text-red-400' : 'text-text-primary'}`}>
+            {errorMsg ? 'System Error' : 'Initialization Failed'}
           </h2>
-          <p className="text-sm text-neutral-500 leading-relaxed mb-8">
-            {errorMsg ? `Backend Error: ${errorMsg}. Please check your database connection in AWS Amplify.` : (personality.name ? `${personality.name}'s clone needs more training before it can speak.` : 'No personality data found.')}
+          <p className="font-sans text-sm text-text-muted leading-relaxed mb-8">
+            {errorMsg ? `[ERROR: ${errorMsg}]` : (personality.name ? `Cognitive trace for ${personality.name} lacks sufficient depth for standalone simulation.` : 'No trace data found.')}
           </p>
-          {!errorMsg && (
-            <p className="text-sm text-neutral-400 mb-8">
-              Each training session adds depth and fidelity.
-            </p>
-          )}
-          <Link href="/train" className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all ${
-            errorMsg ? 'bg-red-950/40 text-red-300 border border-red-900 hover:bg-red-900/50' : 'bg-neutral-100 text-neutral-900 hover:bg-white'
-          }`}>
-            {errorMsg ? '← Back to Onboarding' : 'Start Training →'}
+          <Link href="/train" className="inline-flex items-center gap-2 px-6 py-3 rounded-sm font-sans font-medium text-sm transition-all bg-accent-brass text-[#17161B] hover:bg-[#A99360]">
+            {errorMsg ? 'Return' : 'Resume Trace'}
           </Link>
         </div>
       </div>
@@ -162,65 +155,65 @@ export default function ClonePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-neutral-950 font-sans text-sm relative overflow-hidden text-neutral-200">
+    <div className="min-h-screen flex flex-col bg-bg font-sans text-sm relative overflow-hidden text-text-primary selection:bg-accent-cold selection:text-white">
 
       {/* Header */}
-      <header className="flex items-center justify-between px-6 h-14 border-b border-neutral-900 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-20">
+      <header className="flex items-center justify-between px-6 h-14 border-b border-[#1C1A21] bg-bg sticky top-0 z-20">
         <div className="flex items-center gap-4">
-          <Link href="/" className="text-neutral-500 hover:text-neutral-300 transition-colors flex items-center gap-2 text-sm">
-            ← Back
+          <Link href="/" className="font-mono text-[10px] text-text-muted hover:text-text-primary uppercase tracking-widest transition-colors flex items-center gap-2">
+            [HOME]
           </Link>
-          <span className="text-neutral-800">|</span>
-          <span className="text-neutral-400 font-medium text-sm">Clone Mode</span>
+          <span className="text-[#2A2630]">|</span>
+          <span className="font-mono text-[10px] text-accent-cold uppercase tracking-widest">Clone Session</span>
         </div>
         <div className="flex items-center gap-4">
           <button
             onClick={() => setVoiceEnabled(v => !v)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all duration-200 border ${
-              voiceEnabled ? 'bg-neutral-900 border-neutral-800 text-neutral-200' : 'bg-transparent border-transparent text-neutral-600 hover:bg-neutral-900'
+            className={`font-mono text-[10px] px-3 py-1.5 uppercase tracking-widest rounded-sm transition-colors border cursor-pointer ${
+              voiceEnabled ? 'bg-surface border-[#2A2630] text-text-primary' : 'bg-transparent border-transparent text-text-muted hover:bg-surface'
             }`}
           >
-            {voiceEnabled ? '🔊 Voice On' : '🔇 Voice Off'}
+            {voiceEnabled ? '[TTS: ON]' : '[TTS: OFF]'}
           </button>
-          <span className="text-xs text-neutral-500 hidden sm:inline">{completeness}% profile</span>
+          <span className="font-mono text-[10px] text-accent-brass uppercase tracking-widest hidden sm:inline">[{completeness}%]</span>
         </div>
       </header>
 
       <div className="flex-1 flex overflow-hidden">
 
         {/* Sidebar */}
-        <aside className="w-64 shrink-0 border-r border-neutral-900 bg-neutral-950/50 p-5 flex-col items-center gap-5 overflow-y-auto hidden lg:flex">
+        <aside className="w-64 shrink-0 border-r border-[#1C1A21] bg-[#121115] p-6 flex-col items-center gap-8 overflow-y-auto hidden lg:flex">
           <CloneAvatar name={personality?.name || ''} isSpeaking={speaking} completeness={completeness} />
 
-          <div className="w-full border-t border-neutral-900/60 pt-5">
-            <p className="text-[11px] text-neutral-600 tracking-wider text-center mb-4 font-medium">PROFILE</p>
+          <div className="w-full border-t border-[#1C1A21] pt-6">
+            <p className="font-mono text-[10px] text-accent-cold tracking-widest text-center mb-6 uppercase">Metrics</p>
             {[
-              { label: 'Sessions', value: personality?.sessions || 0 },
-              { label: 'Values mapped', value: personality?.thinkingPatterns?.values?.length || 0 },
-              { label: 'Domains', value: personality?.knowledgeDomains?.length || 0 },
-              { label: 'Memories stored', value: personality?.memoriesCount || 0 },
+              { label: 'Trace Sessions', value: personality?.sessions || 0 },
+              { label: 'Values Mapped', value: personality?.thinkingPatterns?.values?.length || 0 },
+              { label: 'Domains Extracted', value: personality?.knowledgeDomains?.length || 0 },
+              { label: 'Memories Logged', value: personality?.memoriesCount || 0 },
             ].map((item, i) => (
-              <div key={i} className="flex justify-between mb-2.5">
-                <span className="text-xs text-neutral-500">{item.label}</span>
-                <span className="text-xs text-neutral-300 font-medium">{item.value}</span>
+              <div key={i} className="flex justify-between mb-3 font-mono text-[10px] uppercase tracking-widest">
+                <span className="text-text-muted">{item.label}</span>
+                <span className="text-text-primary">{item.value}</span>
               </div>
             ))}
           </div>
 
-          <Link href="/train" className="block w-full text-center p-2.5 border border-neutral-800 rounded-lg text-neutral-500 hover:text-neutral-300 hover:bg-neutral-900/50 text-xs transition-all">
-            More training
+          <Link href="/train" className="block w-full text-center p-3 border border-[#2A2630] bg-transparent text-text-muted hover:text-text-primary hover:bg-surface rounded-sm font-sans font-medium text-xs transition-all">
+            Resume Trace Collection
           </Link>
         </aside>
 
         {/* Chat */}
-        <div className="flex-1 flex flex-col relative items-center bg-neutral-950">
+        <div className="flex-1 flex flex-col relative items-center bg-bg">
 
           {/* Mobile avatar */}
           <div className="lg:hidden pt-6 pb-2 text-center w-full flex justify-center">
             <CloneAvatar name={personality?.name || ''} isSpeaking={speaking} completeness={completeness} />
           </div>
 
-          <div className="w-full max-w-2xl flex-1 overflow-y-auto p-4 sm:p-8 pb-40 scroll-smooth chat-scroll">
+          <div className="w-full max-w-2xl flex-1 overflow-y-auto p-4 sm:p-8 pb-40 chat-scroll">
             {messages.map((msg, i) => (
               <ChatBubble
                 key={i}
@@ -234,35 +227,35 @@ export default function ClonePage() {
             <div ref={chatEndRef} />
           </div>
 
-          {/* Floating Input */}
-          <div className="absolute bottom-6 w-full max-w-2xl px-4 z-20">
-            <div className="flex items-end gap-2 bg-neutral-900/90 backdrop-blur-xl border border-neutral-800 rounded-2xl p-2 pl-4 shadow-2xl">
+          {/* Flat Input Area */}
+          <div className="absolute bottom-0 w-full max-w-2xl px-4 pb-8 bg-gradient-to-t from-bg via-bg to-transparent pt-10 z-20">
+            <div className="flex flex-col gap-2 bg-surface border border-[#2A2630] rounded-sm p-3 shadow-2xl">
               <textarea
                 ref={textareaRef}
                 value={input}
                 onChange={handleInput}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) } }}
-                placeholder={`Message ${personality?.name || 'Clone'}…`}
+                placeholder={`Engage ${personality?.name || 'simulation'}...`}
                 rows={1}
-                className="flex-1 bg-transparent border-none text-neutral-200 text-base focus:outline-none resize-none max-h-32 py-2.5 placeholder:text-neutral-600 leading-relaxed"
+                className="flex-1 bg-transparent border-none text-text-primary text-[15px] focus:outline-none resize-none max-h-32 py-2 placeholder:text-text-muted/40 font-sans"
               />
-              <div className="flex items-center gap-1.5 shrink-0 pb-1">
+              <div className="flex items-center justify-between border-t border-[#2A2630] pt-2 mt-1">
                 <VoiceInput onTranscription={sendMessage} mode="clone" disabled={loading} />
                 <button
                   onClick={() => sendMessage(input)}
                   disabled={loading || !input.trim()}
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                  className={`px-4 py-1.5 font-mono text-[10px] uppercase tracking-widest rounded-sm transition-colors cursor-pointer ${
                     input.trim() && !loading 
-                      ? 'bg-neutral-200 text-neutral-950 hover:bg-white cursor-pointer' 
-                      : 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
+                      ? 'bg-accent-brass text-[#17161B] hover:bg-[#A99360]' 
+                      : 'bg-transparent text-text-muted border border-[#2A2630] cursor-not-allowed'
                   }`}
                 >
-                  <span className="font-medium text-lg">↑</span>
+                  [SEND]
                 </button>
               </div>
             </div>
-            <p className="text-center mt-3 text-[11px] text-neutral-700">
-              AI simulation of {personality?.name || 'this person'}. Handle with care.
+            <p className="text-center mt-3 font-mono text-[10px] text-text-muted uppercase tracking-widest">
+              [SIMULATION ENGINE ACTIVE]
             </p>
           </div>
         </div>
@@ -270,11 +263,11 @@ export default function ClonePage() {
 
       {/* Cinematic Activation Overlay */}
       {activating && ready && personality && (
-        <div className={`fixed inset-0 z-50 bg-neutral-950 flex flex-col items-center justify-center transition-opacity duration-700 ${fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <div className={`fixed inset-0 z-50 bg-[#121115] flex flex-col items-center justify-center transition-opacity duration-700 ${fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="text-center">
-            <div className="text-4xl mb-8 opacity-50 text-neutral-600">◈</div>
-            <p className="text-xs text-neutral-500 tracking-[0.15em] mb-4">ACTIVATING</p>
-            <h1 className="text-3xl font-light text-neutral-200 tracking-wide">
+            <div className="font-display text-4xl mb-8 text-accent-brass animate-pulse">◈</div>
+            <p className="font-mono text-[10px] text-accent-cold tracking-[0.2em] uppercase mb-4">[BOOTING TRACE]</p>
+            <h1 className="font-display text-4xl text-text-primary tracking-wide">
               {personality.name}
             </h1>
           </div>

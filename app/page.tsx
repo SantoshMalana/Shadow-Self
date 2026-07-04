@@ -1,91 +1,115 @@
 'use client'
+
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function HomePage() {
-  const [ollamaRunning, setOllamaRunning] = useState<boolean | null>(null)
   const [mounted, setMounted] = useState(false)
+  const router = useRouter()
+  const [checkingAuth, setCheckingAuth] = useState(true)
+
+  // Signature Mechanic: Moving Light Source
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY
+      const maxScroll = document.body.scrollHeight - window.innerHeight
+      const scrollPct = maxScroll > 0 ? scrollY / maxScroll : 0
+
+      // The light source moves from top to bottom
+      const yOffset = 8 + (scrollPct * 16) // 8px to 24px
+      const blur = 24 + (scrollPct * 16) // 24px to 40px
+      
+      document.documentElement.style.setProperty('--shadow-y', `${yOffset}px`)
+      document.documentElement.style.setProperty('--shadow-blur', `${blur}px`)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     setMounted(true)
-    fetch('/api/health')
-      .then(r => r.json())
-      .then(data => setOllamaRunning(data.running))
-      .catch(() => setOllamaRunning(false))
-  }, [])
+    // Check if user is authenticated via cookie. Next.js App Router usually handles this better on the server,
+    // but to prevent the layout collision during client-side hydration, we can quickly check cookies.
+    if (document.cookie.includes('sb-') && document.cookie.includes('-auth-token')) {
+      router.push('/train')
+    } else {
+      setCheckingAuth(false)
+    }
+  }, [router])
+
+  if (checkingAuth) return null // Wait for client hydration to avoid flash of content if logged in
 
   return (
-    <main className="min-h-screen flex flex-col bg-neutral-950 text-white font-sans relative overflow-hidden">
-      {/* Dynamic Background Glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
+    <main className="min-h-screen flex flex-col bg-bg text-text-primary font-sans relative overflow-x-hidden selection:bg-accent-cold selection:text-white">
+      {/* 
+        NO gradient blobs, NO glassmorphism, NO neural-network-node iconography.
+        The product is a shadow; it relies on a real light source.
+      */}
 
       {/* Nav */}
-      <nav className="flex items-center justify-between px-8 py-5 border-b border-white/5 bg-black/40 backdrop-blur-md z-10">
-        <div className="flex items-center gap-3">
-          <span className="text-xl font-bold tracking-tight text-white/90">
+      <nav className="flex items-center justify-between px-8 py-6 z-10">
+        <div className="flex items-center">
+          <span className="font-display text-lg tracking-wide text-text-primary">
             Shadow Shelf
-          </span>
-          <span className="text-[10px] font-semibold text-neutral-400 bg-neutral-900 border border-neutral-800 rounded px-2 py-0.5 tracking-widest">
-            BETA
-          </span>
-        </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-          <span className={`w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.5)] ${
-            ollamaRunning === true ? 'bg-green-400' : ollamaRunning === false ? 'bg-red-400' : 'bg-neutral-500'
-          }`} />
-          <span className="text-xs font-medium text-neutral-400">
-            {ollamaRunning === true ? 'Inference Online' : ollamaRunning === false ? 'Inference Offline' : 'Checking…'}
           </span>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className={`flex-1 flex flex-col items-center justify-center text-center px-6 py-20 z-10 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-sm hover:bg-white/10 transition-colors">
-          <span className="text-blue-400 text-sm">◈</span>
-          <span className="text-xs font-medium text-neutral-300 tracking-wider uppercase">Cognitive Legacy Platform</span>
+      {/* Hero — The Thesis */}
+      <section className={`flex-1 flex flex-col items-center justify-center px-6 py-24 z-10 transition-opacity duration-1000 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+        
+        <div className="w-full max-w-3xl flex flex-col items-start gap-3 mb-16 dynamic-shadow bg-surface p-10 border border-[#2A2630] rounded-sm">
+          <span className="text-[10px] font-mono text-accent-cold uppercase tracking-widest mb-4">
+            A senior engineer's debugging session, playing out live:
+          </span>
+          
+          {/* The Failure Archive */}
+          <div className="flex flex-col gap-3 font-mono text-sm">
+            <div className="text-text-muted line-through opacity-70">
+              → checked the cache layer
+            </div>
+            <div className="text-text-muted line-through opacity-70">
+              → rolled back the deploy
+            </div>
+            
+            {/* The Resolution */}
+            <div className="text-accent-brass font-medium text-[15px] flex items-center gap-2">
+              <span className="text-accent-brass">→</span> it was the auth token TTL
+            </div>
+          </div>
         </div>
 
-        {/* Headline */}
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter leading-[1.1] max-w-4xl mb-8 text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60">
-          The people who shape us<br />
-          <span className="text-neutral-500">shouldn't have to disappear.</span>
+        {/* The Wedge */}
+        <h1 className="font-display text-4xl md:text-6xl tracking-tight leading-[1.1] max-w-4xl text-center text-text-primary mb-12">
+          We learn how you actually debug,<br />
+          including the wrong turns.
         </h1>
 
-        <p className="text-lg md:text-xl text-neutral-400 max-w-2xl leading-relaxed mb-12 font-light">
-          Shadow Shelf creates a living AI clone — capturing your thinking style, personality,
-          and emotional depth. Train it while you're here.
-        </p>
-
-        {/* CTAs */}
-        <div className="flex gap-4 flex-wrap justify-center">
-          <Link href="/signup" className="group relative inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-black font-semibold text-sm overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.15)]">
-            <span className="relative z-10">Create your Clone</span>
-            <span className="relative z-10 transition-transform group-hover:translate-x-1">→</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-neutral-200 to-white opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="flex gap-6 justify-center">
+          <Link href="/signup" className="dynamic-shadow px-8 py-4 bg-accent-brass text-[#17161B] font-sans font-medium text-sm transition-transform active:scale-95">
+            Start
           </Link>
-          <Link href="/login" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-transparent text-white font-medium text-sm border border-white/20 transition-all hover:bg-white/5 hover:border-white/40 active:scale-95">
+          <Link href="/login" className="px-8 py-4 bg-transparent text-text-primary font-sans font-medium text-sm border border-text-muted/30 hover:border-text-muted transition-colors active:scale-95">
             Sign In
           </Link>
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="border-t border-white/5 py-24 px-8 bg-black/40 z-10">
+      {/* The Architecture */}
+      <section className="py-32 px-8 z-10 bg-[#121115]">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-bold text-neutral-500 tracking-[0.2em] text-center mb-12">HOW IT WORKS</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { step: '01', label: 'Train', desc: 'Answer daily questions. Share how you think, decide, and feel. Every answer deepens your clone.' },
-              { step: '02', label: 'Process', desc: 'Extracts core values, communication styles, and emotional triggers into a cognitive profile via local AI.' },
-              { step: '03', label: 'Clone', desc: 'Talk to your AI clone — voice-to-voice, in your style, with your opinions and emotional depth.' }
-            ].map((item, i) => (
-              <div key={item.step} className="group p-8 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300 hover:-translate-y-1">
-                <div className="text-xs font-bold text-neutral-600 mb-6 tracking-widest">{item.step}</div>
-                <h3 className="text-lg font-semibold text-white/90 mb-3 group-hover:text-blue-400 transition-colors">{item.label}</h3>
-                <p className="text-sm text-neutral-400 leading-relaxed font-light">{item.desc}</p>
+              { step: '01', label: 'Living', desc: 'Answer daily prompts. Share exactly how you think, decide, and debug.' },
+              { step: '02', label: 'Deployment', desc: 'Extracts core values and logic into a cognitive profile via supervised local AI.' },
+              { step: '03', label: 'Posthumous', desc: 'A functional clone that retains your architectural instincts and emotional depth.' }
+            ].map((item) => (
+              <div key={item.step} className="dynamic-shadow p-10 bg-surface border border-[#2A2630]">
+                <div className="font-mono text-[10px] text-accent-cold mb-6">{item.step}</div>
+                <h3 className="font-display text-2xl text-text-primary mb-4">{item.label}</h3>
+                <p className="font-sans text-sm text-text-muted leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -93,10 +117,11 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 text-center border-t border-white/5 z-10 bg-black/60">
-        <p className="text-xs text-neutral-600 font-medium">Shadow Shelf · Built by Santosh · phi3:mini + nomic-embed-text</p>
+      <footer className="py-12 text-center z-10 bg-[#121115] border-t border-[#1C1A21]">
+        <p className="font-mono text-xs text-text-muted">
+          Shadow Shelf · Cognitive Trace
+        </p>
       </footer>
     </main>
   )
 }
-

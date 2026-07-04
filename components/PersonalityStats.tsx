@@ -15,17 +15,17 @@ interface PersonalityStatsProps {
 
 function StatRow({ label, value, max }: { label: string; value: number; max: number }) {
   const pct = Math.min((value / max) * 100, 100)
-  const barColor = pct > 60 ? 'bg-neutral-200' : pct > 30 ? 'bg-neutral-500' : 'bg-neutral-700'
+  const barColor = pct > 60 ? 'bg-accent-brass' : pct > 30 ? 'bg-accent-cold' : 'bg-text-muted/30'
 
   return (
-    <div className="mb-3.5">
-      <div className="flex justify-between mb-1">
-        <span className="text-xs text-neutral-500">{label}</span>
-        <span className="text-xs text-neutral-300 font-medium">{value}/{max}</span>
+    <div className="mb-4">
+      <div className="flex justify-between mb-1.5 font-mono text-[10px] uppercase tracking-widest">
+        <span className="text-text-muted">{label}</span>
+        <span className="text-text-primary">{value}/{max}</span>
       </div>
-      <div className="h-0.5 bg-neutral-800 rounded-full overflow-hidden">
+      <div className="h-0.5 bg-[#2A2630] overflow-hidden">
         <div
-          className={`h-full rounded-full transition-[width] duration-700 ease-out ${barColor}`}
+          className={`h-full transition-[width] duration-700 ease-out ${barColor}`}
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -39,19 +39,18 @@ export default function PersonalityStats({ personality, completeness }: Personal
   const offset = circ - (completeness / 100) * circ
 
   return (
-    <div className="w-full flex flex-col gap-5">
+    <div className="w-full flex flex-col gap-6">
 
       {/* Ring */}
-      <div className="flex items-center gap-3.5">
+      <div className="flex items-center gap-4">
         <div className="relative shrink-0">
           <svg width="52" height="52" viewBox="0 0 52 52">
-            <circle cx="26" cy="26" r={r} fill="none" stroke="#1a1a1a" strokeWidth="3" />
+            <circle cx="26" cy="26" r={r} fill="none" stroke="#2A2630" strokeWidth="2" />
             <circle
               cx="26" cy="26" r={r}
               fill="none"
-              stroke={completeness > 60 ? '#d0d0d0' : '#444'}
-              strokeWidth="3"
-              strokeLinecap="round"
+              stroke={completeness > 60 ? '#9C8552' : '#4A5A6B'}
+              strokeWidth="2"
               strokeDasharray={circ}
               strokeDashoffset={offset}
               transform="rotate(-90 26 26)"
@@ -59,13 +58,13 @@ export default function PersonalityStats({ personality, completeness }: Personal
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-[11px] font-semibold text-neutral-200">{completeness}%</span>
+            <span className="font-mono text-[11px] text-text-primary">{completeness}%</span>
           </div>
         </div>
         <div>
-          <p className="text-[13px] font-medium text-neutral-200 mb-0.5">Clone Completeness</p>
-          <p className="text-[11px] text-neutral-600">
-            {personality.sessions} session{personality.sessions !== 1 ? 's' : ''}
+          <p className="font-sans text-[13px] text-text-primary mb-1">Cognitive Profile</p>
+          <p className="font-mono text-[10px] text-text-muted uppercase tracking-widest">
+            {personality.sessions} session{personality.sessions !== 1 ? 's' : ''} logged
           </p>
         </div>
       </div>
@@ -82,12 +81,12 @@ export default function PersonalityStats({ personality, completeness }: Personal
       {/* Tags */}
       {(personality.communicationStyle?.tone?.length || 0) > 0 && (
         <div>
-          <p className="text-[11px] text-neutral-600 tracking-wider font-medium uppercase mb-2">Detected Tones</p>
+          <p className="font-mono text-[10px] text-accent-cold tracking-widest uppercase mb-2">Detected Tones</p>
           <div className="flex flex-wrap gap-1.5">
             {personality.communicationStyle.tone.slice(0, 5).map((t, i) => (
               <span
                 key={i}
-                className="bg-neutral-800 border border-neutral-800 text-neutral-400 rounded-md px-2 py-0.5 text-xs capitalize"
+                className="bg-[#1C1A21] border border-[#2A2630] text-text-primary px-2 py-0.5 text-xs font-sans capitalize"
               >
                 {t}
               </span>
@@ -98,12 +97,12 @@ export default function PersonalityStats({ personality, completeness }: Personal
 
       {(personality.knowledgeDomains?.length || 0) > 0 && (
         <div>
-          <p className="text-[11px] text-neutral-600 tracking-wider font-medium uppercase mb-2">Knowledge</p>
+          <p className="font-mono text-[10px] text-accent-cold tracking-widest uppercase mb-2">Knowledge Domains</p>
           <div className="flex flex-wrap gap-1.5">
             {personality.knowledgeDomains.slice(0, 4).map((d, i) => (
               <span
                 key={i}
-                className="bg-neutral-800 border border-neutral-800 text-neutral-400 rounded-md px-2 py-0.5 text-xs capitalize"
+                className="bg-[#1C1A21] border border-[#2A2630] text-text-primary px-2 py-0.5 text-xs font-sans capitalize"
               >
                 {d}
               </span>

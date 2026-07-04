@@ -24,19 +24,14 @@ export default function CloneAvatar({ name, isSpeaking = false, completeness = 0
     <div className="flex flex-col items-center gap-5">
       {/* Avatar */}
       <div className="relative flex items-center justify-center">
-        {/* Outer pulse ring when speaking */}
-        {isSpeaking && (
-          <div className="absolute w-[96px] h-[96px] rounded-full border border-blue-500/20 animate-[pulse_2s_ease-in-out_infinite]" />
-        )}
-
         {/* Main circle */}
-        <div className={`w-[76px] h-[76px] rounded-full flex items-center justify-center transition-all duration-500 shadow-xl ${
+        <div className={`w-[76px] h-[76px] flex items-center justify-center transition-all duration-500 rounded-sm ${
           isSpeaking 
-            ? 'bg-gradient-to-br from-neutral-800 to-black border-blue-500/40 shadow-[0_0_30px_rgba(59,130,246,0.15)] scale-105' 
-            : 'bg-gradient-to-br from-[#111] to-[#0a0a0a] border-neutral-800 shadow-black/50'
-        } border`}>
-          <span className={`text-[22px] font-light tracking-[0.1em] transition-colors duration-500 ${
-            isSpeaking ? 'text-blue-200' : 'text-neutral-500'
+            ? 'bg-accent-brass border-[#A99360]' 
+            : 'bg-surface border-[#2A2630]'
+        } border dynamic-shadow`}>
+          <span className={`font-display text-2xl transition-colors duration-500 ${
+            isSpeaking ? 'text-[#17161B]' : 'text-text-primary'
           }`}>
             {initials}
           </span>
@@ -51,9 +46,8 @@ export default function CloneAvatar({ name, isSpeaking = false, completeness = 0
             <circle
               cx="38" cy="38" r="36"
               fill="none"
-              stroke={completeness > 70 ? 'rgba(59, 130, 246, 0.4)' : 'rgba(255, 255, 255, 0.05)'}
-              strokeWidth="1.5"
-              strokeLinecap="round"
+              stroke={completeness > 70 ? '#9C8552' : '#2A2630'}
+              strokeWidth="2"
               strokeDasharray={2 * Math.PI * 36}
               strokeDashoffset={(2 * Math.PI * 36) * (1 - completeness / 100)}
               transform="rotate(-90 38 38)"
@@ -65,23 +59,23 @@ export default function CloneAvatar({ name, isSpeaking = false, completeness = 0
 
       {/* Name */}
       <div className="text-center">
-        <h2 className="text-[16px] font-medium tracking-[0.15em] text-neutral-300 uppercase mb-1">
+        <h2 className="font-display text-[16px] tracking-wide text-text-primary mb-1">
           {name || 'Unknown'}
         </h2>
-        <p className={`text-[10px] tracking-[0.15em] uppercase transition-colors duration-300 ${
-          isSpeaking ? 'text-blue-400/80 animate-pulse' : 'text-neutral-600'
+        <p className={`font-mono text-[10px] tracking-widest uppercase transition-colors duration-300 ${
+          isSpeaking ? 'text-accent-brass' : 'text-text-muted'
         }`}>
-          {isSpeaking ? 'generating response' : `${completeness}% trained`}
+          {isSpeaking ? '[GENERATING]' : `[${completeness}% TRAINED]`}
         </p>
       </div>
 
       {/* Voice visualizer */}
       {isSpeaking && (
-        <div className="flex items-center gap-[3px] h-[20px] mt-2">
+        <div className="flex items-center gap-1 h-[20px] mt-2">
           {Array.from({ length: 12 }).map((_, i) => {
             const h = 4 + Math.abs(Math.sin((tick + i) * 0.8)) * 16
             return (
-              <div key={i} className="w-[2px] bg-blue-400/60 rounded-full transition-all duration-[120ms] ease-out"
+              <div key={i} className="w-[3px] bg-accent-brass transition-all duration-[120ms] ease-out rounded-sm"
                 style={{ height: `${h}px` }}
               />
             )

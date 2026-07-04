@@ -1,24 +1,33 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #0a0a0a;
-  --color-surface: #111111;
-  --color-surface-2: #1a1a1a;
-  --color-border: #262626;
-  --color-border-subtle: #1e1e1e;
-  --color-text-primary: #e5e5e5;
-  --color-text-secondary: #737373;
-  --color-text-muted: #525252;
-  --color-accent: #ffffff;
-  --color-accent-dim: rgba(255,255,255,0.08);
-  --color-glow: rgba(255,255,255,0.04);
+  --color-bg: #17161B;
+  --color-surface: #221F26;
+  --color-text-primary: #EDEAE3;
+  --color-text-muted: #8B8790;
+  --color-accent-brass: #9C8552;
+  --color-accent-cold: #4A5A6B;
+  
+  --font-display: var(--font-fraunces), serif;
+  --font-sans: var(--font-inter), sans-serif;
+  --font-mono: var(--font-jetbrains-mono), monospace;
 }
 
 :root {
-  --bg: #0a0a0a;
-  --text-primary: #e5e5e5;
-  --border: #262626;
-  --accent: #d0d0d0;
+  /* Master Design Token Palette */
+  --bg: #17161B;
+  --surface: #221F26;
+  --text-primary: #EDEAE3;
+  --text-muted: #8B8790;
+  --accent-brass: #9C8552;
+  --accent-cold: #4A5A6B;
+
+  /* Dynamic Light Source Shadow Variables */
+  --shadow-x: 0px;
+  --shadow-y: 8px;
+  --shadow-blur: 24px;
+  --shadow-spread: -4px;
+  --shadow-opacity: 0.15;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -34,7 +43,7 @@ button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 a:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--accent-brass);
   outline-offset: 2px;
 }
 
@@ -67,8 +76,8 @@ body {
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: #404040; }
+::-webkit-scrollbar-thumb { background: var(--surface); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 /* Chat scroll */
 .chat-scroll {
@@ -76,14 +85,14 @@ body {
   scroll-behavior: smooth;
 }
 .chat-scroll::-webkit-scrollbar { width: 4px; }
-.chat-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.chat-scroll::-webkit-scrollbar-thumb { background: var(--surface); border-radius: 2px; }
 
 /* Typing dots */
 .typing-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #737373;
+  background: var(--text-muted);
   animation: dotBounce 1.2s ease infinite;
 }
 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
@@ -94,7 +103,16 @@ body {
   40% { transform: scale(1); opacity: 1; }
 }
 
-@keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.15); opacity: 0; }
+/* Dynamic Shadow Class based on CSS variables */
+.dynamic-shadow {
+  box-shadow: var(--shadow-x) var(--shadow-y) var(--shadow-blur) var(--shadow-spread) rgba(0, 0, 0, var(--shadow-opacity));
+  transition: box-shadow 0.1s ease-out;
+}
+
+/* Component Level Shadows */
+.rung-1-shadow {
+  box-shadow: 0px 2px 8px -2px rgba(0, 0, 0, 0.2);
+}
+.rung-5-shadow {
+  box-shadow: 0px 16px 48px -8px rgba(0, 0, 0, 0.4);
 }
