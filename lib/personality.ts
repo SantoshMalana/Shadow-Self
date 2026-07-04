@@ -133,10 +133,14 @@ Return only valid JSON:`
 
   try {
     const result = await generateChat([], extractionPrompt)
-    const jsonMatch = result.match(/\{[\s\S]*\}/)
+    let jsonMatch = result.match(/\{[\s\S]*\}/)
     if (!jsonMatch) return existing
 
-    const traits = JSON.parse(jsonMatch[0])
+    let jsonString = jsonMatch[0]
+    // Clean trailing commas (common LLM hallucination)
+    jsonString = jsonString.replace(/,\s*([\]}])/g, '$1')
+
+    const traits = JSON.parse(jsonString)
     return mergeTraits(existing, traits, question, answer)
   } catch (err) {
     console.error("Extract traits error:", err)

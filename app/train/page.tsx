@@ -72,6 +72,7 @@ export default function TrainPage() {
   const chatEndRef = useRef<HTMLDivElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const unlockedRef = useRef(false)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -82,12 +83,11 @@ export default function TrainPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        // 1. Fetch User State
         const user = await getUserState()
         if ('error' in user) {
           console.error("Backend returned error:", user.error)
           setUserState({ id: 'error', name: 'Database Connection Error', depthRung: 1, daysKnown: 0 } as any)
-          setMessages([{ role: 'assistant', content: `⚠ System Error: ${user.error}. Please check your database connection.` }])
+          setMessages([{ role: 'assistant', content: `⚠ System Error: ${user.error}. Please check your database connection in AWS Amplify.` }])
           return
         }
 
@@ -97,7 +97,6 @@ export default function TrainPage() {
           setNameInput(user.name)
         }
 
-        // 2. Fetch Personality (for stats)
         try {
           const pData = await fetch('/api/personality').then(r => r.json())
           if (!pData.error) {
@@ -108,7 +107,6 @@ export default function TrainPage() {
             setMessages([{ role: 'assistant', content: initialMessage, turnGoal: 'establish_baseline' }])
           }
         } catch (e) {
-          // Ignore API errors if backend isn't ready
           const q = getDailyQuestion(0, user.depthRung)
           setCurrentQuestion(q)
           const initialMessage = `Let's begin onboarding. Here's your first question:\n\n"${q}"`
@@ -122,6 +120,14 @@ export default function TrainPage() {
   }, [])
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
+
+  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value)
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`
+    }
+  }
 
   const speakText = async (text: string, voiceId?: string) => {
     if (!audioRef.current) return
@@ -148,13 +154,12 @@ export default function TrainPage() {
     if (!nameInput.trim()) return
     
     try {
-      // Update User table via server action
       const result = await updateUserName(nameInput.trim())
       
       if ('error' in result) {
         console.error("saveName error:", result.error)
         setMessages([{ role: 'assistant', content: `⚠ Could not save your name: ${result.error}. The database may not be reachable.` }])
-        setNameSet(true) // Still let them through so they see the error
+        setNameSet(true)
         return
       }
       
@@ -176,7 +181,6 @@ export default function TrainPage() {
   const sendMessage = async (text: string) => {
     if (!text.trim() || loading) return
     
-    // Unlock audio immediately on user interaction
     if (audioRef.current && !unlockedRef.current) {
       audioRef.current.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA'
       audioRef.current.play().catch(() => {})
@@ -186,6 +190,7 @@ export default function TrainPage() {
     const userMsg: Message = { role: 'user', content: text }
     setMessages(prev => [...prev, userMsg])
     setInput('')
+    if (textareaRef.current) textareaRef.current.style.height = 'auto'
     setLoading(true)
     
     try {
@@ -199,10 +204,9 @@ export default function TrainPage() {
       setMessages(prev => [...prev, { 
         role: 'assistant', 
         content: data.response, 
-        turnGoal: data.turnGoal // Backend provides this now (or is mocked)
+        turnGoal: data.turnGoal
       }])
       
-      // Attempt to refresh user state (trust depth might have increased)
       const refreshedUser = await getUserState()
       if ('error' in refreshedUser) {
         console.error("Failed to refresh user state:", refreshedUser.error)
@@ -214,7 +218,6 @@ export default function TrainPage() {
         const updated = await fetch('/api/personality').then(r => r.json())
         if (!updated.error) {
           setPersonality(updated)
-          // Fallback to existing user state if refresh failed
           const currentDepth = 'error' in refreshedUser ? (userState?.depthRung || 1) : refreshedUser.depthRung;
           setCurrentQuestion(getDailyQuestion(updated.sessions || 0, currentDepth))
         }
@@ -233,84 +236,58 @@ export default function TrainPage() {
   const completeness = personality ? getCompleteness(personality) : 0
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#0a0a0a', fontFamily: 'Inter, sans-serif', fontSize: '14px' }}>
-
+    <div className="min-h-screen flex flex-col bg-neutral-950 font-sans text-sm relative overflow-hidden text-neutral-200">
+      
       {/* Header */}
-      <header style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 24px', height: '56px',
-        borderBottom: '1px solid #151515',
-        background: 'rgba(10,10,10,0.9)', backdropFilter: 'blur(12px)',
-        position: 'sticky', top: 0, zIndex: 20
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <Link href="/" style={{ color: '#555', textDecoration: 'none', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <header className="flex items-center justify-between px-6 h-14 border-b border-neutral-900 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-20">
+        <div className="flex items-center gap-4">
+          <Link href="/" className="text-neutral-500 hover:text-neutral-300 transition-colors flex items-center gap-2 text-sm">
             ← Back
           </Link>
-          <span style={{ color: '#222' }}>|</span>
-          <span style={{ color: '#888', fontWeight: '500', fontSize: '13px' }}>Onboarding & Calibration</span>
+          <span className="text-neutral-800">|</span>
+          <span className="text-neutral-400 font-medium text-sm">Onboarding & Calibration</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div className="flex items-center gap-4">
           <button
-            id="voice-toggle-btn"
             onClick={() => setVoiceEnabled(v => !v)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '6px 12px', borderRadius: '6px', fontSize: '12px',
-              background: voiceEnabled ? '#1a1a1a' : 'transparent',
-              border: `1px solid ${voiceEnabled ? '#333' : '#1a1a1a'}`,
-              color: voiceEnabled ? '#e0e0e0' : '#555',
-              cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-              transition: 'all 0.15s ease'
-            }}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all duration-200 border ${
+              voiceEnabled ? 'bg-neutral-900 border-neutral-800 text-neutral-200' : 'bg-transparent border-transparent text-neutral-600 hover:bg-neutral-900'
+            }`}
           >
             {voiceEnabled ? '🔊 Voice On' : '🔇 Voice Off'}
           </button>
           {userState && (
-            <span style={{ fontSize: '12px', color: '#444' }}>
+            <span className="text-xs text-neutral-500 hidden sm:inline">
               Level {userState.depthRung} Depth
             </span>
           )}
           {personality?.updated_at && (
-            <span style={{ fontSize: '12px', color: '#333' }}>Last: {timeAgo(personality.updated_at)}</span>
+            <span className="text-xs text-neutral-600 hidden md:inline">Last: {timeAgo(personality.updated_at)}</span>
           )}
         </div>
       </header>
 
       {/* Name Gate */}
       {!nameSet && (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
-          <div style={{ width: '100%', maxWidth: '420px', textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', marginBottom: '8px' }}>◈</div>
-            <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#f0f0f0', marginBottom: '8px' }}>
-              Who are we cloning?
-            </h2>
-            <p style={{ color: '#666', marginBottom: '32px', fontSize: '14px' }}>
-              Confirm your name to begin the onboarding process.
-            </p>
-            <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="w-full max-w-md text-center">
+            <div className="text-4xl mb-4 text-neutral-700 animate-pulse">◈</div>
+            <h2 className="text-2xl font-semibold text-neutral-100 mb-2">Who are we cloning?</h2>
+            <p className="text-neutral-500 mb-8 text-sm">Confirm your name to begin the onboarding process.</p>
+            
+            <div className="flex flex-col sm:flex-row gap-3">
               <input
-                id="clone-name-input"
                 type="text"
                 value={nameInput}
                 onChange={e => setNameInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && saveName()}
                 placeholder="Full name…"
                 autoFocus
-                style={{
-                  flex: 1, background: '#0e0e0e', border: '1px solid #222',
-                  borderRadius: '10px', padding: '12px 16px', color: '#f0f0f0',
-                  fontSize: '15px', outline: 'none', fontFamily: 'Inter, sans-serif'
-                }}
+                className="flex-1 bg-neutral-900/50 border border-neutral-800 rounded-xl px-4 py-3 text-neutral-100 text-base focus:outline-none focus:ring-2 focus:ring-neutral-700 transition-all placeholder:text-neutral-600"
               />
               <button
-                id="save-name-btn"
                 onClick={saveName}
-                style={{
-                  padding: '12px 20px', background: '#f0f0f0', color: '#0a0a0a',
-                  border: 'none', borderRadius: '10px', fontWeight: '600',
-                  fontSize: '14px', cursor: 'pointer', fontFamily: 'Inter, sans-serif'
-                }}
+                className="px-6 py-3 bg-neutral-100 text-neutral-950 rounded-xl font-medium text-sm hover:bg-white transition-colors"
               >
                 Begin →
               </button>
@@ -321,38 +298,24 @@ export default function TrainPage() {
 
       {/* Main UI */}
       {nameSet && (
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        <div className="flex-1 flex overflow-hidden relative">
 
-          {/* Left Sidebar */}
-          <aside style={{
-            width: '260px', flexShrink: 0,
-            borderRight: '1px solid #151515',
-            background: '#0d0d0d',
-            padding: '20px',
-            display: 'flex', flexDirection: 'column', gap: '20px',
-            overflowY: 'auto'
-          }} className="hidden lg:flex">
-            
-            {/* Trust Depth Visualization */}
+          {/* Left Sidebar (Desktop) */}
+          <aside className="w-64 shrink-0 border-r border-neutral-900 bg-neutral-950/50 p-5 flex-col gap-5 overflow-y-auto hidden lg:flex">
             {userState && (
-              <div style={{ marginBottom: '16px' }}>
-                <div style={{ fontSize: '11px', color: '#888', letterSpacing: '0.08em', marginBottom: '12px' }}>
-                  TRUST DEPTH
-                </div>
-                <div style={{ background: '#111', border: '1px solid #222', borderRadius: '8px', padding: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '18px', fontWeight: '600', color: '#f0f0f0' }}>Level {userState.depthRung}</span>
-                    <span style={{ fontSize: '12px', color: '#555' }}>/ 5</span>
+              <div className="mb-2">
+                <div className="text-xs text-neutral-600 tracking-wider mb-3 font-medium">TRUST DEPTH</div>
+                <div className="bg-neutral-900/40 border border-neutral-800/60 rounded-xl p-4">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-lg font-semibold text-neutral-200">Level {userState.depthRung}</span>
+                    <span className="text-xs text-neutral-500">/ 5</span>
                   </div>
-                  <div style={{ display: 'flex', gap: '4px' }}>
+                  <div className="flex gap-1">
                     {[1, 2, 3, 4, 5].map(level => (
-                      <div key={level} style={{
-                        flex: 1, height: '4px', borderRadius: '2px',
-                        background: level <= userState.depthRung ? '#fff' : '#222'
-                      }} />
+                      <div key={level} className={`flex-1 h-1 rounded-full ${level <= userState.depthRung ? 'bg-neutral-200' : 'bg-neutral-800'}`} />
                     ))}
                   </div>
-                  <div style={{ fontSize: '11px', color: '#666', marginTop: '12px', lineHeight: '1.5' }}>
+                  <div className="text-xs text-neutral-500 mt-3 leading-relaxed">
                     {userState.depthRung === 1 && "Surface-level facts and basic communication style."}
                     {userState.depthRung === 2 && "Values, opinions, and core beliefs."}
                     {userState.depthRung === 3 && "Emotional triggers and nuanced reactions."}
@@ -362,29 +325,23 @@ export default function TrainPage() {
               </div>
             )}
 
-            <div style={{ fontSize: '11px', color: '#333', letterSpacing: '0.08em', marginTop: '8px' }}>CLONE PROFILE</div>
+            <div className="text-xs text-neutral-600 tracking-wider font-medium mt-2">CLONE PROFILE</div>
             {personality ? (
               <PersonalityStats personality={personality} completeness={completeness} />
             ) : (
-              <div style={{ color: '#555', fontSize: '13px' }}>Backend starting up...</div>
+              <div className="text-neutral-600 text-sm animate-pulse">Backend starting up...</div>
             )}
-            <div style={{ marginTop: 'auto' }}>
-              <Link href="/clone" style={{
-                display: 'block', textAlign: 'center', padding: '10px',
-                background: '#f0f0f0', color: '#0a0a0a', borderRadius: '8px',
-                fontWeight: '600', fontSize: '13px', textDecoration: 'none'
-              }}>
+            
+            <div className="mt-auto pt-4">
+              <Link href="/clone" className="block text-center p-2.5 bg-neutral-100 hover:bg-white text-neutral-950 rounded-lg font-medium text-sm transition-colors">
                 Talk to Clone →
               </Link>
             </div>
           </aside>
 
           {/* Chat Area */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', alignItems: 'center', background: '#0a0a0a' }}>
-            <div
-              className="chat-scroll"
-              style={{ width: '100%', maxWidth: '680px', flex: 1, overflowY: 'auto', padding: '32px 24px 160px' }}
-            >
+          <div className="flex-1 flex flex-col relative items-center w-full">
+            <div className="w-full max-w-2xl flex-1 overflow-y-auto p-4 sm:p-8 pb-40 scroll-smooth">
               {messages.map((msg, i) => (
                 <ChatBubble
                   key={i}
@@ -399,48 +356,33 @@ export default function TrainPage() {
             </div>
 
             {/* Floating Input */}
-            <div style={{
-              position: 'absolute', bottom: '24px',
-              width: '100%', maxWidth: '680px', padding: '0 16px', zIndex: 20
-            }}>
-              <div style={{
-                display: 'flex', alignItems: 'flex-end', gap: '8px',
-                background: '#111', border: '1px solid #222',
-                borderRadius: '16px', padding: '10px 10px 10px 16px',
-                boxShadow: '0 4px 24px rgba(0,0,0,0.4)'
-              }}>
+            <div className="absolute bottom-6 w-full max-w-2xl px-4 z-20">
+              <div className="flex items-end gap-2 bg-neutral-900/90 backdrop-blur-xl border border-neutral-800 rounded-2xl p-2 pl-4 shadow-2xl">
                 <textarea
-                  id="train-message-input"
+                  ref={textareaRef}
                   value={input}
-                  onChange={e => setInput(e.target.value)}
+                  onChange={handleInput}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) } }}
                   placeholder="Share your thoughts…"
                   rows={1}
-                  style={{
-                    flex: 1, background: 'transparent', border: 'none',
-                    color: '#f0f0f0', fontSize: '15px', fontFamily: 'Inter, sans-serif',
-                    outline: 'none', resize: 'none', maxHeight: '120px',
-                    lineHeight: '1.5', padding: '4px 0'
-                  }}
+                  className="flex-1 bg-transparent border-none text-neutral-200 text-base focus:outline-none resize-none max-h-32 py-2.5 placeholder:text-neutral-600 leading-relaxed"
                 />
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                <div className="flex items-center gap-1.5 shrink-0 pb-1">
                   <VoiceInput onTranscription={sendMessage} mode="onboarding" disabled={loading} />
                   <button
-                    id="train-send-btn"
                     onClick={() => sendMessage(input)}
                     disabled={loading || !input.trim()}
-                    style={{
-                      width: '34px', height: '34px', borderRadius: '8px', border: 'none',
-                      background: input.trim() && !loading ? '#f0f0f0' : '#1a1a1a',
-                      color: input.trim() && !loading ? '#0a0a0a' : '#444',
-                      cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
-                      fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      transition: 'all 0.15s ease', fontFamily: 'Inter, sans-serif'
-                    }}
-                  >↑</button>
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                      input.trim() && !loading 
+                        ? 'bg-neutral-200 text-neutral-950 hover:bg-white cursor-pointer' 
+                        : 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
+                    }`}
+                  >
+                    <span className="font-medium text-lg">↑</span>
+                  </button>
                 </div>
               </div>
-              <div style={{ textAlign: 'center', marginTop: '8px', fontSize: '11px', color: '#333' }}>
+              <div className="text-center mt-3 text-xs text-neutral-600 font-medium">
                 {currentQuestion.length > 60 ? currentQuestion.slice(0, 60) + '…' : currentQuestion}
               </div>
             </div>

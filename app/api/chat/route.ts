@@ -23,6 +23,16 @@ export async function POST(req: NextRequest) {
     }
 
     const { messages, mode, question } = await req.json()
+    
+    // Safety check: Limit input length to prevent DoS or token blowout
+    if (question && question.length > 2000) {
+      return NextResponse.json({ error: 'Question too long.' }, { status: 400 })
+    }
+    const totalLength = messages.reduce((acc: number, m: any) => acc + (m.content?.length || 0), 0)
+    if (totalLength > 20000) {
+      return NextResponse.json({ error: 'Conversation history too long. Please start a new session.' }, { status: 400 })
+    }
+
     const personality = await getPersonality(user.id)
 
     // Turn goal is now deterministic, not LLM-selected — see lib/turn-goal.ts
@@ -61,16 +71,31 @@ export async function POST(req: NextRequest) {
     if ((mode === 'train' || mode === 'onboarding') && question && messages.length > 0) {
       const lastUserMsg = [...messages].reverse().find((m: any) => m.role === 'user')
       if (lastUserMsg) {
-        Promise.all([
-          (async () => {
+        // Execute background tasks independently to prevent cascading failures
+        ;(async () => {
+          try {
             const updated = await extractTraits(question, lastUserMsg.content, personality)
             await savePersonality(user.id, updated)
-          })(),
-          (async () => {
+          } catch (err) {
+            console.error('extractTraits task error:', err)
+          }
+        })();
+
+        ;(async () => {
+          try {
             await storeMemory(user.id, `Q: ${question}\nA: ${lastUserMsg.content}`, 'qa')
-          })(),
-          maybeAdvanceDepthRung(user.id),
-        ]).catch(err => console.error('Background task error:', err))
+          } catch (err) {
+            console.error('storeMemory task error:', err)
+          }
+        })();
+
+        ;(async () => {
+          try {
+            await maybeAdvanceDepthRung(user.id)
+          } catch (err) {
+            console.error('maybeAdvanceDepthRung task error:', err)
+          }
+        })();
       }
     }
 

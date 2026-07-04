@@ -37,6 +37,7 @@ export default function ClonePage() {
   const chatEndRef = useRef<HTMLDivElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const unlockedRef = useRef(false)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -69,6 +70,14 @@ export default function ClonePage() {
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
+  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value)
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`
+    }
+  }
+
   const speakText = async (text: string, voiceId?: string) => {
     if (!audioRef.current) return
     try {
@@ -93,7 +102,6 @@ export default function ClonePage() {
   const sendMessage = async (text: string) => {
     if (!text.trim() || loading || activating) return
     
-    // Unlock audio immediately on user interaction
     if (audioRef.current && !unlockedRef.current) {
       audioRef.current.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA'
       audioRef.current.play().catch(() => {})
@@ -103,7 +111,9 @@ export default function ClonePage() {
     const userMsg: Message = { role: 'user', content: text }
     setMessages(prev => [...prev, userMsg])
     setInput('')
+    if (textareaRef.current) textareaRef.current.style.height = 'auto'
     setLoading(true)
+
     try {
       const res = await fetch('/api/chat', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -127,32 +137,23 @@ export default function ClonePage() {
   if (personality !== null && (!ready || (personality as any).error)) {
     const errorMsg = (personality as any).error
     return (
-      <div style={{
-        minHeight: '100vh', background: '#0a0a0a', display: 'flex',
-        alignItems: 'center', justifyContent: 'center', padding: '40px',
-        fontFamily: 'Inter, sans-serif'
-      }}>
-        <div style={{ textAlign: 'center', maxWidth: '360px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '24px', opacity: 0.3, color: errorMsg ? '#ef4444' : 'inherit' }}>◈</div>
-          <h2 style={{ fontSize: '22px', fontWeight: '500', color: errorMsg ? '#ef4444' : '#d0d0d0', marginBottom: '12px' }}>
+      <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center p-10 font-sans">
+        <div className="text-center max-w-sm">
+          <div className="text-5xl mb-6 opacity-30 text-neutral-500">◈</div>
+          <h2 className={`text-2xl font-medium mb-3 ${errorMsg ? 'text-red-400' : 'text-neutral-200'}`}>
             {errorMsg ? 'System Error' : 'Clone not ready yet'}
           </h2>
-          <p style={{ fontSize: '14px', color: '#555', lineHeight: '1.7', marginBottom: '8px' }}>
-            {errorMsg ? `Backend Error: ${errorMsg}. Please check your database connection.` : (personality.name ? `${personality.name}'s clone needs more training before it can speak.` : 'No personality data found.')}
+          <p className="text-sm text-neutral-500 leading-relaxed mb-8">
+            {errorMsg ? `Backend Error: ${errorMsg}. Please check your database connection in AWS Amplify.` : (personality.name ? `${personality.name}'s clone needs more training before it can speak.` : 'No personality data found.')}
           </p>
           {!errorMsg && (
-            <p style={{ fontSize: '14px', color: '#444', marginBottom: '32px' }}>
+            <p className="text-sm text-neutral-400 mb-8">
               Each training session adds depth and fidelity.
             </p>
           )}
-          <Link href="/train" style={{
-            display: 'inline-flex', alignItems: 'center', gap: '8px',
-            padding: '12px 24px', borderRadius: '10px',
-            background: errorMsg ? '#2a0000' : '#f0f0f0', color: errorMsg ? '#ffaaaa' : '#0a0a0a',
-            border: errorMsg ? '1px solid #4a0000' : 'none',
-            fontWeight: '600', fontSize: '14px', textDecoration: 'none',
-            marginTop: errorMsg ? '24px' : '0'
-          }}>
+          <Link href="/train" className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all ${
+            errorMsg ? 'bg-red-950/40 text-red-300 border border-red-900 hover:bg-red-900/50' : 'bg-neutral-100 text-neutral-900 hover:bg-white'
+          }`}>
             {errorMsg ? '← Back to Onboarding' : 'Start Training →'}
           </Link>
         </div>
@@ -161,90 +162,65 @@ export default function ClonePage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#0a0a0a', fontFamily: 'Inter, sans-serif', fontSize: '14px', position: 'relative', overflow: 'hidden' }}>
+    <div className="min-h-screen flex flex-col bg-neutral-950 font-sans text-sm relative overflow-hidden text-neutral-200">
 
       {/* Header */}
-      <header style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 24px', height: '56px',
-        borderBottom: '1px solid #151515',
-        background: 'rgba(10,10,10,0.85)', backdropFilter: 'blur(12px)',
-        position: 'sticky', top: 0, zIndex: 20
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <Link href="/" style={{ color: '#555', textDecoration: 'none', fontSize: '13px' }}>← Back</Link>
-          <span style={{ color: '#222' }}>|</span>
-          <span style={{ color: '#888', fontWeight: '500', fontSize: '13px' }}>Clone Mode</span>
+      <header className="flex items-center justify-between px-6 h-14 border-b border-neutral-900 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-20">
+        <div className="flex items-center gap-4">
+          <Link href="/" className="text-neutral-500 hover:text-neutral-300 transition-colors flex items-center gap-2 text-sm">
+            ← Back
+          </Link>
+          <span className="text-neutral-800">|</span>
+          <span className="text-neutral-400 font-medium text-sm">Clone Mode</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div className="flex items-center gap-4">
           <button
-            id="voice-toggle-btn"
             onClick={() => setVoiceEnabled(v => !v)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '6px 12px', borderRadius: '6px', fontSize: '12px',
-              background: voiceEnabled ? '#1a1a1a' : 'transparent',
-              border: `1px solid ${voiceEnabled ? '#333' : '#1a1a1a'}`,
-              color: voiceEnabled ? '#e0e0e0' : '#555',
-              cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-              transition: 'all 0.15s ease'
-            }}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all duration-200 border ${
+              voiceEnabled ? 'bg-neutral-900 border-neutral-800 text-neutral-200' : 'bg-transparent border-transparent text-neutral-600 hover:bg-neutral-900'
+            }`}
           >
             {voiceEnabled ? '🔊 Voice On' : '🔇 Voice Off'}
           </button>
-          <span style={{ fontSize: '12px', color: '#444' }}>{completeness}% profile</span>
+          <span className="text-xs text-neutral-500 hidden sm:inline">{completeness}% profile</span>
         </div>
       </header>
 
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+      <div className="flex-1 flex overflow-hidden">
 
         {/* Sidebar */}
-        <aside style={{
-          width: '240px', flexShrink: 0,
-          borderRight: '1px solid #111',
-          background: '#0d0d0d',
-          padding: '32px 20px',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '28px'
-        }} className="hidden lg:flex">
+        <aside className="w-60 shrink-0 border-r border-neutral-900 bg-neutral-950/50 p-8 flex-col items-center gap-7 overflow-y-auto hidden lg:flex">
           <CloneAvatar name={personality?.name || ''} isSpeaking={speaking} completeness={completeness} />
 
-          <div style={{ width: '100%', borderTop: '1px solid #151515', paddingTop: '20px' }}>
-            <p style={{ fontSize: '11px', color: '#333', letterSpacing: '0.08em', textAlign: 'center', marginBottom: '16px' }}>PROFILE</p>
+          <div className="w-full border-t border-neutral-900/60 pt-5">
+            <p className="text-[11px] text-neutral-600 tracking-wider text-center mb-4 font-medium">PROFILE</p>
             {[
               { label: 'Sessions', value: personality?.sessions || 0 },
               { label: 'Values mapped', value: personality?.thinkingPatterns?.values?.length || 0 },
               { label: 'Domains', value: personality?.knowledgeDomains?.length || 0 },
               { label: 'Memories stored', value: personality?.memoriesCount || 0 },
             ].map((item, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <span style={{ fontSize: '12px', color: '#555' }}>{item.label}</span>
-                <span style={{ fontSize: '12px', color: '#d0d0d0', fontWeight: '500' }}>{item.value}</span>
+              <div key={i} className="flex justify-between mb-2.5">
+                <span className="text-xs text-neutral-500">{item.label}</span>
+                <span className="text-xs text-neutral-300 font-medium">{item.value}</span>
               </div>
             ))}
           </div>
 
-          <Link href="/train" style={{
-            display: 'block', width: '100%', textAlign: 'center', padding: '9px',
-            border: '1px solid #1e1e1e', borderRadius: '8px',
-            color: '#666', fontSize: '12px', textDecoration: 'none',
-            transition: 'all 0.15s ease'
-          }}>
+          <Link href="/train" className="block w-full text-center p-2.5 border border-neutral-800 rounded-lg text-neutral-500 hover:text-neutral-300 hover:bg-neutral-900/50 text-xs transition-all">
             More training
           </Link>
         </aside>
 
         {/* Chat */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', alignItems: 'center', background: '#0a0a0a' }}>
+        <div className="flex-1 flex flex-col relative items-center bg-neutral-950">
 
           {/* Mobile avatar */}
-          <div className="lg:hidden" style={{ padding: '24px 0 8px', textAlign: 'center' }}>
+          <div className="lg:hidden pt-6 pb-2 text-center w-full flex justify-center">
             <CloneAvatar name={personality?.name || ''} isSpeaking={speaking} completeness={completeness} />
           </div>
 
-          <div
-            className="chat-scroll"
-            style={{ width: '100%', maxWidth: '680px', flex: 1, overflowY: 'auto', padding: '32px 24px 160px' }}
-          >
+          <div className="w-full max-w-2xl flex-1 overflow-y-auto p-4 sm:p-8 pb-40 scroll-smooth chat-scroll">
             {messages.map((msg, i) => (
               <ChatBubble
                 key={i}
@@ -259,48 +235,33 @@ export default function ClonePage() {
           </div>
 
           {/* Floating Input */}
-          <div style={{
-            position: 'absolute', bottom: '24px',
-            width: '100%', maxWidth: '680px', padding: '0 16px', zIndex: 20
-          }}>
-            <div style={{
-              display: 'flex', alignItems: 'flex-end', gap: '8px',
-              background: '#111', border: '1px solid #222',
-              borderRadius: '16px', padding: '10px 10px 10px 16px',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.4)'
-            }}>
+          <div className="absolute bottom-6 w-full max-w-2xl px-4 z-20">
+            <div className="flex items-end gap-2 bg-neutral-900/90 backdrop-blur-xl border border-neutral-800 rounded-2xl p-2 pl-4 shadow-2xl">
               <textarea
-                id="clone-message-input"
+                ref={textareaRef}
                 value={input}
-                onChange={e => setInput(e.target.value)}
+                onChange={handleInput}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) } }}
                 placeholder={`Message ${personality?.name || 'Clone'}…`}
                 rows={1}
-                style={{
-                  flex: 1, background: 'transparent', border: 'none',
-                  color: '#f0f0f0', fontSize: '15px', fontFamily: 'Inter, sans-serif',
-                  outline: 'none', resize: 'none', maxHeight: '120px',
-                  lineHeight: '1.5', padding: '4px 0'
-                }}
+                className="flex-1 bg-transparent border-none text-neutral-200 text-base focus:outline-none resize-none max-h-32 py-2.5 placeholder:text-neutral-600 leading-relaxed"
               />
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+              <div className="flex items-center gap-1.5 shrink-0 pb-1">
                 <VoiceInput onTranscription={sendMessage} mode="clone" disabled={loading} />
                 <button
-                  id="clone-send-btn"
                   onClick={() => sendMessage(input)}
                   disabled={loading || !input.trim()}
-                  style={{
-                    width: '34px', height: '34px', borderRadius: '8px', border: 'none',
-                    background: input.trim() && !loading ? '#f0f0f0' : '#1a1a1a',
-                    color: input.trim() && !loading ? '#0a0a0a' : '#444',
-                    cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
-                    fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    transition: 'all 0.15s ease', fontFamily: 'Inter, sans-serif'
-                  }}
-                >↑</button>
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                    input.trim() && !loading 
+                      ? 'bg-neutral-200 text-neutral-950 hover:bg-white cursor-pointer' 
+                      : 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
+                  }`}
+                >
+                  <span className="font-medium text-lg">↑</span>
+                </button>
               </div>
             </div>
-            <p style={{ textAlign: 'center', marginTop: '8px', fontSize: '11px', color: '#2a2a2a' }}>
+            <p className="text-center mt-3 text-[11px] text-neutral-700">
               AI simulation of {personality?.name || 'this person'}. Handle with care.
             </p>
           </div>
@@ -309,18 +270,11 @@ export default function ClonePage() {
 
       {/* Cinematic Activation Overlay */}
       {activating && ready && personality && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 50,
-          background: '#0a0a0a',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          opacity: fadeOut ? 0 : 1,
-          transition: 'opacity 0.7s ease',
-          pointerEvents: fadeOut ? 'none' : 'all'
-        }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', marginBottom: '32px', opacity: 0.5 }}>◈</div>
-            <p style={{ fontSize: '12px', color: '#333', letterSpacing: '0.15em', marginBottom: '16px' }}>ACTIVATING</p>
-            <h1 style={{ fontSize: '28px', fontWeight: '300', color: '#d0d0d0', letterSpacing: '0.05em' }}>
+        <div className={`fixed inset-0 z-50 bg-neutral-950 flex flex-col items-center justify-center transition-opacity duration-700 ${fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <div className="text-center">
+            <div className="text-4xl mb-8 opacity-50 text-neutral-600">◈</div>
+            <p className="text-xs text-neutral-500 tracking-[0.15em] mb-4">ACTIVATING</p>
+            <h1 className="text-3xl font-light text-neutral-200 tracking-wide">
               {personality.name}
             </h1>
           </div>

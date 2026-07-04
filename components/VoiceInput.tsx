@@ -57,8 +57,8 @@ export default function VoiceInput({ onTranscription, mode = 'train', disabled }
             throw new Error('Recording too short')
           }
           const formData = new FormData()
-          // Groq Whisper sometimes rejects "recording.webm", but accepts it if we just name it .wav or .m4a so ffmpeg handles it
-          const fileExtension = mimeType.includes('mp4') ? 'm4a' : 'wav'
+          // Groq Whisper expects the extension to match the container
+          const fileExtension = mimeType.includes('mp4') ? 'm4a' : 'webm'
           formData.append('audio', blob, `recording.${fileExtension}`)
 
           const res = await fetch('/api/transcribe', { method: 'POST', body: formData })
