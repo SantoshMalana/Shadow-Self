@@ -139,6 +139,7 @@ export default function ClonePage() {
           </p>
           <Link href="/train" className="btn-primary-lg">
             {errorMsg ? '← Back to Training' : 'Start Training →'}
+          </Link>
         </div>
       </div>
     )
