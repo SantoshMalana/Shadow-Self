@@ -4,6 +4,7 @@ import Link from 'next/link'
 import ChatBubble from '@/components/ChatBubble'
 import VoiceInput from '@/components/VoiceInput'
 import CloneAvatar from '@/components/CloneAvatar'
+import UserMenu from '@/components/UserMenu'
 
 interface Message { role: 'user' | 'assistant'; content: string }
 interface Personality {
@@ -185,9 +186,12 @@ export default function ClonePage() {
               </div>
             ))}
           </div>
-          <Link href="/train" className="btn-ghost w-full justify-center text-xs mt-auto">
-            More training
-          </Link>
+          <div className="mt-auto w-full pt-4">
+            <Link href="/train" className="btn-ghost w-full justify-center text-xs">
+              More training
+            </Link>
+            <UserMenu name={personality?.name} />
+          </div>
         </aside>
 
         {/* Chat */}

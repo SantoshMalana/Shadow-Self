@@ -6,6 +6,7 @@ import VoiceInput from '@/components/VoiceInput'
 import PersonalityStats from '@/components/PersonalityStats'
 import { getDailyQuestion } from '@/lib/questions'
 import { getUserState, updateUserName } from '@/app/actions/user'
+import UserMenu from '@/components/UserMenu'
 
 interface Message { 
   role: 'user' | 'assistant'
@@ -290,10 +291,11 @@ export default function TrainPage() {
               <div className="text-text-faint text-sm animate-pulse">Loading profile...</div>
             )}
             
-            <div className="mt-auto pt-4">
+            <div className="mt-auto pt-4 w-full">
               <Link href="/clone" className="btn-primary-lg justify-center w-full text-sm">
                 Talk to Clone →
               </Link>
+              <UserMenu name={userState?.name} />
             </div>
           </aside>
 
