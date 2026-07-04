@@ -84,7 +84,14 @@ export default function TrainPage() {
       try {
         // 1. Fetch User State
         const user = await getUserState()
-        setUserState(user)
+        if ('error' in user) {
+          console.error("Backend returned error:", user.error)
+          setUserState({ id: 'error', name: 'Database Connection Error', depthRung: 1, daysKnown: 0 } as any)
+          setMessages([{ role: 'assistant', content: `⚠ System Error: ${user.error}. Please check your database connection.` }])
+          return
+        }
+
+        setUserState(user as any)
         if (user.name) {
           setNameSet(true)
           setNameInput(user.name)
@@ -140,16 +147,30 @@ export default function TrainPage() {
   const saveName = async () => {
     if (!nameInput.trim()) return
     
-    // Update User table via server action
-    const updatedUser = await updateUserName(nameInput.trim())
-    setUserState(updatedUser)
-    setNameSet(true)
-    
-    const q = getDailyQuestion(0, updatedUser.depthRung)
-    setCurrentQuestion(q)
-    const responseMsg = `Great, ${updatedUser.name}. Let's begin.\n\n"${q}"`
-    setMessages([{ role: 'assistant', content: responseMsg, turnGoal: 'establish_baseline' }])
-    if (voiceEnabled) speakText(responseMsg)
+    try {
+      // Update User table via server action
+      const result = await updateUserName(nameInput.trim())
+      
+      if ('error' in result) {
+        console.error("saveName error:", result.error)
+        setMessages([{ role: 'assistant', content: `⚠ Could not save your name: ${result.error}. The database may not be reachable.` }])
+        setNameSet(true) // Still let them through so they see the error
+        return
+      }
+      
+      setUserState(result as any)
+      setNameSet(true)
+      
+      const q = getDailyQuestion(0, result.depthRung)
+      setCurrentQuestion(q)
+      const responseMsg = `Great, ${result.name}. Let's begin.\n\n"${q}"`
+      setMessages([{ role: 'assistant', content: responseMsg, turnGoal: 'establish_baseline' }])
+      if (voiceEnabled) speakText(responseMsg)
+    } catch (err: any) {
+      console.error("saveName crashed:", err)
+      setMessages([{ role: 'assistant', content: `⚠ Error: ${err.message || 'Unknown error'}. Check console for details.` }])
+      setNameSet(true)
+    }
   }
 
   const sendMessage = async (text: string) => {

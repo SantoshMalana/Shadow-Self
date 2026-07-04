@@ -90,23 +90,17 @@ export default function VoiceInput({ onTranscription, mode = 'train', disabled }
         onTouchEnd={stopRecording}
         onTouchCancel={stopRecording}
         disabled={disabled || transcribing}
-        style={{
-          padding: '8px',
-          borderRadius: '8px',
-          border: 'none',
-          background: recording ? 'rgba(239,68,68,0.15)' : 'transparent',
-          color: recording ? '#ef4444' : '#666',
-          cursor: disabled || transcribing ? 'not-allowed' : 'pointer',
-          opacity: disabled || transcribing ? 0.5 : 1,
-          fontSize: '20px',
-          transition: 'all 0.15s ease',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+        className={`p-2.5 rounded-xl border flex items-center justify-center text-xl transition-all duration-300 relative ${
+          recording 
+            ? 'bg-red-500/20 border-red-500/50 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.4)] scale-110' 
+            : 'bg-transparent border-transparent text-neutral-500 hover:text-white hover:bg-white/5 hover:border-white/10'
+        } ${disabled || transcribing ? 'opacity-50 cursor-not-allowed hover:bg-transparent hover:border-transparent hover:text-neutral-500' : 'cursor-pointer'}`}
         title={recording ? 'Listening… release to send' : transcribing ? 'Transcribing…' : 'Hold to speak'}
       >
-        {transcribing ? '⟳' : recording ? '⏹' : '🎙'}
+        {recording && (
+          <span className="absolute inset-0 rounded-xl bg-red-500/30 animate-ping pointer-events-none" />
+        )}
+        <span className="relative z-10">{transcribing ? '⟳' : recording ? '⏹' : '🎙'}</span>
       </button>
       {error && (
         <div style={{

@@ -48,6 +48,12 @@ export default function ClonePage() {
     let alive = true
     fetch('/api/personality').then(r => r.json()).then(data => {
       if (!alive) return
+      if (data.error) {
+        console.error("Backend returned error:", data.error)
+        setPersonality({ error: data.error } as any)
+        setActivating(false)
+        return
+      }
       setPersonality(data)
       if (data.name && data.sessions > 0) {
         setReady(true)
@@ -117,8 +123,9 @@ export default function ClonePage() {
 
   const completeness = personality ? getCompleteness(personality) : 0
 
-  // Not ready
-  if (personality !== null && !ready) {
+  // Not ready or Error
+  if (personality !== null && (!ready || (personality as any).error)) {
+    const errorMsg = (personality as any).error
     return (
       <div style={{
         minHeight: '100vh', background: '#0a0a0a', display: 'flex',
@@ -126,23 +133,27 @@ export default function ClonePage() {
         fontFamily: 'Inter, sans-serif'
       }}>
         <div style={{ textAlign: 'center', maxWidth: '360px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '24px', opacity: 0.3 }}>◈</div>
-          <h2 style={{ fontSize: '22px', fontWeight: '500', color: '#d0d0d0', marginBottom: '12px' }}>
-            Clone not ready yet
+          <div style={{ fontSize: '48px', marginBottom: '24px', opacity: 0.3, color: errorMsg ? '#ef4444' : 'inherit' }}>◈</div>
+          <h2 style={{ fontSize: '22px', fontWeight: '500', color: errorMsg ? '#ef4444' : '#d0d0d0', marginBottom: '12px' }}>
+            {errorMsg ? 'System Error' : 'Clone not ready yet'}
           </h2>
           <p style={{ fontSize: '14px', color: '#555', lineHeight: '1.7', marginBottom: '8px' }}>
-            {personality.name ? `${personality.name}'s clone needs more training before it can speak.` : 'No personality data found.'}
+            {errorMsg ? `Backend Error: ${errorMsg}. Please check your database connection.` : (personality.name ? `${personality.name}'s clone needs more training before it can speak.` : 'No personality data found.')}
           </p>
-          <p style={{ fontSize: '14px', color: '#444', marginBottom: '32px' }}>
-            Each training session adds depth and fidelity.
-          </p>
+          {!errorMsg && (
+            <p style={{ fontSize: '14px', color: '#444', marginBottom: '32px' }}>
+              Each training session adds depth and fidelity.
+            </p>
+          )}
           <Link href="/train" style={{
             display: 'inline-flex', alignItems: 'center', gap: '8px',
             padding: '12px 24px', borderRadius: '10px',
-            background: '#f0f0f0', color: '#0a0a0a',
-            fontWeight: '600', fontSize: '14px', textDecoration: 'none'
+            background: errorMsg ? '#2a0000' : '#f0f0f0', color: errorMsg ? '#ffaaaa' : '#0a0a0a',
+            border: errorMsg ? '1px solid #4a0000' : 'none',
+            fontWeight: '600', fontSize: '14px', textDecoration: 'none',
+            marginTop: errorMsg ? '24px' : '0'
           }}>
-            Start Training →
+            {errorMsg ? '← Back to Onboarding' : 'Start Training →'}
           </Link>
         </div>
       </div>

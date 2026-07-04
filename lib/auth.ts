@@ -27,23 +27,27 @@ export async function getDbUser(requireAuth = false) {
   const authUser = await getAuthUser(requireAuth)
   if (!authUser) return null
 
-  // Check if user exists in our DB
-  let dbUser = await prisma.user.findUnique({
-    where: { id: authUser.id }
-  })
-
-  // If not, this is their first login after signup. Create the DB row.
-  if (!dbUser) {
-    dbUser = await prisma.user.create({
-      data: {
-        id: authUser.id,
-        email: authUser.email!,
-        name: authUser.user_metadata?.name || null,
-        depthRung: 1,
-        daysKnown: 0,
-      }
+  try {
+    // Check if user exists in our DB
+    let dbUser = await prisma.user.findUnique({
+      where: { id: authUser.id }
     })
-  }
 
-  return dbUser
+    // If not, this is their first login after signup. Create the DB row.
+    if (!dbUser) {
+      dbUser = await prisma.user.create({
+        data: {
+          id: authUser.id,
+          email: authUser.email!,
+          name: authUser.user_metadata?.name || null,
+          depthRung: 1,
+          daysKnown: 0,
+        }
+      })
+    }
+    return dbUser
+  } catch (error: any) {
+    console.error("[getDbUser] Database connection or query failed:", error.message || error)
+    throw new Error(`Database error: ${error.message?.split('\n')[0] || 'Could not connect to database'}`)
+  }
 }
