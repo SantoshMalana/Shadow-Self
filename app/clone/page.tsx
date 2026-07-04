@@ -8,19 +8,19 @@ import CloneAvatar from '@/components/CloneAvatar'
 interface Message { role: 'user' | 'assistant'; content: string }
 interface Personality {
   name: string; voice_id: string; sessions: number
-  communication_style: { tone: string[] }
-  thinking_patterns: { values: string[] }
-  emotional_profile: { passion_topics: string[] }
-  knowledge_domains: string[]
+  communicationStyle: { tone: string[] }
+  thinkingPatterns: { values: string[] }
+  emotionalProfile: { passionTopics: string[] }
+  knowledgeDomains: string[]
   memoriesCount?: number
 }
 
 function getCompleteness(p: Personality): number {
   let s = 0
-  s += Math.min(p.communication_style.tone.length * 5, 20)
-  s += Math.min(p.thinking_patterns.values.length * 3, 20)
-  s += Math.min(p.emotional_profile.passion_topics.length * 3, 15)
-  s += Math.min(p.knowledge_domains.length * 3, 15)
+  s += Math.min((p.communicationStyle?.tone?.length || 0) * 5, 20)
+  s += Math.min((p.thinkingPatterns?.values?.length || 0) * 3, 20)
+  s += Math.min((p.emotionalProfile?.passionTopics?.length || 0) * 3, 15)
+  s += Math.min((p.knowledgeDomains?.length || 0) * 3, 15)
   return Math.min(s + (p.sessions > 0 ? 30 : 0), 100)
 }
 
@@ -201,8 +201,8 @@ export default function ClonePage() {
             <p style={{ fontSize: '11px', color: '#333', letterSpacing: '0.08em', textAlign: 'center', marginBottom: '16px' }}>PROFILE</p>
             {[
               { label: 'Sessions', value: personality?.sessions || 0 },
-              { label: 'Values mapped', value: personality?.thinking_patterns.values.length || 0 },
-              { label: 'Domains', value: personality?.knowledge_domains.length || 0 },
+              { label: 'Values mapped', value: personality?.thinkingPatterns?.values?.length || 0 },
+              { label: 'Domains', value: personality?.knowledgeDomains?.length || 0 },
               { label: 'Memories stored', value: personality?.memoriesCount || 0 },
             ].map((item, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>

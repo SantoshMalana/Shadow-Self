@@ -2,10 +2,10 @@
 
 interface PersonalityData {
   sessions: number
-  communication_style: { tone: string[]; vocabulary: string[]; explanation_style: string }
-  thinking_patterns: { values: string[]; opinions: string[] }
-  emotional_profile: { passion_topics: string[] }
-  knowledge_domains: string[]
+  communicationStyle: { tone: string[]; vocabulary: string[]; explanationStyle: string }
+  thinkingPatterns: { values: string[]; opinions: string[] }
+  emotionalProfile: { passionTopics: string[] }
+  knowledgeDomains: string[]
 }
 
 interface PersonalityStatsProps {
@@ -74,19 +74,19 @@ export default function PersonalityStats({ personality, completeness }: Personal
 
       {/* Bars */}
       <div>
-        <StatRow label="Tones" value={personality.communication_style.tone.length} max={10} />
-        <StatRow label="Values" value={personality.thinking_patterns.values.length} max={15} />
-        <StatRow label="Opinions" value={personality.thinking_patterns.opinions.length} max={20} />
-        <StatRow label="Passions" value={personality.emotional_profile.passion_topics.length} max={10} />
-        <StatRow label="Domains" value={personality.knowledge_domains.length} max={10} />
+        <StatRow label="Tones" value={personality.communicationStyle?.tone?.length || 0} max={10} />
+        <StatRow label="Values" value={personality.thinkingPatterns?.values?.length || 0} max={15} />
+        <StatRow label="Opinions" value={personality.thinkingPatterns?.opinions?.length || 0} max={20} />
+        <StatRow label="Passions" value={personality.emotionalProfile?.passionTopics?.length || 0} max={10} />
+        <StatRow label="Domains" value={personality.knowledgeDomains?.length || 0} max={10} />
       </div>
 
       {/* Tags */}
-      {personality.communication_style.tone.length > 0 && (
+      {(personality.communicationStyle?.tone?.length || 0) > 0 && (
         <div>
           <p style={{ fontSize: '10px', color: '#333', letterSpacing: '0.08em', marginBottom: '8px' }}>DETECTED TONES</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-            {personality.communication_style.tone.slice(0, 5).map((t, i) => (
+            {personality.communicationStyle.tone.slice(0, 5).map((t, i) => (
               <span key={i} style={{
                 padding: '3px 10px', borderRadius: '4px',
                 background: '#111', border: '1px solid #1e1e1e',
@@ -99,11 +99,11 @@ export default function PersonalityStats({ personality, completeness }: Personal
         </div>
       )}
 
-      {personality.knowledge_domains.length > 0 && (
+      {(personality.knowledgeDomains?.length || 0) > 0 && (
         <div>
           <p style={{ fontSize: '10px', color: '#333', letterSpacing: '0.08em', marginBottom: '8px' }}>KNOWLEDGE</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-            {personality.knowledge_domains.slice(0, 4).map((d, i) => (
+            {personality.knowledgeDomains.slice(0, 4).map((d, i) => (
               <span key={i} style={{
                 padding: '3px 10px', borderRadius: '4px',
                 background: '#111', border: '1px solid #1e1e1e',

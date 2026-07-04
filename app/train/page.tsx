@@ -18,27 +18,27 @@ interface Personality {
   sessions: number
   updated_at?: string
   voiceId?: string
-  communication_style: any
-  thinking_patterns: any
-  emotional_profile: any
-  knowledge_domains: any
+  communicationStyle: any
+  thinkingPatterns: any
+  emotionalProfile: any
+  knowledgeDomains: any
 }
 
 function getCompleteness(p: Personality): number {
   let score = 0
-  if (p.communication_style) {
-    score += Math.min((p.communication_style.tone?.length || 0) * 5, 20)
-    score += Math.min(p.communication_style.vocabulary?.length || 0, 15)
+  if (p.communicationStyle) {
+    score += Math.min((p.communicationStyle.tone?.length || 0) * 5, 20)
+    score += Math.min(p.communicationStyle.vocabulary?.length || 0, 15)
   }
-  if (p.thinking_patterns) {
-    score += Math.min((p.thinking_patterns.values?.length || 0) * 3, 20)
-    score += Math.min(p.thinking_patterns.opinions?.length || 0, 15)
+  if (p.thinkingPatterns) {
+    score += Math.min((p.thinkingPatterns.values?.length || 0) * 3, 20)
+    score += Math.min(p.thinkingPatterns.opinions?.length || 0, 15)
   }
-  if (p.emotional_profile) {
-    score += Math.min((p.emotional_profile.passion_topics?.length || 0) * 3, 15)
+  if (p.emotionalProfile) {
+    score += Math.min((p.emotionalProfile.passionTopics?.length || 0) * 3, 15)
   }
-  if (p.knowledge_domains) {
-    score += Math.min(p.knowledge_domains.length * 3, 15)
+  if (p.knowledgeDomains) {
+    score += Math.min(p.knowledgeDomains.length * 3, 15)
   }
   return Math.min(score, 100)
 }
