@@ -15,20 +15,19 @@ interface PersonalityStatsProps {
 
 function StatRow({ label, value, max }: { label: string; value: number; max: number }) {
   const pct = Math.min((value / max) * 100, 100)
+  const barColor = pct > 60 ? 'bg-neutral-200' : pct > 30 ? 'bg-neutral-500' : 'bg-neutral-700'
+
   return (
-    <div style={{ marginBottom: '14px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-        <span style={{ fontSize: '11px', color: '#555' }}>{label}</span>
-        <span style={{ fontSize: '11px', color: '#888', fontWeight: '500' }}>{value}/{max}</span>
+    <div className="mb-3.5">
+      <div className="flex justify-between mb-1">
+        <span className="text-xs text-neutral-500">{label}</span>
+        <span className="text-xs text-neutral-300 font-medium">{value}/{max}</span>
       </div>
-      <div style={{ height: '2px', background: '#1a1a1a', borderRadius: '1px', overflow: 'hidden' }}>
-        <div style={{
-          height: '100%',
-          width: `${pct}%`,
-          background: pct > 60 ? '#d0d0d0' : pct > 30 ? '#666' : '#333',
-          borderRadius: '1px',
-          transition: 'width 0.8s ease'
-        }} />
+      <div className="h-0.5 bg-neutral-800 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-[width] duration-700 ease-out ${barColor}`}
+          style={{ width: `${pct}%` }}
+        />
       </div>
     </div>
   )
@@ -40,16 +39,18 @@ export default function PersonalityStats({ personality, completeness }: Personal
   const offset = circ - (completeness / 100) * circ
 
   return (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="w-full flex flex-col gap-5">
 
       {/* Ring */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-        <div style={{ position: 'relative', flexShrink: 0 }}>
+      <div className="flex items-center gap-3.5">
+        <div className="relative shrink-0">
           <svg width="52" height="52" viewBox="0 0 52 52">
             <circle cx="26" cy="26" r={r} fill="none" stroke="#1a1a1a" strokeWidth="3" />
             <circle
               cx="26" cy="26" r={r}
-              fill="none" stroke={completeness > 60 ? '#d0d0d0' : '#444'} strokeWidth="3"
+              fill="none"
+              stroke={completeness > 60 ? '#d0d0d0' : '#444'}
+              strokeWidth="3"
               strokeLinecap="round"
               strokeDasharray={circ}
               strokeDashoffset={offset}
@@ -57,16 +58,13 @@ export default function PersonalityStats({ personality, completeness }: Personal
               style={{ transition: 'stroke-dashoffset 1s ease, stroke 0.5s ease' }}
             />
           </svg>
-          <div style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
-            <span style={{ fontSize: '11px', fontWeight: '600', color: '#d0d0d0' }}>{completeness}%</span>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-[11px] font-semibold text-neutral-200">{completeness}%</span>
           </div>
         </div>
         <div>
-          <p style={{ fontSize: '13px', fontWeight: '500', color: '#d0d0d0', marginBottom: '2px' }}>Clone Completeness</p>
-          <p style={{ fontSize: '11px', color: '#444' }}>
+          <p className="text-[13px] font-medium text-neutral-200 mb-0.5">Clone Completeness</p>
+          <p className="text-[11px] text-neutral-600">
             {personality.sessions} session{personality.sessions !== 1 ? 's' : ''}
           </p>
         </div>
@@ -84,14 +82,13 @@ export default function PersonalityStats({ personality, completeness }: Personal
       {/* Tags */}
       {(personality.communicationStyle?.tone?.length || 0) > 0 && (
         <div>
-          <p style={{ fontSize: '10px', color: '#333', letterSpacing: '0.08em', marginBottom: '8px' }}>DETECTED TONES</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+          <p className="text-[11px] text-neutral-600 tracking-wider font-medium uppercase mb-2">Detected Tones</p>
+          <div className="flex flex-wrap gap-1.5">
             {personality.communicationStyle.tone.slice(0, 5).map((t, i) => (
-              <span key={i} style={{
-                padding: '3px 10px', borderRadius: '4px',
-                background: '#111', border: '1px solid #1e1e1e',
-                fontSize: '11px', color: '#666', textTransform: 'capitalize'
-              }}>
+              <span
+                key={i}
+                className="bg-neutral-800 border border-neutral-800 text-neutral-400 rounded-md px-2 py-0.5 text-xs capitalize"
+              >
                 {t}
               </span>
             ))}
@@ -101,14 +98,13 @@ export default function PersonalityStats({ personality, completeness }: Personal
 
       {(personality.knowledgeDomains?.length || 0) > 0 && (
         <div>
-          <p style={{ fontSize: '10px', color: '#333', letterSpacing: '0.08em', marginBottom: '8px' }}>KNOWLEDGE</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+          <p className="text-[11px] text-neutral-600 tracking-wider font-medium uppercase mb-2">Knowledge</p>
+          <div className="flex flex-wrap gap-1.5">
             {personality.knowledgeDomains.slice(0, 4).map((d, i) => (
-              <span key={i} style={{
-                padding: '3px 10px', borderRadius: '4px',
-                background: '#111', border: '1px solid #1e1e1e',
-                fontSize: '11px', color: '#666', textTransform: 'capitalize'
-              }}>
+              <span
+                key={i}
+                className="bg-neutral-800 border border-neutral-800 text-neutral-400 rounded-md px-2 py-0.5 text-xs capitalize"
+              >
                 {d}
               </span>
             ))}

@@ -19,7 +19,7 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
   if (isUser) {
     return (
       <div className="ss-message flex justify-end mb-6">
-        <div className="max-w-[75%] px-5 py-3.5 rounded-2xl rounded-tr-sm bg-gradient-to-br from-neutral-800 to-neutral-900 border border-neutral-700/50 text-[#e8e8e8] text-[15px] leading-relaxed shadow-lg shadow-black/20 break-words">
+        <div className="max-w-[75%] px-5 py-3.5 rounded-2xl rounded-tr-sm bg-gradient-to-br from-neutral-800 to-neutral-900 border border-neutral-700/50 text-neutral-200 text-[15px] leading-relaxed shadow-lg shadow-black/20 break-words">
           {content}
         </div>
       </div>
@@ -49,13 +49,9 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
         <div className="text-[15px] text-neutral-300 leading-[1.75] whitespace-pre-wrap break-words font-light">
           {isTyping ? (
             <span className="flex gap-1.5 items-center py-2 h-6">
-              {[0, 150, 300].map(delay => (
-                <span
-                  key={delay}
-                  className="w-1.5 h-1.5 rounded-full bg-blue-500/60 animate-pulse"
-                  style={{ animationDelay: `${delay}ms` }}
-                />
-              ))}
+              <span className="typing-dot" />
+              <span className="typing-dot" />
+              <span className="typing-dot" />
             </span>
           ) : content}
         </div>
@@ -86,7 +82,7 @@ function FeedbackButtons({ messageId }: { messageId: string }) {
 
   if (state === 'sent') {
     return (
-      <div style={{ marginTop: '8px', fontSize: '11px', color: '#555' }}>
+      <div className="mt-2 text-[11px] text-neutral-600">
         ✓ Feedback recorded
       </div>
     )
@@ -94,42 +90,24 @@ function FeedbackButtons({ messageId }: { messageId: string }) {
 
   if (state === 'correcting') {
     return (
-      <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div className="mt-3 flex flex-col gap-2">
         <textarea
           value={correction}
           onChange={e => setCorrection(e.target.value)}
           placeholder="What should the response have said instead?"
           rows={2}
-          style={{
-            width: '100%',
-            padding: '8px 12px',
-            fontSize: '13px',
-            background: '#0d0d0d',
-            border: '1px solid #333',
-            borderRadius: '8px',
-            color: '#ddd',
-            resize: 'vertical',
-            outline: 'none',
-          }}
+          className="w-full px-3 py-2 text-[13px] bg-neutral-900 border border-neutral-800 rounded-lg text-neutral-300 resize-y focus:outline-none focus:border-neutral-700 placeholder:text-neutral-600"
         />
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div className="flex gap-2">
           <button
             onClick={() => submitFeedback('down', correction)}
-            style={{
-              padding: '4px 12px', fontSize: '12px',
-              background: '#1a1a1a', border: '1px solid #333',
-              borderRadius: '6px', color: '#e0e0e0', cursor: 'pointer'
-            }}
+            className="px-3 py-1.5 text-xs bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-lg text-neutral-200 cursor-pointer transition-colors"
           >
             Submit
           </button>
           <button
             onClick={() => setState('idle')}
-            style={{
-              padding: '4px 12px', fontSize: '12px',
-              background: 'transparent', border: '1px solid #252525',
-              borderRadius: '6px', color: '#666', cursor: 'pointer'
-            }}
+            className="px-3 py-1.5 text-xs bg-transparent border border-neutral-800 rounded-lg text-neutral-500 hover:text-neutral-400 cursor-pointer transition-colors"
           >
             Cancel
           </button>
@@ -139,28 +117,18 @@ function FeedbackButtons({ messageId }: { messageId: string }) {
   }
 
   return (
-    <div style={{ marginTop: '8px', display: 'flex', gap: '6px', opacity: state === 'idle' ? 0.65 : 1, transition: 'opacity 0.2s' }}
-      className="feedback-buttons"
-      onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-      onMouseLeave={e => { if (state === 'idle') e.currentTarget.style.opacity = '0.65' }}
-    >
+    <div className={`mt-2 flex gap-1.5 transition-opacity duration-200 ${state === 'idle' ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
       <button
         onClick={() => { setState('up'); submitFeedback('up') }}
         title="Good response"
-        style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          fontSize: '14px', padding: '2px 4px', color: state === 'up' ? '#4ade80' : '#777',
-        }}
+        className={`bg-transparent border-none cursor-pointer text-sm p-1 transition-colors ${state === 'up' ? 'text-green-400' : 'text-neutral-600 hover:text-neutral-400'}`}
       >
         👍
       </button>
       <button
         onClick={() => setState('correcting')}
         title="Bad response — provide correction"
-        style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          fontSize: '14px', padding: '2px 4px', color: state === 'down' ? '#f87171' : '#777',
-        }}
+        className={`bg-transparent border-none cursor-pointer text-sm p-1 transition-colors ${state === 'down' ? 'text-red-400' : 'text-neutral-600 hover:text-neutral-400'}`}
       >
         👎
       </button>

@@ -4,12 +4,11 @@
   --color-bg: #0a0a0a;
   --color-surface: #111111;
   --color-surface-2: #1a1a1a;
-  --color-sidebar: #0d0d0d;
-  --color-border: #222222;
-  --color-border-subtle: #1a1a1a;
-  --color-text-primary: #f0f0f0;
-  --color-text-secondary: #888888;
-  --color-text-muted: #444444;
+  --color-border: #262626;
+  --color-border-subtle: #1e1e1e;
+  --color-text-primary: #e5e5e5;
+  --color-text-secondary: #737373;
+  --color-text-muted: #525252;
   --color-accent: #ffffff;
   --color-accent-dim: rgba(255,255,255,0.08);
   --color-glow: rgba(255,255,255,0.04);
@@ -17,31 +16,9 @@
 
 :root {
   --bg: #0a0a0a;
-  --surface: #111111;
-  --surface-2: #1a1a1a;
-  --sidebar: #0d0d0d;
-  --border: #222222;
-  --border-subtle: #1a1a1a;
-  --text-primary: #f0f0f0;
-  --text-secondary: #888888;
-  --text-muted: #444444;
-  --accent: #ffffff;
-  --accent-dim: rgba(255,255,255,0.08);
-  --glow: rgba(255,255,255,0.04);
-  
-  /* Audit design tokens */
-  --ss-bg: #0a0a0a;
-  --ss-surface: #111111;
-  --ss-surface-2: #1a1a1a;
-  --ss-border: #252525;
-  --ss-border-soft: #1e1e1e;
-  --ss-text: #e8e8e8;
-  --ss-text-dim: #888888;
-  --ss-text-faint: #555555;
-  --ss-accent: #d0d0d0;
-  --ss-success: #4ade80;
-  --ss-danger: #f87171;
-  --ss-radius: 8px;
+  --text-primary: #e5e5e5;
+  --border: #262626;
+  --accent: #d0d0d0;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -57,7 +34,7 @@ button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 a:focus-visible {
-  outline: 2px solid var(--ss-accent);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -91,7 +68,7 @@ body {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: #333; }
+::-webkit-scrollbar-thumb:hover { background: #404040; }
 
 /* Chat scroll */
 .chat-scroll {
@@ -106,7 +83,7 @@ body {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--text-muted);
+  background: #737373;
   animation: dotBounce 1.2s ease infinite;
 }
 .typing-dot:nth-child(2) { animation-delay: 0.2s; }

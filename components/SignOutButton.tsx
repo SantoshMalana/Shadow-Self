@@ -5,7 +5,7 @@ export default function SignOutButton() {
     <form action={logout}>
       <button 
         type="submit" 
-        className="fixed bottom-4 right-4 z-50 bg-[#151515] hover:bg-[#222] text-[#888] hover:text-white border border-[#222] text-xs font-medium px-4 py-2 rounded-full transition-all"
+        className="px-3 py-1.5 rounded-lg text-xs bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-neutral-300 border border-neutral-800 transition-colors font-medium"
       >
         Sign Out
       </button>

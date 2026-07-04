@@ -15,7 +15,7 @@ export default function HomePage() {
   }, [])
 
   return (
-    <main className="min-h-screen flex flex-col bg-[#050505] text-white font-sans relative overflow-hidden">
+    <main className="min-h-screen flex flex-col bg-neutral-950 text-white font-sans relative overflow-hidden">
       {/* Dynamic Background Glows */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />

@@ -189,7 +189,7 @@ export default function ClonePage() {
       <div className="flex-1 flex overflow-hidden">
 
         {/* Sidebar */}
-        <aside className="w-60 shrink-0 border-r border-neutral-900 bg-neutral-950/50 p-8 flex-col items-center gap-7 overflow-y-auto hidden lg:flex">
+        <aside className="w-64 shrink-0 border-r border-neutral-900 bg-neutral-950/50 p-5 flex-col items-center gap-5 overflow-y-auto hidden lg:flex">
           <CloneAvatar name={personality?.name || ''} isSpeaking={speaking} completeness={completeness} />
 
           <div className="w-full border-t border-neutral-900/60 pt-5">

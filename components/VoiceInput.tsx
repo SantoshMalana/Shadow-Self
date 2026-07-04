@@ -103,12 +103,7 @@ export default function VoiceInput({ onTranscription, mode = 'train', disabled }
         <span className="relative z-10">{transcribing ? '⟳' : recording ? '⏹' : '🎙'}</span>
       </button>
       {error && (
-        <div style={{
-          position: 'absolute', bottom: '100%', marginBottom: '8px',
-          whiteSpace: 'nowrap', padding: '4px 8px',
-          background: 'rgba(239,68,68,0.1)', color: '#ef4444',
-          fontSize: '11px', borderRadius: '4px'
-        }}>
+        <div className="absolute bottom-full mb-2 whitespace-nowrap px-2 py-1 bg-red-950/80 text-red-400 text-[11px] rounded-md">
           {error}
         </div>
       )}
