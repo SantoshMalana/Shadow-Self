@@ -1,7 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getDbUser } from '@/lib/auth'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Secure the endpoint
+    const user = await getDbUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // 2. Strict rate limiting for TTS API
+    // Allow 20 TTS requests per minute per user
+    const rateCheck = checkRateLimit(`synthesize:${user.id}`, 20, 60_000)
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: 'Too many voice generations. Please wait a minute.' },
+        { status: 429 }
+      )
+    }
+
     const { text, voiceId } = await req.json()
 
     if (!text) {

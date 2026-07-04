@@ -1,7 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getDbUser } from '@/lib/auth'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Secure the endpoint (must be logged in)
+    const user = await getDbUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // 2. Strict rate limiting for expensive external API calls
+    // Allow 15 voice inputs per minute per user
+    const rateCheck = checkRateLimit(`transcribe:${user.id}`, 15, 60_000)
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: 'Too many voice recordings. Please wait a minute.' },
+        { status: 429 }
+      )
+    }
+
     const formData = await req.formData()
     const audioFile = formData.get('audio') as File
 
@@ -27,7 +45,6 @@ export async function POST(req: NextRequest) {
     const result = await withKeyRotation(
       apiKeys,
       async (key) => {
-        // FormData must be reconstructed on every retry loop because it gets consumed by fetch
         const whisperForm = new FormData()
         whisperForm.append('file', audioFile, audioFile.name)
         whisperForm.append('model', modelName)
