@@ -355,6 +355,60 @@ a:focus-visible {
   border-radius: var(--radius-lg);
 }
 
+.ss-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  background: rgba(20, 15, 32, 0.5); /* card/50 */
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+@media (max-width: 1024px) {
+  .ss-sidebar { display: none; }
+}
+
+.ss-sidebar-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+.ss-chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  align-items: center;
+  width: 100%;
+}
+
+.ss-chat-area {
+  width: 100%;
+  max-width: 672px; /* max-w-2xl */
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px;
+  padding-bottom: 160px; /* pb-40 */
+}
+
+@media (max-width: 640px) {
+  .ss-chat-area { padding: 16px; padding-bottom: 160px; }
+}
+
+.ss-chat-input-wrapper {
+  position: absolute;
+  bottom: 24px;
+  width: 100%;
+  max-width: 672px;
+  padding: 0 16px;
+  z-index: 20;
+}
+
 /* ====== SCROLLBAR ====== */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }

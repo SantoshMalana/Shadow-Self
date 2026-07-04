@@ -259,11 +259,11 @@ export default function TrainPage() {
         <div className="flex-1 flex overflow-hidden relative">
 
           {/* Left Sidebar */}
-          <aside className="w-64 shrink-0 border-r border-border bg-card/50 p-5 flex-col gap-5 overflow-y-auto hidden lg:flex">
+          <aside className="ss-sidebar">
             {userState && (
               <div className="mb-2">
                 <div className="text-[11px] text-accent-light tracking-wider mb-3 font-semibold uppercase">Trust Depth</div>
-                <div className="ss-card p-4">
+                <div className="ss-sidebar-card">
                   <div className="flex justify-between items-center mb-3">
                     <span className="text-lg font-bold text-text-primary">Level {userState.depthRung}</span>
                     <span className="text-xs text-text-faint">/ 5</span>
@@ -298,8 +298,8 @@ export default function TrainPage() {
           </aside>
 
           {/* Chat Area */}
-          <div className="flex-1 flex flex-col relative items-center w-full">
-            <div className="w-full max-w-2xl flex-1 overflow-y-auto p-4 sm:p-8 pb-40 chat-scroll">
+          <div className="ss-chat-container">
+            <div className="ss-chat-area chat-scroll">
               {messages.map((msg, i) => (
                 <ChatBubble
                   key={i}
@@ -315,7 +315,7 @@ export default function TrainPage() {
             </div>
 
             {/* Input */}
-            <div className="absolute bottom-6 w-full max-w-2xl px-4 z-20">
+            <div className="ss-chat-input-wrapper">
               <div className="flex items-center gap-[10px] bg-card/90 backdrop-blur-xl border border-border rounded-full p-[10px] pl-5 shadow-2xl">
                 <textarea
                   ref={textareaRef}

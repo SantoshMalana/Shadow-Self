@@ -169,7 +169,7 @@ export default function ClonePage() {
 
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
-        <aside className="w-64 shrink-0 border-r border-border bg-card/50 p-5 flex-col items-center gap-5 overflow-y-auto hidden lg:flex">
+        <aside className="ss-sidebar">
           <CloneAvatar name={personality?.name || ''} isSpeaking={speaking} completeness={completeness} />
           <div className="w-full border-t border-border pt-5">
             <p className="text-[11px] text-accent-light tracking-wider text-center mb-4 font-semibold uppercase">Profile</p>
@@ -191,11 +191,11 @@ export default function ClonePage() {
         </aside>
 
         {/* Chat */}
-        <div className="flex-1 flex flex-col relative items-center bg-bg">
+        <div className="ss-chat-container">
           <div className="lg:hidden pt-6 pb-2 text-center w-full flex justify-center">
             <CloneAvatar name={personality?.name || ''} isSpeaking={speaking} completeness={completeness} />
           </div>
-          <div className="w-full max-w-2xl flex-1 overflow-y-auto p-4 sm:p-8 pb-40 chat-scroll">
+          <div className="ss-chat-area chat-scroll">
             {messages.map((msg, i) => (
               <ChatBubble key={i} role={msg.role} content={msg.content} mode="clone" name={personality?.name} />
             ))}
@@ -204,7 +204,7 @@ export default function ClonePage() {
           </div>
 
           {/* Input */}
-          <div className="absolute bottom-6 w-full max-w-2xl px-4 z-20">
+          <div className="ss-chat-input-wrapper">
             <div className="flex items-center gap-[10px] bg-card/90 backdrop-blur-xl border border-border rounded-full p-[10px] pl-5 shadow-2xl">
               <textarea
                 ref={textareaRef}
