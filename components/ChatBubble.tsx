@@ -18,7 +18,7 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
 
   if (isUser) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+      <div className="ss-message" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
         <div style={{
           maxWidth: '72%',
           padding: '12px 18px',
@@ -38,7 +38,7 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
 
   // Assistant bubble
   return (
-    <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', maxWidth: '88%' }}>
+    <div className="ss-message" style={{ display: 'flex', gap: '12px', marginBottom: '24px', maxWidth: '88%' }}>
       {/* Avatar dot */}
       <div style={{
         flexShrink: 0,
@@ -58,7 +58,7 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
           <span style={{ fontSize: '12px', fontWeight: '500', color: '#555', letterSpacing: '0.01em' }}>
             {assistantName}
           </span>
-          {turnGoal && (
+          {turnGoal && process.env.NEXT_PUBLIC_DEBUG_MODE === 'true' && (
             <span style={{
               fontSize: '10px', padding: '2px 6px', borderRadius: '4px',
               background: '#1a1a1a', border: '1px solid #333', color: '#888',
@@ -164,9 +164,10 @@ function FeedbackButtons({ messageId }: { messageId: string }) {
   }
 
   return (
-    <div style={{ marginTop: '8px', display: 'flex', gap: '6px', opacity: state === 'idle' ? 0.4 : 1, transition: 'opacity 0.2s' }}
+    <div style={{ marginTop: '8px', display: 'flex', gap: '6px', opacity: state === 'idle' ? 0.65 : 1, transition: 'opacity 0.2s' }}
+      className="feedback-buttons"
       onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-      onMouseLeave={e => { if (state === 'idle') e.currentTarget.style.opacity = '0.4' }}
+      onMouseLeave={e => { if (state === 'idle') e.currentTarget.style.opacity = '0.65' }}
     >
       <button
         onClick={() => { setState('up'); submitFeedback('up') }}

@@ -28,6 +28,45 @@
   --accent: #ffffff;
   --accent-dim: rgba(255,255,255,0.08);
   --glow: rgba(255,255,255,0.04);
+  
+  /* Audit design tokens */
+  --ss-bg: #0a0a0a;
+  --ss-surface: #111111;
+  --ss-surface-2: #1a1a1a;
+  --ss-border: #252525;
+  --ss-border-soft: #1e1e1e;
+  --ss-text: #e8e8e8;
+  --ss-text-dim: #888888;
+  --ss-text-faint: #555555;
+  --ss-accent: #d0d0d0;
+  --ss-success: #4ade80;
+  --ss-danger: #f87171;
+  --ss-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Visible focus for every interactive element */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--ss-accent);
+  outline-offset: 2px;
+}
+
+@keyframes ss-message-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ss-message {
+  animation: ss-message-in 0.25s ease-out;
 }
 
 *, *::before, *::after {

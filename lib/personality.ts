@@ -4,6 +4,7 @@ import { generateChat } from './llm'
 export interface PersonalityStore {
   id?: string
   userId?: string
+  version?: number
   voiceId: string
   createdAt?: string
   updatedAt?: string
@@ -30,27 +31,12 @@ export interface PersonalityStore {
   trainingExamples: { question: string; answer: string; traits: any }[]
 }
 
-const defaultPersonality: Omit<PersonalityStore, 'id' | 'userId' | 'createdAt' | 'updatedAt'> = {
+const defaultPersonality: Omit<PersonalityStore, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'version'> = {
   voiceId: '',
   sessions: 0,
-  communicationStyle: {
-    tone: [],
-    vocabulary: [],
-    sentencePatterns: [],
-    explanationStyle: ''
-  },
-  thinkingPatterns: {
-    decisionFramework: [],
-    values: [],
-    opinions: [],
-    contrarianPositions: []
-  },
-  emotionalProfile: {
-    passionTopics: [],
-    frustrationTriggers: [],
-    humorStyle: '',
-    empathyMarkers: []
-  },
+  communicationStyle: { tone: [], vocabulary: [], sentencePatterns: [], explanationStyle: '' },
+  thinkingPatterns: { decisionFramework: [], values: [], opinions: [], contrarianPositions: [] },
+  emotionalProfile: { passionTopics: [], frustrationTriggers: [], humorStyle: '', empathyMarkers: [] },
   knowledgeDomains: [],
   trainingExamples: []
 }
@@ -59,10 +45,11 @@ function deserialize(row: any): PersonalityStore {
   return {
     id: row.id,
     userId: row.userId,
+    version: row.version,
     voiceId: row.voiceId ?? '',
     sessions: row.sessions ?? 0,
     createdAt: row.createdAt?.toISOString(),
-    updatedAt: row.createdAt?.toISOString(), // fallback
+    updatedAt: row.createdAt?.toISOString(),
     communicationStyle: row.communicationStyle as any || defaultPersonality.communicationStyle,
     thinkingPatterns: row.thinkingPatterns as any || defaultPersonality.thinkingPatterns,
     emotionalProfile: row.emotionalProfile as any || defaultPersonality.emotionalProfile,
@@ -98,12 +85,12 @@ export async function getPersonality(userId: string): Promise<PersonalityStore> 
 
 export async function savePersonality(userId: string, data: PersonalityStore): Promise<void> {
   const current = await getPersonality(userId)
-  
-  // Create a new version
-  await prisma.personalityProfile.create({
+  const nextVersion = (current.version ?? 0) + 1
+
+  const created = await prisma.personalityProfile.create({
     data: {
       userId,
-      version: (current as any).version ? (current as any).version + 1 : 2, // Ideally we track version in deserialize
+      version: nextVersion,
       sessions: data.sessions,
       voiceId: data.voiceId,
       communicationStyle: data.communicationStyle as any,
@@ -114,9 +101,8 @@ export async function savePersonality(userId: string, data: PersonalityStore): P
     }
   })
 
-  // Deactivate old versions
   await prisma.personalityProfile.updateMany({
-    where: { userId, id: { not: current.id } },
+    where: { userId, id: { not: created.id } },
     data: { isActive: false }
   })
 }
@@ -169,42 +155,21 @@ function mergeTraits(
     sessions: existing.sessions + 1,
     communicationStyle: {
       ...existing.communicationStyle,
-      tone: [...new Set([
-        ...existing.communicationStyle.tone,
-        newTraits.tone
-      ].filter(Boolean))].slice(-10),
-      vocabulary: [...new Set([
-        ...existing.communicationStyle.vocabulary,
-        ...(newTraits.vocabulary || [])
-      ])].slice(-50),
+      tone: [...new Set([...existing.communicationStyle.tone, newTraits.tone].filter(Boolean))].slice(-10),
+      vocabulary: [...new Set([...existing.communicationStyle.vocabulary, ...(newTraits.vocabulary || [])])].slice(-50),
       explanationStyle: newTraits.thinking_style || existing.communicationStyle.explanationStyle
     },
     thinkingPatterns: {
       ...existing.thinkingPatterns,
-      values: [...new Set([
-        ...existing.thinkingPatterns.values,
-        ...(newTraits.values || [])
-      ])].slice(-30),
-      opinions: [
-        ...existing.thinkingPatterns.opinions,
-        ...(newTraits.opinions || [])
-      ].slice(-50)
+      values: [...new Set([...existing.thinkingPatterns.values, ...(newTraits.values || [])])].slice(-30),
+      opinions: [...existing.thinkingPatterns.opinions, ...(newTraits.opinions || [])].slice(-50)
     },
     emotionalProfile: {
       ...existing.emotionalProfile,
-      passionTopics: [...new Set([
-        ...existing.emotionalProfile.passionTopics,
-        ...(newTraits.passionTopics || [])
-      ])].slice(-20)
+      passionTopics: [...new Set([...existing.emotionalProfile.passionTopics, ...(newTraits.passionTopics || [])])].slice(-20)
     },
-    knowledgeDomains: [...new Set([
-      ...existing.knowledgeDomains,
-      ...(newTraits.knowledgeDomains || [])
-    ])].slice(-20),
-    trainingExamples: [
-      ...existing.trainingExamples,
-      { question, answer, traits: newTraits }
-    ].slice(-100)
+    knowledgeDomains: [...new Set([...existing.knowledgeDomains, ...(newTraits.knowledgeDomains || [])])].slice(-20),
+    trainingExamples: [...existing.trainingExamples, { question, answer, traits: newTraits }].slice(-100)
   }
 }
 

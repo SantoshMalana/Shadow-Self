@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 interface VoiceInputProps {
   onTranscription: (text: string) => void
@@ -13,9 +13,23 @@ export default function VoiceInput({ onTranscription, mode = 'train', disabled }
   const [error, setError] = useState<string | null>(null)
   const mediaRecorder = useRef<MediaRecorder | null>(null)
   const chunks = useRef<Blob[]>([])
+  const recordingRef = useRef(false)
+
+  const stopRecording = () => {
+    if (!recordingRef.current) return
+    mediaRecorder.current?.stop()
+    setRecording(false)
+    recordingRef.current = false
+  }
+
+  useEffect(() => {
+    const handleWindowMouseUp = () => stopRecording()
+    window.addEventListener('mouseup', handleWindowMouseUp)
+    return () => window.removeEventListener('mouseup', handleWindowMouseUp)
+  }, [])
 
   const startRecording = async () => {
-    if (disabled || recording) return
+    if (disabled || recordingRef.current) return
     setError(null)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -62,24 +76,19 @@ export default function VoiceInput({ onTranscription, mode = 'train', disabled }
 
       mediaRecorder.current.start(200) // Collect data every 200ms
       setRecording(true)
+      recordingRef.current = true
     } catch (err: any) {
       setError('Microphone access denied')
     }
-  }
-
-  const stopRecording = () => {
-    if (!recording) return
-    mediaRecorder.current?.stop()
-    setRecording(false)
   }
 
   return (
     <div className="relative flex items-center justify-center">
       <button
         onMouseDown={startRecording}
-        onMouseUp={stopRecording}
         onTouchStart={startRecording}
         onTouchEnd={stopRecording}
+        onTouchCancel={stopRecording}
         disabled={disabled || transcribing}
         style={{
           padding: '8px',

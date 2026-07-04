@@ -9,12 +9,13 @@ interface RateLimitEntry {
 }
 
 const store = new Map<string, RateLimitEntry>()
+const MAX_WINDOW_MS = 24 * 60 * 60 * 1000
 
 // Cleanup old entries every 5 minutes to prevent memory leaks
 setInterval(() => {
   const now = Date.now()
   for (const [key, entry] of store) {
-    entry.timestamps = entry.timestamps.filter(t => now - t < 60_000)
+    entry.timestamps = entry.timestamps.filter(t => now - t < MAX_WINDOW_MS)
     if (entry.timestamps.length === 0) store.delete(key)
   }
 }, 5 * 60 * 1000)

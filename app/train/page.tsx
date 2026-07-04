@@ -95,14 +95,14 @@ export default function TrainPage() {
           const pData = await fetch('/api/personality').then(r => r.json())
           if (!pData.error) {
             setPersonality(pData)
-            const q = getDailyQuestion(pData.sessions || 0)
+            const q = getDailyQuestion(pData.sessions || 0, user.depthRung)
             setCurrentQuestion(q)
             const initialMessage = `Let's continue onboarding. Here's your first question:\n\n"${q}"`
             setMessages([{ role: 'assistant', content: initialMessage, turnGoal: 'establish_baseline' }])
           }
         } catch (e) {
           // Ignore API errors if backend isn't ready
-          const q = getDailyQuestion(0)
+          const q = getDailyQuestion(0, user.depthRung)
           setCurrentQuestion(q)
           const initialMessage = `Let's begin onboarding. Here's your first question:\n\n"${q}"`
           setMessages([{ role: 'assistant', content: initialMessage, turnGoal: 'establish_baseline' }])
@@ -145,7 +145,7 @@ export default function TrainPage() {
     setUserState(updatedUser)
     setNameSet(true)
     
-    const q = getDailyQuestion(0)
+    const q = getDailyQuestion(0, updatedUser.depthRung)
     setCurrentQuestion(q)
     const responseMsg = `Great, ${updatedUser.name}. Let's begin.\n\n"${q}"`
     setMessages([{ role: 'assistant', content: responseMsg, turnGoal: 'establish_baseline' }])
@@ -189,7 +189,7 @@ export default function TrainPage() {
         const updated = await fetch('/api/personality').then(r => r.json())
         if (!updated.error) {
           setPersonality(updated)
-          setCurrentQuestion(getDailyQuestion(updated.sessions || 0))
+          setCurrentQuestion(getDailyQuestion(updated.sessions || 0, refreshedUser.depthRung))
         }
       } catch (e) {
         // Backend not ready

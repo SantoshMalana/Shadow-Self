@@ -11,12 +11,16 @@ export async function DELETE() {
 
     const userId = user.id
 
-    await prisma.feedback.deleteMany({ where: { userId } })
-    await prisma.consentLedger.deleteMany({ where: { userId } })
-    await prisma.$executeRaw`DELETE FROM memories WHERE user_id = ${userId}::uuid`
-    await prisma.message.deleteMany({ where: { userId } })
-    await prisma.personalityProfile.deleteMany({ where: { userId } })
-    await prisma.user.delete({ where: { id: userId } })
+    // All-or-nothing: if any step fails, everything rolls back instead of
+    // leaving the account half-deleted.
+    await prisma.$transaction([
+      prisma.feedback.deleteMany({ where: { userId } }),
+      prisma.consentLedger.deleteMany({ where: { userId } }),
+      prisma.$executeRaw`DELETE FROM memories WHERE user_id = ${userId}::uuid`,
+      prisma.message.deleteMany({ where: { userId } }),
+      prisma.personalityProfile.deleteMany({ where: { userId } }),
+      prisma.user.delete({ where: { id: userId } }),
+    ])
 
     const supabase = await createClient()
     await supabase.auth.signOut()
