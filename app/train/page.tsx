@@ -204,16 +204,22 @@ export default function TrainPage() {
       
       // Attempt to refresh user state (trust depth might have increased)
       const refreshedUser = await getUserState()
-      setUserState(refreshedUser)
+      if ('error' in refreshedUser) {
+        console.error("Failed to refresh user state:", refreshedUser.error)
+      } else {
+        setUserState(refreshedUser as any)
+      }
 
       try {
         const updated = await fetch('/api/personality').then(r => r.json())
         if (!updated.error) {
           setPersonality(updated)
-          setCurrentQuestion(getDailyQuestion(updated.sessions || 0, refreshedUser.depthRung))
+          // Fallback to existing user state if refresh failed
+          const currentDepth = 'error' in refreshedUser ? (userState?.depthRung || 1) : refreshedUser.depthRung;
+          setCurrentQuestion(getDailyQuestion(updated.sessions || 0, currentDepth))
         }
       } catch (e) {
-        // Backend not ready
+        console.error("Failed to fetch updated personality", e)
       }
       
       if (voiceEnabled) {
