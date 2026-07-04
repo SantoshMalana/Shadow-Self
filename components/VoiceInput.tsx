@@ -88,18 +88,18 @@ export default function VoiceInput({ onTranscription, mode = 'train', disabled }
         onTouchEnd={stopRecording}
         onTouchCancel={stopRecording}
         disabled={disabled || transcribing}
-        className={`w-10 h-10 rounded-sm border flex items-center justify-center text-lg transition-colors duration-200 relative ${
+        className={`w-[30px] h-[30px] rounded-full flex items-center justify-center text-sm transition-all duration-200 relative ${
           recording 
-            ? 'bg-accent-brass border-accent-brass text-[#17161B]' 
-            : 'bg-surface border-[#2A2630] text-text-muted hover:text-text-primary hover:border-text-muted'
-        } ${disabled || transcribing ? 'opacity-50 cursor-not-allowed hover:bg-surface hover:border-[#2A2630] hover:text-text-muted' : 'cursor-pointer'}`}
+            ? 'bg-accent text-white shadow-[0_0_20px_rgba(131,40,249,0.5)] scale-110' 
+            : 'bg-accent-soft text-text-faint hover:text-accent-light hover:bg-accent-soft/80'
+        } ${disabled || transcribing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         title={recording ? 'Listening… release to send' : transcribing ? 'Transcribing…' : 'Hold to speak'}
       >
-        <span className="relative z-10 font-mono">{transcribing ? '⟳' : recording ? '⏹' : '🎙'}</span>
+        <span className="relative z-10">{transcribing ? '⟳' : recording ? '⏹' : '🎙'}</span>
       </button>
       {error && (
-        <div className="absolute bottom-full mb-3 whitespace-nowrap px-3 py-1.5 bg-[#1C1A21] border border-red-900/50 text-red-400 font-mono text-[10px] uppercase tracking-widest rounded-sm">
-          [ERROR: {error}]
+        <div className="absolute bottom-full mb-3 whitespace-nowrap px-3 py-1.5 bg-card border border-red-900/50 text-red-400 text-[11px] rounded-[var(--radius-md)]">
+          {error}
         </div>
       )}
     </div>

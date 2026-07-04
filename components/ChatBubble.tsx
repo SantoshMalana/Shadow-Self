@@ -17,56 +17,50 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
   const isUser = role === 'user'
   const assistantName = mode === 'clone' ? (name || 'Clone') : 'Shadow Shelf'
 
-  // The shadow elevates based on depthRung (Trust depth = screen depth)
-  const shadowClass = `rung-${depthRung}-shadow`
-
   if (isUser) {
     return (
       <div className="ss-message flex justify-end mb-6">
-        {/* User bubble is flat and slightly muted, like a prompt */}
-        <div className="max-w-[75%] px-5 py-3.5 bg-[#1C1A21] border border-[#2A2630] text-text-primary text-[15px] leading-relaxed break-words rounded-sm">
+        <div className="max-w-[78%] px-3.5 py-2.5 rounded-2xl rounded-br-sm bg-accent-soft text-text-primary text-sm leading-[1.5] break-words">
           {content}
         </div>
       </div>
     )
   }
 
-  // Assistant bubble
   return (
-    <div className="ss-message flex gap-4 mb-8 max-w-[90%]">
-      {/* Avatar dot */}
-      <div className={`shrink-0 w-8 h-8 flex items-center justify-center text-xs mt-1 bg-surface border border-[#2A2630] ${shadowClass} transition-shadow duration-500 rounded-sm`}>
-        {mode === 'clone' ? <span className="text-accent-brass">◈</span> : <span className="text-text-muted">✧</span>}
+    <div className="ss-message flex gap-3.5 mb-8 max-w-[90%]">
+      {/* Avatar */}
+      <div className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center mt-1" style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, #8328f9 78%)' }}>
+        <span className="text-[10px] text-white font-bold">◈</span>
       </div>
 
-      <div className="flex-1 min-w-0 pt-1">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-accent-cold">
+      <div className="flex-1 min-w-0 pt-0.5">
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className="text-xs font-semibold text-text-muted">
             {assistantName}
           </span>
           {turnGoal && process.env.NEXT_PUBLIC_DEBUG_MODE === 'true' && (
-            <span className="text-[10px] px-2 py-0.5 bg-[#121115] border border-[#2A2630] text-accent-cold font-mono">
-              [GOAL: {turnGoal}]
+            <span className="text-[10px] px-2 py-0.5 bg-accent-soft border border-border text-accent-light rounded-full font-mono">
+              {turnGoal}
             </span>
           )}
           {depthRung > 1 && (
-             <span className="text-[10px] px-2 py-0.5 bg-[#121115] border border-accent-brass/20 text-accent-brass font-mono">
-             [RUNG {depthRung}]
+             <span className="text-[10px] px-2 py-0.5 bg-accent-soft border border-accent/30 text-accent-light rounded-full font-mono">
+             Rung {depthRung}
            </span>
           )}
         </div>
         
-        <div className="font-sans text-[15px] text-text-primary leading-[1.75] whitespace-pre-wrap break-words">
+        <div className="text-[15px] text-text-primary leading-[1.7] whitespace-pre-wrap break-words">
           {isTyping ? (
             <span className="flex gap-1.5 items-center py-2 h-6">
-              <span className="typing-dot bg-text-muted" />
-              <span className="typing-dot bg-text-muted" />
-              <span className="typing-dot bg-text-muted" />
+              <span className="typing-dot" />
+              <span className="typing-dot" />
+              <span className="typing-dot" />
             </span>
           ) : content}
         </div>
         
-        {/* Feedback UI */}
         {!isTyping && messageId && <FeedbackButtons messageId={messageId} />}
       </div>
     </div>
@@ -92,8 +86,8 @@ function FeedbackButtons({ messageId }: { messageId: string }) {
 
   if (state === 'sent') {
     return (
-      <div className="mt-2 font-mono text-[10px] uppercase tracking-widest text-accent-cold">
-        [Feedback logged]
+      <div className="mt-2 text-[11px] text-accent-light font-medium">
+        ✓ Feedback logged
       </div>
     )
   }
@@ -104,20 +98,20 @@ function FeedbackButtons({ messageId }: { messageId: string }) {
         <textarea
           value={correction}
           onChange={e => setCorrection(e.target.value)}
-          placeholder="Enter truth trace correction..."
+          placeholder="How should the clone have responded?"
           rows={2}
-          className="w-full px-4 py-3 text-[13px] font-sans bg-bg border border-[#2A2630] text-text-primary resize-y focus:outline-none focus:border-accent-brass placeholder:text-text-muted/50 rounded-sm"
+          className="w-full px-4 py-3 text-[13px] bg-bg border border-border text-text-primary resize-y focus:outline-none focus:border-accent placeholder:text-text-faint rounded-[var(--radius-md)]"
         />
         <div className="flex gap-2">
           <button
             onClick={() => submitFeedback('down', correction)}
-            className="px-4 py-2 text-xs font-mono uppercase tracking-widest bg-accent-cold text-white hover:bg-accent-cold/80 transition-colors rounded-sm cursor-pointer"
+            className="btn-pill text-xs py-2 px-4"
           >
-            Submit Correction
+            Submit
           </button>
           <button
             onClick={() => setState('idle')}
-            className="px-4 py-2 text-xs font-mono uppercase tracking-widest bg-transparent border border-[#2A2630] text-text-muted hover:text-text-primary transition-colors rounded-sm cursor-pointer"
+            className="btn-ghost text-xs py-2 px-4"
           >
             Cancel
           </button>
@@ -127,18 +121,18 @@ function FeedbackButtons({ messageId }: { messageId: string }) {
   }
 
   return (
-    <div className={`mt-3 flex gap-2 transition-opacity duration-200 ${state === 'idle' ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
+    <div className={`mt-3 flex gap-3 transition-opacity duration-200 ${state === 'idle' ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
       <button
         onClick={() => { setState('up'); submitFeedback('up') }}
-        className="font-mono text-[10px] uppercase tracking-widest text-text-muted hover:text-text-primary cursor-pointer transition-colors"
+        className="text-xs text-text-faint hover:text-accent-light cursor-pointer transition-colors"
       >
-        [CONFIRM]
+        👍 Accurate
       </button>
       <button
         onClick={() => setState('correcting')}
-        className="font-mono text-[10px] uppercase tracking-widest text-text-muted hover:text-accent-brass cursor-pointer transition-colors"
+        className="text-xs text-text-faint hover:text-accent-light cursor-pointer transition-colors"
       >
-        [CORRECT]
+        ✏️ Correct
       </button>
     </div>
   )

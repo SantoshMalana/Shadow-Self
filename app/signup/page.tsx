@@ -7,81 +7,73 @@ import Link from 'next/link'
 export default function SignupPage() {
   const [state, action, isPending] = useActionState(
     async (prevState: any, formData: FormData) => {
-      return await signup(formData)
+      const result = await signup(prevState, formData)
+      return result
     },
-    null
+    { error: '' }
   )
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg text-text-primary p-4 selection:bg-accent-cold selection:text-white">
-      <div className="w-full max-w-md bg-surface p-10 border border-[#2A2630] rounded-sm dynamic-shadow">
-        <div className="text-center mb-10">
-          <h1 className="font-display text-3xl mb-2 text-text-primary">Initialize</h1>
-          <p className="font-sans text-text-muted text-sm">Begin your cognitive trace</p>
+    <div className="min-h-screen flex items-center justify-center p-6 relative">
+      {/* Light rays */}
+      <div className="light-fx" aria-hidden="true">
+        <div className="ray-source" />
+        <div className="rays" />
+      </div>
+
+      <div className="w-full max-w-sm relative z-10">
+        {/* Logo */}
+        <div className="flex items-center justify-center gap-2 mb-10">
+          <span className="w-6 h-6 rounded-full shrink-0" style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, #8328f9 78%)' }} />
+          <span className="font-bold text-base tracking-tight">Shadow Shelf</span>
         </div>
 
-        <form action={action} className="space-y-6">
-          <div>
-            <label className="block font-mono text-[10px] uppercase tracking-widest text-accent-cold mb-2">
-              Name
-            </label>
-            <input
-              type="text"
-              name="name"
-              required
-              className="w-full bg-bg border border-[#2A2630] rounded-sm px-4 py-3 text-text-primary focus:outline-none focus:border-accent-brass transition-colors placeholder:text-text-muted/50 font-sans text-sm"
-              placeholder="Your full name"
-            />
-          </div>
+        <div className="ss-card p-8">
+          <h1 className="text-xl font-bold text-center mb-1.5">Create your clone</h1>
+          <p className="text-sm text-text-muted text-center mb-7">Your first entry takes about four minutes.</p>
 
-          <div>
-            <label className="block font-mono text-[10px] uppercase tracking-widest text-accent-cold mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              required
-              className="w-full bg-bg border border-[#2A2630] rounded-sm px-4 py-3 text-text-primary focus:outline-none focus:border-accent-brass transition-colors placeholder:text-text-muted/50 font-sans text-sm"
-              placeholder="name@example.com"
-            />
-          </div>
-
-          <div>
-            <label className="block font-mono text-[10px] uppercase tracking-widest text-accent-cold mb-2">
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              required
-              minLength={6}
-              className="w-full bg-bg border border-[#2A2630] rounded-sm px-4 py-3 text-text-primary focus:outline-none focus:border-accent-brass transition-colors placeholder:text-text-muted/50 font-sans text-sm"
-              placeholder="••••••••"
-            />
-          </div>
-
-          {state?.error && (
-            <div className="p-3 bg-red-950/20 border border-red-900/50 rounded-sm text-red-400 text-sm font-sans">
-              {state.error}
+          <form action={action} className="flex flex-col gap-4">
+            <div>
+              <label htmlFor="email" className="block text-xs font-semibold text-text-muted mb-1.5 uppercase tracking-wider">Email</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                placeholder="you@example.com"
+                className="w-full px-4 py-3 bg-bg border border-border rounded-[var(--radius-md)] text-text-primary text-sm focus:outline-none focus:border-accent transition-colors placeholder:text-text-faint"
+              />
             </div>
-          )}
+            <div>
+              <label htmlFor="password" className="block text-xs font-semibold text-text-muted mb-1.5 uppercase tracking-wider">Password</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                placeholder="At least 6 characters"
+                className="w-full px-4 py-3 bg-bg border border-border rounded-[var(--radius-md)] text-text-primary text-sm focus:outline-none focus:border-accent transition-colors placeholder:text-text-faint"
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={isPending}
-            className="w-full bg-accent-brass text-[#17161B] font-sans font-medium text-sm px-4 py-3 hover:bg-[#A99360] transition-colors disabled:opacity-50 mt-4 active:scale-[0.98]"
-          >
-            {isPending ? 'Initializing...' : 'Initialize'}
-          </button>
-        </form>
+            {state?.error && (
+              <p className="text-sm text-red-400 bg-red-950/30 border border-red-900/40 px-3 py-2 rounded-[var(--radius-md)]">{state.error}</p>
+            )}
 
-        <div className="mt-8 text-center text-sm font-sans text-text-muted">
-          Already initialized?{' '}
-          <Link href="/login" className="text-text-primary hover:text-accent-brass transition-colors">
-            Sign In
-          </Link>
+            <button
+              type="submit"
+              disabled={isPending}
+              className="btn-primary-lg justify-center mt-2 w-full disabled:opacity-50"
+            >
+              {isPending ? 'Creating…' : 'Create your clone →'}
+            </button>
+          </form>
         </div>
+
+        <p className="text-center text-sm text-text-muted mt-6">
+          Already have an account?{' '}
+          <Link href="/login" className="text-accent-light hover:text-text-primary transition-colors font-medium">Sign in</Link>
+        </p>
       </div>
     </div>
   )
