@@ -263,6 +263,7 @@ export default function ClonePage() {
             <p className="text-center mt-3 text-[11px] text-zinc-500 font-medium">
               AI simulation of {personality?.name || 'this person'}. Handle with care.
             </p>
+          </div>
         </div>
       </div>
 
