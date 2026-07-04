@@ -139,77 +139,102 @@ export default function ClonePage() {
           </p>
           <Link href="/train" className="btn-primary-lg">
             {errorMsg ? '← Back to Training' : 'Start Training →'}
-          </Link>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-bg font-sans text-sm relative overflow-hidden text-text-primary">
-
-      {/* Header */}
-      <header className="flex items-center justify-between px-6 h-[60px] border-b border-border bg-[rgba(7,4,13,0.85)] backdrop-blur-[10px] sticky top-0 z-20">
-        <div className="flex items-center gap-4">
-          <Link href="/" className="text-sm text-text-muted hover:text-text-primary transition-colors">← Back</Link>
-          <span className="text-border">|</span>
-          <span className="text-sm text-accent-light font-semibold">Clone Mode</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setVoiceEnabled(v => !v)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs transition-all border cursor-pointer ${
-              voiceEnabled ? 'bg-accent-soft border-border text-text-primary' : 'bg-transparent border-transparent text-text-faint hover:bg-accent-soft'
-            }`}
-          >
-            {voiceEnabled ? '🔊 Voice On' : '🔇 Voice Off'}
-          </button>
-          <span className="text-xs text-accent-light font-semibold hidden sm:inline">{completeness}% profile</span>
-        </div>
-      </header>
-
-      <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
-        <aside className="ss-sidebar">
-          <CloneAvatar name={personality?.name || ''} isSpeaking={speaking} completeness={completeness} />
-          <div className="w-full border-t border-border pt-5">
-            <p className="text-[11px] text-accent-light tracking-wider text-center mb-4 font-semibold uppercase">Profile</p>
-            {[
-              { label: 'Sessions', value: personality?.sessions || 0 },
-              { label: 'Values mapped', value: personality?.thinkingPatterns?.values?.length || 0 },
-              { label: 'Domains', value: personality?.knowledgeDomains?.length || 0 },
-              { label: 'Memories', value: personality?.memoriesCount || 0 },
-            ].map((item, i) => (
-              <div key={i} className="flex justify-between mb-2.5">
-                <span className="text-xs text-text-faint">{item.label}</span>
-                <span className="text-xs text-text-primary font-semibold">{item.value}</span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-auto w-full pt-4">
-            <Link href="/train" className="btn-ghost w-full justify-center text-xs">
-              More training
+    <div className="h-screen flex bg-zinc-950 font-sans text-sm relative overflow-hidden text-zinc-100">
+      
+      {/* Left Sidebar */}
+      <aside className="h-screen flex flex-col justify-between w-[280px] shrink-0 p-4 bg-zinc-950 border-r border-zinc-800/80 hidden lg:flex">
+        {/* Top Section */}
+        <div>
+          <div className="flex items-center gap-3 mb-8 px-2 mt-2">
+            <Link href="/" className="text-zinc-400 hover:text-zinc-100 transition-colors flex items-center gap-2 font-medium">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+              Back
             </Link>
-            <UserMenu name={personality?.name} />
+            <div className="w-px h-4 bg-zinc-800" />
+            <span className="font-semibold text-zinc-200 tracking-wide">Clone Mode</span>
           </div>
-        </aside>
+          
+          {/* Middle Section (Main Content) */}
+          <div className="flex-1 overflow-y-auto space-y-6 py-2 px-1">
+            <CloneAvatar name={personality?.name || ''} isSpeaking={speaking} completeness={completeness} />
+            
+            <div className="bg-zinc-900/50 border border-zinc-800/60 p-4 rounded-xl backdrop-blur-sm mt-4">
+              <div className="text-[10px] text-zinc-500 tracking-widest mb-4 font-bold uppercase">Profile Stats</div>
+              {[
+                { label: 'Sessions', value: personality?.sessions || 0 },
+                { label: 'Values mapped', value: personality?.thinkingPatterns?.values?.length || 0 },
+                { label: 'Domains', value: personality?.knowledgeDomains?.length || 0 },
+                { label: 'Memories', value: personality?.memoriesCount || 0 },
+              ].map((item, i) => (
+                <div key={i} className="flex justify-between items-center mb-3 last:mb-0">
+                  <span className="text-xs text-zinc-400 font-medium">{item.label}</span>
+                  <span className="text-[13px] text-zinc-200 font-semibold">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
 
-        {/* Chat */}
-        <div className="ss-chat-container">
+        {/* Bottom Section (Sticky Dock) */}
+        <div className="mt-auto">
+          <Link 
+            href="/train" 
+            className="flex items-center justify-center w-full gap-2 bg-transparent hover:bg-zinc-900 border border-zinc-800 text-zinc-300 font-medium py-2.5 rounded-xl transition-colors mb-4"
+          >
+            More training
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </Link>
+          <UserMenu name={personality?.name} />
+        </div>
+      </aside>
+
+      {/* Main Area */}
+      <div className="flex-1 flex flex-col relative overflow-hidden bg-bg">
+        
+        {/* Top Header of Chat Area */}
+        <header className="flex items-center justify-between lg:justify-end px-6 h-[60px] border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-20 shrink-0">
+          <div className="lg:hidden flex items-center gap-4">
+            <Link href="/" className="text-zinc-400">Back</Link>
+            <span className="text-zinc-200 font-semibold">Clone Mode</span>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setVoiceEnabled(v => !v)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs transition-all border cursor-pointer font-medium ${
+                voiceEnabled ? 'bg-purple-900/30 border-purple-500/30 text-purple-200' : 'bg-transparent border-transparent text-zinc-500 hover:bg-zinc-900'
+              }`}
+            >
+              {voiceEnabled ? '🔊 Voice On' : '🔇 Voice Off'}
+            </button>
+            <span className="text-xs text-purple-400 font-semibold hidden sm:inline">{completeness}% profile</span>
+          </div>
+        </header>
+
+        {/* Chat Area */}
+        <div className="flex-1 overflow-y-auto relative flex flex-col items-center chat-scroll">
           <div className="lg:hidden pt-6 pb-2 text-center w-full flex justify-center">
             <CloneAvatar name={personality?.name || ''} isSpeaking={speaking} completeness={completeness} />
           </div>
-          <div className="ss-chat-area chat-scroll">
+          <div className="w-full max-w-2xl flex-1 p-4 sm:p-8 pb-40">
             {messages.map((msg, i) => (
               <ChatBubble key={i} role={msg.role} content={msg.content} mode="clone" name={personality?.name} />
             ))}
             {loading && <ChatBubble role="assistant" content="" mode="clone" isTyping name={personality?.name} />}
             <div ref={chatEndRef} />
           </div>
+        </div>
 
-          {/* Input */}
-          <div className="ss-chat-input-wrapper">
-            <div className="flex items-center gap-[10px] bg-card/90 backdrop-blur-xl border border-border rounded-full p-[10px] pl-5 shadow-2xl">
+        {/* Input */}
+        <div className="absolute bottom-6 w-full flex justify-center px-4 z-20 pointer-events-none">
+          <div className="w-full max-w-2xl pointer-events-auto">
+            <div className="flex items-center gap-[10px] bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 rounded-full p-[10px] pl-5 shadow-2xl">
               <textarea
                 ref={textareaRef}
                 value={input}
@@ -217,27 +242,26 @@ export default function ClonePage() {
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) } }}
                 placeholder={`Message ${personality?.name || 'Clone'}…`}
                 rows={1}
-                className="flex-1 bg-transparent border-none text-text-primary text-[15px] focus:outline-none resize-none max-h-32 py-2 placeholder:text-text-faint leading-relaxed"
+                className="flex-1 bg-transparent border-none text-zinc-100 text-[15px] focus:outline-none resize-none max-h-32 py-2 placeholder:text-zinc-500 leading-relaxed"
               />
               <div className="flex items-center gap-2 shrink-0">
                 <VoiceInput onTranscription={sendMessage} mode="clone" disabled={loading} />
                 <button
                   onClick={() => sendMessage(input)}
                   disabled={loading || !input.trim()}
-                  className={`w-[30px] h-[30px] rounded-full flex items-center justify-center transition-all ${
+                  className={`w-[30px] h-[30px] rounded-full flex items-center justify-center transition-all duration-200 ${
                     input.trim() && !loading 
-                      ? 'bg-accent text-white hover:bg-accent-hover cursor-pointer shadow-[0_4px_14px_-4px_rgba(131,40,249,0.6)]' 
-                      : 'bg-border text-text-faint cursor-not-allowed'
+                      ? 'bg-purple-600 text-white hover:brightness-110 shadow-[0_2px_10px_-2px_rgba(147,51,234,0.6)] cursor-pointer active:scale-95' 
+                      : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
                   }`}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </button>
               </div>
             </div>
-            <p className="text-center mt-3 text-[11px] text-text-faint">
+            <p className="text-center mt-3 text-[11px] text-zinc-500 font-medium">
               AI simulation of {personality?.name || 'this person'}. Handle with care.
             </p>
-          </div>
         </div>
       </div>
 
