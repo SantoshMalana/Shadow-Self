@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { logout } from '@/app/actions/auth'
 import { usePathname } from 'next/navigation'
 
-export default function UserMenu({ name }: { name?: string | null }) {
+export default function UserMenu({ name, email }: { name?: string | null, email?: string | null }) {
   const pathname = usePathname()
 
   const navItems = [
@@ -28,12 +28,12 @@ export default function UserMenu({ name }: { name?: string | null }) {
   ]
 
   return (
-    <div className="w-full border-t border-zinc-900 pt-4 flex flex-col gap-1">
-      <div className="px-2 py-1 mb-2 flex items-center gap-3">
+    <div className="w-full flex flex-col gap-1">
+      <div className="px-2 py-1 mb-2 flex items-center gap-3 min-w-0">
         <div className="w-9 h-9 rounded-full flex-shrink-0" style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, #8328f9 78%)', boxShadow: '0 0 15px -3px rgba(131,40,249,0.4)' }} />
-        <div className="flex flex-col overflow-hidden">
-          <span className="text-[10px] text-zinc-500 tracking-widest font-bold uppercase mb-[1px]">Account</span>
+        <div className="flex flex-col min-w-0 overflow-hidden">
           <span className="text-[13px] font-semibold text-zinc-100 truncate">{name || 'User'}</span>
+          <span className="text-[11px] text-zinc-500 truncate">{email || 'user@example.com'}</span>
         </div>
       </div>
 

@@ -149,10 +149,11 @@ export default function ClonePage() {
     <div className="h-screen flex bg-zinc-950 font-sans text-sm relative overflow-hidden text-zinc-100">
       
       {/* Left Sidebar */}
-      <aside className="h-screen flex flex-col justify-between w-[280px] shrink-0 p-4 bg-zinc-950 border-r border-zinc-800/80 hidden lg:flex">
-        {/* Top Section */}
-        <div>
-          <div className="flex items-center gap-3 mb-8 px-2 mt-2">
+      <aside className="w-72 h-screen flex flex-col justify-between p-5 bg-zinc-950 border-r border-zinc-800 hidden lg:flex shrink-0">
+        
+        {/* Top Group: Navigation & Widgets */}
+        <div className="flex flex-col space-y-6 overflow-y-auto min-h-0">
+          <div className="flex items-center gap-3 mb-2 px-2 mt-2">
             <Link href="/" className="text-zinc-400 hover:text-zinc-100 transition-colors flex items-center gap-2 font-medium">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
               Back
@@ -161,32 +162,29 @@ export default function ClonePage() {
             <span className="font-semibold text-zinc-200 tracking-wide">Clone Mode</span>
           </div>
           
-          {/* Middle Section (Main Content) */}
-          <div className="flex-1 overflow-y-auto space-y-6 py-2 px-1">
-            <CloneAvatar name={personality?.name || ''} isSpeaking={speaking} completeness={completeness} />
-            
-            <div className="bg-zinc-900/50 border border-zinc-800/60 p-4 rounded-xl backdrop-blur-sm mt-4">
-              <div className="text-[10px] text-zinc-500 tracking-widest mb-4 font-bold uppercase">Profile Stats</div>
-              {[
-                { label: 'Sessions', value: personality?.sessions || 0 },
-                { label: 'Values mapped', value: personality?.thinkingPatterns?.values?.length || 0 },
-                { label: 'Domains', value: personality?.knowledgeDomains?.length || 0 },
-                { label: 'Memories', value: personality?.memoriesCount || 0 },
-              ].map((item, i) => (
-                <div key={i} className="flex justify-between items-center mb-3 last:mb-0">
-                  <span className="text-xs text-zinc-400 font-medium">{item.label}</span>
-                  <span className="text-[13px] text-zinc-200 font-semibold">{item.value}</span>
-                </div>
-              ))}
-            </div>
+          <CloneAvatar name={personality?.name || ''} isSpeaking={speaking} completeness={completeness} />
+          
+          <div className="bg-zinc-900/40 border border-zinc-800 p-4 rounded-xl mt-4">
+            <div className="text-[10px] text-zinc-500 tracking-widest mb-4 font-bold uppercase">Profile Stats</div>
+            {[
+              { label: 'Sessions', value: personality?.sessions || 0 },
+              { label: 'Values mapped', value: personality?.thinkingPatterns?.values?.length || 0 },
+              { label: 'Domains', value: personality?.knowledgeDomains?.length || 0 },
+              { label: 'Memories', value: personality?.memoriesCount || 0 },
+            ].map((item, i) => (
+              <div key={i} className="flex justify-between items-center mb-3 last:mb-0">
+                <span className="text-xs text-zinc-400 font-medium">{item.label}</span>
+                <span className="text-[13px] text-zinc-200 font-semibold">{item.value}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Bottom Section (Sticky Dock) */}
-        <div className="mt-auto">
+        {/* Bottom Group: CTA & Account */}
+        <div className="pt-4 border-t border-zinc-900 shrink-0 flex flex-col gap-4 mt-6">
           <Link 
             href="/train" 
-            className="flex items-center justify-center w-full gap-2 bg-transparent hover:bg-zinc-900 border border-zinc-800 text-zinc-300 font-medium py-2.5 rounded-xl transition-colors mb-4"
+            className="flex items-center justify-center w-full gap-2 bg-transparent hover:bg-zinc-900 border border-zinc-800 text-zinc-300 font-medium py-3 px-4 rounded-xl transition-colors mb-4"
           >
             More training
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>

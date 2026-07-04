@@ -206,10 +206,11 @@ export default function TrainPage() {
       
       {/* Left Sidebar (Only visible if nameSet) */}
       {nameSet && (
-        <aside className="h-screen flex flex-col justify-between w-[280px] shrink-0 p-4 bg-zinc-950 border-r border-zinc-800/80 hidden lg:flex">
-          {/* Top Section */}
-          <div>
-            <div className="flex items-center gap-3 mb-8 px-2 mt-2">
+        <aside className="w-72 h-screen flex flex-col justify-between p-5 bg-zinc-950 border-r border-zinc-800 hidden lg:flex shrink-0">
+          
+          {/* Top Group: Navigation & Widgets */}
+          <div className="flex flex-col space-y-6 overflow-y-auto min-h-0">
+            <div className="flex items-center gap-3 mb-2 px-2 mt-2">
               <Link href="/" className="text-zinc-400 hover:text-zinc-100 transition-colors flex items-center gap-2 font-medium">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                 Back
@@ -218,54 +219,51 @@ export default function TrainPage() {
               <span className="font-semibold text-zinc-200 tracking-wide">Training</span>
             </div>
             
-            {/* Middle Section (Main Content) */}
-            <div className="flex-1 overflow-y-auto space-y-6 py-2 px-1">
-              {userState && (
-                <div>
-                  <div className="text-[10px] text-zinc-500 tracking-widest mb-3 font-bold uppercase">Trust Depth</div>
-                  <div className="bg-zinc-900/50 border border-zinc-800/60 p-4 rounded-xl backdrop-blur-sm">
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="text-lg font-bold text-zinc-100 tracking-tight">Level {userState.depthRung}</span>
-                      <span className="text-xs font-medium text-zinc-500">/ 5</span>
-                    </div>
-                    <div className="flex gap-1.5 mb-4">
-                      {[1, 2, 3, 4, 5].map(level => (
-                        <div 
-                          key={level} 
-                          className={`flex-1 h-1.5 rounded-full transition-colors ${
-                            level <= userState.depthRung 
-                              ? 'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]' 
-                              : 'bg-zinc-800'
-                          }`} 
-                        />
-                      ))}
-                    </div>
-                    <div className="text-[13px] text-zinc-400 leading-relaxed font-medium">
-                      {userState.depthRung === 1 && "Surface-level facts and basic communication style."}
-                      {userState.depthRung === 2 && "Values, opinions, and core beliefs."}
-                      {userState.depthRung === 3 && "Emotional triggers and nuanced reactions."}
-                      {userState.depthRung >= 4 && "Deep behavioral cloning and instinctual logic."}
-                    </div>
+            {userState && (
+              <div>
+                <div className="text-[10px] text-zinc-500 tracking-widest mb-3 font-bold uppercase">Trust Depth</div>
+                <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl p-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-lg font-bold text-zinc-100 tracking-tight">Level {userState.depthRung}</span>
+                    <span className="text-xs font-medium text-zinc-500">/ 5</span>
+                  </div>
+                  <div className="grid grid-cols-5 gap-1.5 mb-4">
+                    {[1, 2, 3, 4, 5].map(level => (
+                      <div 
+                        key={level} 
+                        className={`h-1.5 rounded-full transition-colors ${
+                          level <= userState.depthRung 
+                            ? 'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]' 
+                            : 'bg-zinc-800'
+                        }`} 
+                      />
+                    ))}
+                  </div>
+                  <div className="text-[13px] text-zinc-400 leading-relaxed font-medium">
+                    {userState.depthRung === 1 && "Surface-level facts and basic communication style."}
+                    {userState.depthRung === 2 && "Values, opinions, and core beliefs."}
+                    {userState.depthRung === 3 && "Emotional triggers and nuanced reactions."}
+                    {userState.depthRung >= 4 && "Deep behavioral cloning and instinctual logic."}
                   </div>
                 </div>
-              )}
-
-              <div>
-                <div className="text-[10px] text-zinc-500 tracking-widest font-bold mb-3 uppercase">Clone Profile</div>
-                {personality ? (
-                  <PersonalityStats personality={personality} completeness={completeness} />
-                ) : (
-                  <div className="text-zinc-500 text-sm animate-pulse font-medium">Loading profile...</div>
-                )}
               </div>
+            )}
+
+            <div>
+              <div className="text-[10px] text-zinc-500 tracking-widest font-bold mb-3 uppercase">Clone Profile</div>
+              {personality ? (
+                <PersonalityStats personality={personality} completeness={completeness} />
+              ) : (
+                <div className="text-zinc-500 text-sm animate-pulse font-medium">Loading profile...</div>
+              )}
             </div>
           </div>
 
-          {/* Bottom Section (Sticky Dock) */}
-          <div className="mt-auto">
+          {/* Bottom Group: CTA & Account */}
+          <div className="pt-4 border-t border-zinc-900 shrink-0 flex flex-col gap-4 mt-6">
             <Link 
               href="/clone" 
-              className="flex items-center justify-center w-full gap-2 bg-purple-600 hover:bg-purple-500 text-white font-semibold py-2.5 rounded-xl transition-all duration-200 hover:brightness-110 active:scale-[0.98] mb-4 shadow-[0_4px_14px_-4px_rgba(147,51,234,0.5)] border border-purple-500/50"
+              className="flex items-center justify-center w-full gap-2 bg-purple-600 hover:bg-purple-500 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:brightness-110 active:scale-[0.99] shadow-[0_4px_14px_-4px_rgba(147,51,234,0.5)] border border-purple-500/50"
             >
               Talk to Clone 
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
