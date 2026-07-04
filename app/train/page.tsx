@@ -232,12 +232,17 @@ export default function TrainPage() {
 
       {/* Name Gate */}
       {!nameSet && (
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="w-full max-w-md text-center">
-            <div className="w-12 h-12 rounded-full mx-auto mb-6" style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, #8328f9 78%)' }} />
-            <h2 className="text-2xl font-bold text-text-primary mb-2">Who are we cloning?</h2>
-            <p className="text-text-muted mb-8 text-sm">Confirm your name to begin the onboarding process.</p>
-            <div className="flex flex-col sm:flex-row gap-3">
+        <div className="name-gate-wrapper">
+          <div className="name-gate-card">
+            <div className="name-gate-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
+                <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
+              </svg>
+            </div>
+            <h2 className="name-gate-title">Who are we cloning?</h2>
+            <p className="name-gate-desc">Confirm your name to begin the onboarding process.</p>
+            <div className="name-gate-form">
               <input
                 type="text"
                 value={nameInput}
@@ -245,9 +250,9 @@ export default function TrainPage() {
                 onKeyDown={e => e.key === 'Enter' && saveName()}
                 placeholder="Full name…"
                 autoFocus
-                className="flex-1 bg-card border border-border rounded-[var(--radius-md)] px-4 py-3 text-text-primary text-base focus:outline-none focus:border-accent transition-colors placeholder:text-text-faint"
+                className="name-gate-input"
               />
-              <button onClick={saveName} className="btn-primary-lg justify-center">
+              <button onClick={saveName} className="btn-primary-lg justify-center flex-shrink-0">
                 Begin →
               </button>
             </div>

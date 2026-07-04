@@ -409,6 +409,34 @@ a:focus-visible {
   z-index: 20;
 }
 
+/* ====== NAME GATE ====== */
+.name-gate-wrapper {
+  flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.name-gate-card {
+  width: 100%; max-width: 440px; text-align: center;
+}
+.name-gate-icon {
+  width: 64px; height: 64px; margin: 0 auto 24px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent-soft); border-radius: 50%;
+  color: var(--accent-light);
+  box-shadow: 0 0 0 1px rgba(131,40,249,0.2), 0 8px 24px -8px rgba(131,40,249,0.4);
+}
+.name-gate-title { font-size: 28px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; letter-spacing: -0.01em; }
+.name-gate-desc { color: var(--text-muted); font-size: 15px; margin-bottom: 32px; line-height: 1.5; }
+.name-gate-form { display: flex; gap: 12px; }
+.name-gate-input {
+  flex: 1; background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 14px 18px;
+  color: var(--text-primary); font-size: 16px;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.name-gate-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(131,40,249,0.2); }
+@media (max-width: 480px) {
+  .name-gate-form { flex-direction: column; }
+}
+
 /* ====== SCROLLBAR ====== */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
