@@ -19,8 +19,8 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
 
   if (isUser) {
     return (
-      <div className="ss-message flex justify-end mb-6">
-        <div className="max-w-[78%] px-3.5 py-2.5 rounded-2xl rounded-br-sm bg-accent-soft text-text-primary text-sm leading-[1.5] break-words">
+      <div className="ss-message flex justify-end mb-7">
+        <div className="max-w-[82%] px-4.5 py-3 rounded-2xl rounded-br-sm bg-accent-soft text-text-primary text-[15px] leading-[1.7] break-words">
           {content}
         </div>
       </div>
@@ -28,14 +28,14 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
   }
 
   return (
-    <div className="ss-message flex gap-3.5 mb-8 max-w-[90%]">
+    <div className="ss-message flex gap-3.5 mb-9 max-w-[90%]">
       {/* Avatar */}
-      <div className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center mt-1" style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, #8328f9 78%)' }}>
-        <span className="text-[10px] text-white font-bold">◈</span>
+      <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-1" style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, #8328f9 78%)' }}>
+        <span className="text-[11px] text-white font-bold">◈</span>
       </div>
 
       <div className="flex-1 min-w-0 pt-0.5">
-        <div className="flex items-center gap-2 mb-1.5">
+        <div className="flex items-center gap-2 mb-2">
           <span className="text-xs font-semibold text-text-muted">
             {assistantName}
           </span>
@@ -50,17 +50,19 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
            </span>
           )}
         </div>
-        
-        <div className="text-[15px] text-text-primary leading-[1.7] whitespace-pre-wrap break-words">
-          {isTyping ? (
-            <span className="flex gap-1.5 items-center py-2 h-6">
-              <span className="typing-dot" />
-              <span className="typing-dot" />
-              <span className="typing-dot" />
-            </span>
-          ) : content}
+
+        <div className="bg-surface border border-border rounded-2xl rounded-tl-sm px-5 py-3.5">
+          <div className="text-[15px] text-text-primary leading-[1.7] whitespace-pre-wrap break-words">
+            {isTyping ? (
+              <span className="flex gap-1.5 items-center py-2 h-6">
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+              </span>
+            ) : content}
+          </div>
         </div>
-        
+
         {!isTyping && messageId && <FeedbackButtons messageId={messageId} />}
       </div>
     </div>
@@ -86,7 +88,7 @@ function FeedbackButtons({ messageId }: { messageId: string }) {
 
   if (state === 'sent') {
     return (
-      <div className="mt-2 text-[11px] text-accent-light font-medium">
+      <div className="mt-2.5 text-[11px] text-accent-light font-medium">
         ✓ Feedback logged
       </div>
     )
@@ -121,16 +123,16 @@ function FeedbackButtons({ messageId }: { messageId: string }) {
   }
 
   return (
-    <div className={`mt-3 flex gap-3 transition-opacity duration-200 ${state === 'idle' ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
+    <div className="mt-3 flex gap-4">
       <button
         onClick={() => { setState('up'); submitFeedback('up') }}
-        className="text-xs text-text-faint hover:text-accent-light cursor-pointer transition-colors"
+        className="text-xs text-text-faint hover:text-accent-light cursor-pointer transition-colors flex items-center gap-1.5"
       >
         👍 Accurate
       </button>
       <button
         onClick={() => setState('correcting')}
-        className="text-xs text-text-faint hover:text-accent-light cursor-pointer transition-colors"
+        className="text-xs text-text-faint hover:text-accent-light cursor-pointer transition-colors flex items-center gap-1.5"
       >
         ✏️ Correct
       </button>

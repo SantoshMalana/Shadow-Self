@@ -3,67 +3,117 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import ChatBubble from '@/components/ChatBubble'
 import VoiceInput from '@/components/VoiceInput'
-import CloneAvatar from '@/components/CloneAvatar'
+import PersonalityStats from '@/components/PersonalityStats'
+import { getDailyQuestion } from '@/lib/questions'
+import { getUserState, updateUserName } from '@/app/actions/user'
 import UserMenu from '@/components/UserMenu'
 
-interface Message { role: 'user' | 'assistant'; content: string }
+interface Message {
+  role: 'user' | 'assistant'
+  content: string
+  turnGoal?: string
+}
+
 interface Personality {
-  name: string; voice_id: string; sessions: number
-  communicationStyle: { tone: string[] }
-  thinkingPatterns: { values: string[] }
-  emotionalProfile: { passionTopics: string[] }
-  knowledgeDomains: string[]
-  memoriesCount?: number
+  name?: string
+  sessions: number
+  updated_at?: string
+  voiceId?: string
+  communicationStyle: any
+  thinkingPatterns: any
+  emotionalProfile: any
+  knowledgeDomains: any
+}
+
+function truncateAtWord(text: string, max: number): string {
+  if (text.length <= max) return text
+  const cut = text.slice(0, max)
+  const lastSpace = cut.lastIndexOf(' ')
+  return (lastSpace > 0 ? cut.slice(0, lastSpace) : cut) + '…'
 }
 
 function getCompleteness(p: Personality): number {
-  let s = 0
-  s += Math.min((p.communicationStyle?.tone?.length || 0) * 5, 20)
-  s += Math.min((p.thinkingPatterns?.values?.length || 0) * 3, 20)
-  s += Math.min((p.emotionalProfile?.passionTopics?.length || 0) * 3, 15)
-  s += Math.min((p.knowledgeDomains?.length || 0) * 3, 15)
-  return Math.min(s + (p.sessions > 0 ? 30 : 0), 100)
+  let score = 0
+  if (p.communicationStyle) {
+    score += Math.min((p.communicationStyle.tone?.length || 0) * 5, 20)
+    score += Math.min(p.communicationStyle.vocabulary?.length || 0, 15)
+  }
+  if (p.thinkingPatterns) {
+    score += Math.min((p.thinkingPatterns.values?.length || 0) * 3, 20)
+    score += Math.min(p.thinkingPatterns.opinions?.length || 0, 15)
+  }
+  if (p.emotionalProfile) {
+    score += Math.min((p.emotionalProfile.passionTopics?.length || 0) * 3, 15)
+  }
+  if (p.knowledgeDomains) {
+    score += Math.min(p.knowledgeDomains.length * 3, 15)
+  }
+  return Math.min(score, 100)
 }
 
-export default function ClonePage() {
+export default function TrainPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [speaking, setSpeaking] = useState(false)
-  const [voiceEnabled, setVoiceEnabled] = useState(false)
   const [personality, setPersonality] = useState<Personality | null>(null)
-  const [ready, setReady] = useState(false)
-  const [activating, setActivating] = useState(true)
-  const [fadeOut, setFadeOut] = useState(false)
+  const [profileLoading, setProfileLoading] = useState(true)
+  const [userState, setUserState] = useState<{ id: string, name: string | null, depthRung: number, daysKnown: number } | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [currentQuestion, setCurrentQuestion] = useState('')
+  const [nameInput, setNameInput] = useState('')
+  const [nameSet, setNameSet] = useState(false)
+  const [speaking, setSpeaking] = useState(false)
+  const [voiceEnabled, setVoiceEnabled] = useState(true)
   const chatEndRef = useRef<HTMLDivElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const unlockedRef = useRef(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    if (typeof window !== 'undefined') audioRef.current = new Audio()
+    if (typeof window !== 'undefined') {
+      audioRef.current = new Audio()
+    }
   }, [])
 
   useEffect(() => {
-    let alive = true
-    fetch('/api/personality').then(r => r.json()).then(data => {
-      if (!alive) return
-      if (data.error) {
-        setPersonality({ error: data.error } as any)
-        setActivating(false)
-        return
+    async function loadData() {
+      try {
+        const user = await getUserState()
+        // FIX: a backend error is a distinct state, not a fake user name.
+        // Previously this wrote "Database Connection Error" into `name`,
+        // which UserMenu then rendered as if it were the person's name.
+        if ('error' in user) {
+          setLoadError(user.error)
+          return
+        }
+        setUserState(user as any)
+        if (user.name) {
+          setNameSet(true)
+          setNameInput(user.name)
+        }
+        try {
+          const pData = await fetch('/api/personality').then(r => r.json())
+          if (!pData.error) {
+            setPersonality(pData)
+            const q = getDailyQuestion(pData.sessions || 0, user.depthRung)
+            setCurrentQuestion(q)
+            setMessages([{ role: 'assistant', content: `Let's continue. Here's your next question:\n\n"${q}"`, turnGoal: 'establish_baseline' }])
+          }
+        } catch (e) {
+          const q = getDailyQuestion(0, user.depthRung)
+          setCurrentQuestion(q)
+          setMessages([{ role: 'assistant', content: `Let's begin. Here's your first question:\n\n"${q}"`, turnGoal: 'establish_baseline' }])
+        }
+      } catch (err) {
+        console.error("Failed to fetch user state", err)
+        setLoadError('Unexpected error while loading your session.')
+      } finally {
+        // FIX: this used to never fire on the error path, so "Loading profile…"
+        // stayed stuck (and pulsing) forever instead of resolving to any real state.
+        setProfileLoading(false)
       }
-      setPersonality(data)
-      if (data.name && data.sessions > 0) {
-        setReady(true)
-        setMessages([{ role: 'assistant', content: `${data.name} here.` }])
-        setTimeout(() => alive && setFadeOut(true), 2500)
-        setTimeout(() => alive && setActivating(false), 3200)
-      } else {
-        setActivating(false)
-      }
-    })
-    return () => { alive = false }
+    }
+    loadData()
   }, [])
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
@@ -95,8 +145,28 @@ export default function ClonePage() {
     } catch { setSpeaking(false) }
   }
 
+  const saveName = async () => {
+    if (!nameInput.trim()) return
+    try {
+      const result = await updateUserName(nameInput.trim())
+      if ('error' in result) {
+        setLoadError(result.error)
+        return
+      }
+      setUserState(result as any)
+      setNameSet(true)
+      const q = getDailyQuestion(0, result.depthRung)
+      setCurrentQuestion(q)
+      const responseMsg = `Great, ${result.name}. Let's begin.\n\n"${q}"`
+      setMessages([{ role: 'assistant', content: responseMsg, turnGoal: 'establish_baseline' }])
+      if (voiceEnabled) speakText(responseMsg)
+    } catch (err: any) {
+      setLoadError(err.message || 'Unknown error while saving your name.')
+    }
+  }
+
   const sendMessage = async (text: string) => {
-    if (!text.trim() || loading || activating) return
+    if (!text.trim() || loading) return
     if (audioRef.current && !unlockedRef.current) {
       audioRef.current.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA'
       audioRef.current.play().catch(() => {})
@@ -110,122 +180,205 @@ export default function ClonePage() {
     try {
       const res = await fetch('/api/chat', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [...messages, userMsg], mode: 'clone' })
+        body: JSON.stringify({ messages: [...messages, userMsg], mode: 'onboarding', question: currentQuestion })
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
-      setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
-      if (voiceEnabled) speakText(data.response, personality?.voice_id)
+      setMessages(prev => [...prev, { role: 'assistant', content: data.response, turnGoal: data.turnGoal }])
+      const refreshedUser = await getUserState()
+      if (!('error' in refreshedUser)) setUserState(refreshedUser as any)
+      try {
+        const updated = await fetch('/api/personality').then(r => r.json())
+        if (!updated.error) {
+          setPersonality(updated)
+          const currentDepth = 'error' in refreshedUser ? (userState?.depthRung || 1) : refreshedUser.depthRung;
+          setCurrentQuestion(getDailyQuestion(updated.sessions || 0, currentDepth))
+        }
+      } catch (e) { console.error("Failed to fetch updated personality", e) }
+      if (voiceEnabled) speakText(data.response, personality?.voiceId)
     } catch (err: any) {
-      setMessages(prev => [...prev, { role: 'assistant', content: `⚠ ${err.message}` }])
+      setMessages(prev => [...prev, { role: 'assistant', content: `⚠ ${err.message || 'API Error'}` }])
     } finally { setLoading(false) }
   }
 
   const completeness = personality ? getCompleteness(personality) : 0
 
-  // Not ready or Error
-  if (personality !== null && (!ready || (personality as any).error)) {
-    const errorMsg = (personality as any).error
+  // FIX: a DB/session error now gets its own honest screen instead of
+  // faking a user name and silently looping through the name gate.
+  if (loadError) {
     return (
       <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-10 font-sans relative">
-        <div className="light-fx" aria-hidden="true"><div className="ray-source" /><div className="rays" /></div>
         <div className="text-center max-w-sm relative z-10">
-          <div className="w-16 h-16 rounded-full mx-auto mb-6" style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, #8328f9 78%)', opacity: 0.4 }} />
-          <h2 className={`text-2xl font-bold mb-3 ${errorMsg ? 'text-red-400' : 'text-text-primary'}`}>
-            {errorMsg ? 'System Error' : 'Clone not ready yet'}
-          </h2>
+          <div className="w-16 h-16 rounded-full mx-auto mb-6 bg-accent-soft flex items-center justify-center text-accent-light">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold mb-3 text-text-primary">System Error</h2>
           <p className="text-sm text-text-muted leading-relaxed mb-8">
-            {errorMsg ? `Backend Error: ${errorMsg}. Please check your database connection.` : (personality.name ? `${personality.name}'s clone needs more training.` : 'No personality data found.')}
+            {loadError}. Please check your database connection and try again.
           </p>
-          <Link href="/train" className="btn-primary-lg">
-            {errorMsg ? '← Back to Training' : 'Start Training →'}
-          </Link>
+          <Link href="/" className="btn-primary-lg">← Back home</Link>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="h-screen flex bg-zinc-950 font-sans text-sm relative overflow-hidden text-zinc-100">
-      
-      {/* Left Sidebar */}
-      <aside className="w-72 h-screen flex flex-col justify-between p-5 bg-zinc-950 border-r border-zinc-800 hidden lg:flex shrink-0">
-        
-        {/* Top Group: Navigation & Widgets */}
-        <div className="flex flex-col space-y-6 overflow-y-auto min-h-0">
-          <div className="flex items-center gap-3 mb-2 px-2 mt-2">
-            <Link href="/" className="text-zinc-400 hover:text-zinc-100 transition-colors flex items-center gap-2 font-medium">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-              Back
-            </Link>
-            <div className="w-px h-4 bg-zinc-800" />
-            <span className="font-semibold text-zinc-200 tracking-wide">Clone Mode</span>
-          </div>
-          
-          <CloneAvatar name={personality?.name || ''} isSpeaking={speaking} completeness={completeness} />
-          
-          <div className="bg-zinc-900/40 border border-zinc-800 p-4 rounded-xl mt-4">
-            <div className="text-[10px] text-zinc-500 tracking-widest mb-4 font-bold uppercase">Profile Stats</div>
-            {[
-              { label: 'Sessions', value: personality?.sessions || 0 },
-              { label: 'Values mapped', value: personality?.thinkingPatterns?.values?.length || 0 },
-              { label: 'Domains', value: personality?.knowledgeDomains?.length || 0 },
-              { label: 'Memories', value: personality?.memoriesCount || 0 },
-            ].map((item, i) => (
-              <div key={i} className="flex justify-between items-center mb-3 last:mb-0">
-                <span className="text-xs text-zinc-400 font-medium">{item.label}</span>
-                <span className="text-[13px] text-zinc-200 font-semibold">{item.value}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+    <div className="h-screen flex bg-bg font-sans text-sm relative overflow-hidden text-text-primary">
 
-        {/* Bottom Group: CTA & Account */}
-        <div className="pt-4 border-t border-zinc-900 shrink-0 flex flex-col gap-4 mt-6">
-          <Link 
-            href="/train" 
-            className="flex items-center justify-center w-full gap-2 bg-transparent hover:bg-zinc-900 border border-zinc-800 text-zinc-300 font-medium py-3 px-4 rounded-xl transition-colors mb-4"
-          >
-            More training
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          </Link>
-          <UserMenu name={personality?.name} />
-        </div>
-      </aside>
+      {/* Left Sidebar */}
+      {nameSet && (
+        <aside className="ss-sidebar hidden lg:flex">
+
+          {/* Top Group: Navigation & Widgets */}
+          <div className="flex flex-col gap-6 overflow-y-auto min-h-0">
+            <div className="flex items-center gap-3 px-1">
+              <Link href="/" className="text-text-muted hover:text-text-primary transition-colors flex items-center gap-2 font-medium">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                Back
+              </Link>
+              <div className="w-px h-4 bg-border" />
+              <span className="font-semibold text-text-primary tracking-wide">Training</span>
+            </div>
+
+            {userState && (
+              <div>
+                <div className="text-[10px] text-text-faint tracking-widest mb-3 font-bold uppercase">Trust Depth</div>
+                <div className="ss-sidebar-card">
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-lg font-bold text-text-primary tracking-tight">Level {userState.depthRung}</span>
+                    <span className="text-xs font-medium text-text-faint">/ 5</span>
+                  </div>
+                  <div className="grid grid-cols-5 gap-1.5 mb-4">
+                    {[1, 2, 3, 4, 5].map(level => (
+                      <div
+                        key={level}
+                        className={`h-1.5 rounded-full transition-colors ${
+                          level <= userState.depthRung
+                            ? 'bg-accent shadow-[0_0_8px_rgba(131,40,249,0.5)]'
+                            : 'bg-border'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <div className="text-[13px] text-text-muted leading-relaxed font-medium">
+                    {userState.depthRung === 1 && "Surface-level facts and basic communication style."}
+                    {userState.depthRung === 2 && "Values, opinions, and core beliefs."}
+                    {userState.depthRung === 3 && "Emotional triggers and nuanced reactions."}
+                    {userState.depthRung >= 4 && "Deep behavioral cloning and instinctual logic."}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div>
+              <div className="text-[10px] text-text-faint tracking-widest font-bold mb-3 uppercase">Clone Profile</div>
+              {personality ? (
+                <PersonalityStats personality={personality} completeness={completeness} />
+              ) : profileLoading ? (
+                <div className="text-text-faint text-sm animate-pulse font-medium">Loading profile…</div>
+              ) : (
+                <div className="text-text-faint text-sm font-medium">No profile data yet — answer a few questions to get started.</div>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom Group: CTA & Account — pinned to the bottom via mt-auto,
+              but no longer leaves a huge dead gap when the content above is short */}
+          <div className="mt-auto pt-4 flex flex-col gap-3">
+            <Link
+              href="/clone"
+              className="btn-primary-lg justify-center"
+            >
+              Talk to Clone
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </Link>
+            <div className="bg-surface/60 border border-border rounded-[14px] p-2">
+              <UserMenu name={userState?.name} />
+            </div>
+          </div>
+        </aside>
+      )}
 
       {/* Main Area */}
       <div className="flex-1 flex flex-col relative overflow-hidden bg-bg">
-        
-        {/* Top Header of Chat Area */}
-        <header className="flex items-center justify-between lg:justify-end px-6 h-[60px] border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-20 shrink-0">
-          <div className="lg:hidden flex items-center gap-4">
-            <Link href="/" className="text-zinc-400">Back</Link>
-            <span className="text-zinc-200 font-semibold">Clone Mode</span>
+
+        {/* Ambient glow — reuses the landing page's own light-fx asset,
+            toned down, so the app doesn't feel flatter than the marketing site */}
+        <div className="light-fx opacity-40" aria-hidden="true">
+          <div className="ray-source" />
+          <div className="rays" />
+        </div>
+
+        {/* Name Gate Overlay */}
+        {!nameSet && (
+          <div className="absolute inset-0 flex items-center justify-center p-6 z-30 bg-bg">
+            <div className="name-gate-card">
+              <div className="name-gate-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
+                  <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
+                </svg>
+              </div>
+              <h2 className="name-gate-title">Who are we cloning?</h2>
+              <p className="name-gate-desc">Confirm your name to begin the onboarding process.</p>
+              <div className="name-gate-form">
+                <input
+                  type="text"
+                  value={nameInput}
+                  onChange={e => setNameInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && saveName()}
+                  placeholder="Full name…"
+                  autoFocus
+                  className="name-gate-input"
+                />
+                <button onClick={saveName} className="btn-primary-lg justify-center flex-shrink-0">
+                  Begin →
+                </button>
+              </div>
+            </div>
           </div>
-          
-          <div className="flex items-center gap-4">
+        )}
+
+        {/* Top Header of Chat Area */}
+        <header className="flex items-center justify-between lg:justify-end px-6 sm:px-10 h-[60px] border-b border-border bg-bg/80 backdrop-blur-md shrink-0 z-20 relative">
+          <div className="lg:hidden flex items-center gap-4">
+            <Link href="/" className="text-text-muted">Back</Link>
+            <span className="text-text-primary font-semibold">Training</span>
+          </div>
+
+          <div className="flex items-center gap-5">
             <button
               onClick={() => setVoiceEnabled(v => !v)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs transition-all border cursor-pointer font-medium ${
-                voiceEnabled ? 'bg-purple-900/30 border-purple-500/30 text-purple-200' : 'bg-transparent border-transparent text-zinc-500 hover:bg-zinc-900'
+                voiceEnabled ? 'bg-accent-soft border-accent/30 text-accent-light' : 'bg-transparent border-transparent text-text-faint hover:bg-surface'
               }`}
             >
               {voiceEnabled ? '🔊 Voice On' : '🔇 Voice Off'}
             </button>
-            <span className="text-xs text-purple-400 font-semibold hidden sm:inline">{completeness}% profile</span>
+            {userState && (
+              <span className="text-xs text-accent-light font-semibold hidden sm:inline">
+                Depth {userState.depthRung}
+              </span>
+            )}
           </div>
         </header>
 
         {/* Chat Area */}
         <div className="flex-1 overflow-y-auto relative flex flex-col items-center chat-scroll">
-          <div className="lg:hidden pt-6 pb-2 text-center w-full flex justify-center">
-            <CloneAvatar name={personality?.name || ''} isSpeaking={speaking} completeness={completeness} />
-          </div>
           <div className="w-full max-w-2xl flex-1 p-4 sm:p-8 pb-40">
             {messages.map((msg, i) => (
-              <ChatBubble key={i} role={msg.role} content={msg.content} mode="clone" name={personality?.name} />
+              <ChatBubble
+                key={i}
+                role={msg.role}
+                content={msg.content}
+                mode="onboarding"
+                turnGoal={msg.turnGoal}
+                depthRung={(userState?.depthRung as any) || 1}
+              />
             ))}
-            {loading && <ChatBubble role="assistant" content="" mode="clone" isTyping name={personality?.name} />}
+            {loading && <ChatBubble role="assistant" content="" mode="onboarding" isTyping depthRung={(userState?.depthRung as any) || 1} />}
             <div ref={chatEndRef} />
           </div>
         </div>
@@ -233,50 +386,37 @@ export default function ClonePage() {
         {/* Input */}
         <div className="absolute bottom-6 w-full flex justify-center px-4 z-20 pointer-events-none">
           <div className="w-full max-w-2xl pointer-events-auto">
-            <div className="flex items-center gap-[10px] bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 rounded-full p-[10px] pl-5 shadow-2xl">
+            <div className="flex items-center gap-[10px] bg-card/95 backdrop-blur-xl border border-border rounded-full p-[10px] pl-5 shadow-2xl">
               <textarea
                 ref={textareaRef}
                 value={input}
                 onChange={handleInput}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) } }}
-                placeholder={`Message ${personality?.name || 'Clone'}…`}
+                placeholder="Share your thoughts…"
                 rows={1}
-                className="flex-1 bg-transparent border-none text-zinc-100 text-[15px] focus:outline-none resize-none max-h-32 py-2 placeholder:text-zinc-500 leading-relaxed"
+                className="flex-1 bg-transparent border-none text-text-primary text-[15px] focus:outline-none resize-none max-h-32 py-2 placeholder:text-text-faint leading-relaxed"
               />
               <div className="flex items-center gap-2 shrink-0">
-                <VoiceInput onTranscription={sendMessage} mode="clone" disabled={loading} />
+                <VoiceInput onTranscription={sendMessage} mode="onboarding" disabled={loading} />
                 <button
                   onClick={() => sendMessage(input)}
                   disabled={loading || !input.trim()}
                   className={`w-[30px] h-[30px] rounded-full flex items-center justify-center transition-all duration-200 ${
-                    input.trim() && !loading 
-                      ? 'bg-purple-600 text-white hover:brightness-110 shadow-[0_2px_10px_-2px_rgba(147,51,234,0.6)] cursor-pointer active:scale-95' 
-                      : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                    input.trim() && !loading
+                      ? 'bg-accent text-white hover:bg-accent-hover shadow-[0_2px_10px_-2px_rgba(131,40,249,0.6)] cursor-pointer active:scale-95'
+                      : 'bg-surface text-text-faint cursor-not-allowed'
                   }`}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </button>
               </div>
             </div>
-            <p className="text-center mt-3 text-[11px] text-zinc-500 font-medium">
-              AI simulation of {personality?.name || 'this person'}. Handle with care.
-            </p>
+            <div className="text-center mt-3 text-xs text-text-faint font-medium">
+              {truncateAtWord(currentQuestion, 60)}
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Cinematic Activation Overlay */}
-      {activating && ready && personality && (
-        <div className={`fixed inset-0 z-50 bg-bg flex flex-col items-center justify-center transition-opacity duration-700 ${fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-          <div className="text-center">
-            <div className="w-16 h-16 rounded-full mx-auto mb-8 animate-pulse" style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, #8328f9 78%)' }} />
-            <p className="text-xs text-accent-light tracking-[0.15em] mb-4 font-semibold uppercase">Activating</p>
-            <h1 className="text-3xl font-bold text-text-primary tracking-wide">
-              {personality.name}
-            </h1>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

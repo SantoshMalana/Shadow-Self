@@ -88,7 +88,7 @@ export default function VoiceInput({ onTranscription, mode = 'train', disabled }
         onTouchEnd={stopRecording}
         onTouchCancel={stopRecording}
         disabled={disabled || transcribing}
-        className={`w-[30px] h-[30px] rounded-full flex items-center justify-center text-sm transition-all duration-200 relative ${
+        className={`w-10 h-10 rounded-full flex items-center justify-center text-base transition-all duration-200 relative ${
           recording 
             ? 'bg-accent text-white shadow-[0_0_20px_rgba(131,40,249,0.5)] scale-110' 
             : 'bg-accent-soft text-text-faint hover:text-accent-light hover:bg-accent-soft/80'

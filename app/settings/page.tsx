@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 const STREAMS = [
   { key: 'voice', label: 'Voice Recording', description: 'Allow ElevenLabs voice synthesis and Whisper transcription.' },
@@ -72,35 +73,45 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-200 p-6 font-sans">
-      <div className="max-w-2xl mx-auto space-y-10">
-        
-        <header>
-          <h1 className="text-3xl font-light tracking-tight text-white">Settings</h1>
-          <p className="text-neutral-500 mt-1">Data consent, export, and account management.</p>
-        </header>
+    <div className="min-h-screen bg-bg text-text-primary font-sans">
+
+      {/* Nav header — previously missing entirely, this page was a dead end */}
+      <header className="border-b border-border bg-bg/80 backdrop-blur-md px-6 sm:px-10 h-[60px] flex items-center gap-4 sticky top-0 z-20">
+        <Link href="/train" className="text-text-muted hover:text-text-primary transition-colors flex items-center gap-2 font-medium">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          Back
+        </Link>
+        <div className="w-px h-4 bg-border" />
+        <span className="font-semibold text-text-primary tracking-wide">Settings</span>
+      </header>
+
+      <div className="max-w-2xl mx-auto px-6 py-10 space-y-10">
+
+        <div>
+          <h1 className="text-3xl font-light tracking-tight text-text-primary">Settings</h1>
+          <p className="text-text-muted mt-1">Data consent, export, and account management.</p>
+        </div>
 
         {/* Consent Toggles */}
-        <section className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6 space-y-1">
-          <h2 className="text-sm font-medium text-neutral-400 uppercase tracking-widest mb-4">Data Consent</h2>
+        <section className="ss-card p-6 space-y-1">
+          <h2 className="text-sm font-medium text-text-faint uppercase tracking-widest mb-4">Data Consent</h2>
           {loading ? (
-            <p className="text-neutral-600 text-sm">Loading consent preferences...</p>
+            <p className="text-text-faint text-sm animate-pulse">Loading consent preferences...</p>
           ) : (
             STREAMS.map((s, i) => (
               <div key={s.key}>
                 <div className="flex items-center justify-between py-4">
                   <div className="flex-1 pr-6">
-                    <p className="text-white text-sm font-medium">{s.label}</p>
-                    <p className="text-neutral-500 text-xs mt-0.5">{s.description}</p>
+                    <p className="text-text-primary text-sm font-medium">{s.label}</p>
+                    <p className="text-text-faint text-xs mt-0.5">{s.description}</p>
                   </div>
                   <button
                     onClick={() => toggleConsent(s.key)}
                     disabled={saving === s.key}
-                    className="relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none"
-                    style={{
-                      background: consents[s.key] ? '#6366f1' : '#333',
-                      opacity: saving === s.key ? 0.5 : 1,
-                    }}
+                    className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none ${
+                      consents[s.key] ? 'bg-accent' : 'bg-border'
+                    }`}
+                    style={{ opacity: saving === s.key ? 0.5 : 1 }}
                   >
                     <span
                       className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200"
@@ -108,36 +119,36 @@ export default function SettingsPage() {
                     />
                   </button>
                 </div>
-                {i < STREAMS.length - 1 && <div className="border-b border-neutral-800/50" />}
+                {i < STREAMS.length - 1 && <div className="border-b border-border/60" />}
               </div>
             ))
           )}
         </section>
 
         {/* Account Data */}
-        <section className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6 space-y-6">
-          <h2 className="text-sm font-medium text-neutral-400 uppercase tracking-widest">Your Data</h2>
-          
+        <section className="ss-card p-6 space-y-6">
+          <h2 className="text-sm font-medium text-text-faint uppercase tracking-widest">Your Data</h2>
+
           <div className="flex flex-col sm:flex-row gap-4">
             <button
               onClick={handleExport}
               disabled={exporting}
               className="flex-1 px-5 py-3 rounded-xl text-sm font-medium transition-all
-                bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-white
+                bg-surface hover:bg-card border border-border text-text-primary
                 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {exporting ? 'Exporting...' : '↓ Export All My Data'}
             </button>
           </div>
-          <p className="text-xs text-neutral-600">
+          <p className="text-xs text-text-faint">
             Downloads a complete JSON file containing all your messages, memories, personality profiles, feedback, and consent history.
           </p>
         </section>
 
         {/* Danger Zone */}
-        <section className="bg-red-950/20 border border-red-900/30 rounded-2xl p-6 space-y-4">
+        <section className="bg-red-950/20 border border-red-900/30 rounded-[20px] p-6 space-y-4">
           <h2 className="text-sm font-medium text-red-400/80 uppercase tracking-widest">Danger Zone</h2>
-          <p className="text-sm text-neutral-400">
+          <p className="text-sm text-text-muted">
             Permanently delete your account and all associated data. This includes messages, memories, personality profiles, feedback, and consent history. <strong className="text-red-300">This action cannot be undone.</strong>
           </p>
 
@@ -163,7 +174,7 @@ export default function SettingsPage() {
               <button
                 onClick={() => setDeleteConfirm(false)}
                 className="px-5 py-3 rounded-xl text-sm font-medium
-                  bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
+                  bg-surface text-text-muted hover:text-text-primary transition-colors"
               >
                 Cancel
               </button>
