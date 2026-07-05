@@ -28,6 +28,9 @@ export async function getDbUser(requireAuth = false) {
   if (!authUser) return null
 
   try {
+    console.log('[DEBUG] DATABASE_URL exists:', !!process.env.DATABASE_URL)
+    console.log('[DEBUG] DATABASE_URL length:', process.env.DATABASE_URL?.length)
+    
     // Check if user exists in our DB
     let dbUser = await prisma.user.findUnique({
       where: { id: authUser.id }
