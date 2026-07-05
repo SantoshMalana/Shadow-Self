@@ -48,7 +48,7 @@ export default function TrainPage() {
   const [nameSet, setNameSet] = useState(false)
   const [speaking, setSpeaking] = useState(false)
   const [voiceEnabled, setVoiceEnabled] = useState(true)
-  const [inputFocused, setInputFocused] = useState(false)
+
   const chatEndRef = useRef<HTMLDivElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const unlockedRef = useRef(false)
@@ -392,14 +392,11 @@ export default function TrainPage() {
         {/* Input */}
         <div className="absolute bottom-6 w-full flex justify-center px-4 z-20 pointer-events-none">
           <div className="w-full max-w-2xl pointer-events-auto">
-            <div className={`glow-input-wrap ${inputFocused ? 'focused' : ''}`}>
-              <div className="flex items-end gap-3 bg-surface/95 border border-border backdrop-blur-xl rounded-[28px] p-3 pl-6 shadow-2xl">
+              <div className="flex items-end gap-3 bg-surface/95 border border-border backdrop-blur-xl rounded-[28px] p-3 pl-6 shadow-2xl transition-shadow duration-200 focus-within:border-accent/60 focus-within:shadow-[0_0_0_3px_rgba(131,40,249,0.2),0_25px_50px_-12px_rgba(0,0,0,0.5)]">
                 <textarea
                   ref={textareaRef}
                   value={input}
                   onChange={handleInput}
-                  onFocus={() => setInputFocused(true)}
-                  onBlur={() => setInputFocused(false)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) } }}
                   placeholder="Share your thoughts…"
                   rows={1}
@@ -420,7 +417,6 @@ export default function TrainPage() {
                   </button>
                 </div>
               </div>
-            </div>
             <div className="text-center mt-3 text-xs text-text-faint font-medium">
               {truncateAtWord(currentQuestion, 60)}
             </div>
