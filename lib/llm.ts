@@ -44,7 +44,7 @@ export async function generateChat(messages: any[], systemPrompt?: string): Prom
   if (systemPrompt) {
     formattedMessages.push({ role: 'system', content: systemPrompt })
   }
-  formattedMessages.push(...messages)
+  formattedMessages.push(...messages.map((m: any) => ({ role: m.role, content: m.content })))
 
   return withKeyRotation(
     llmKeys,
