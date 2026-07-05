@@ -57,18 +57,20 @@
   margin-left: -160%;
   background: conic-gradient(
     from 0deg,
-    var(--color-border) 0deg, var(--color-border) 255deg,
-    rgba(214, 184, 255, 0.3) 275deg,
+    transparent 0deg, transparent 255deg,
+    rgba(214, 184, 255, 0.4) 275deg,
     var(--color-accent-light) 300deg,
     var(--color-accent) 312deg,
-    rgba(214, 184, 255, 0.3) 330deg,
-    var(--color-border) 345deg, var(--color-border) 360deg
+    rgba(214, 184, 255, 0.4) 330deg,
+    transparent 345deg, transparent 360deg
   );
-  animation: glow-spin 5s linear infinite;
+  animation: glow-spin 2s linear infinite;
+  opacity: 0;
+  transition: opacity 0.25s ease;
   z-index: 0;
 }
 .glow-input-wrap.focused::before {
-  animation-duration: 2s;
+  opacity: 1;
 }
 .glow-input-wrap > * {
   position: relative;
@@ -106,18 +108,20 @@ input:-webkit-autofill:focus {
   margin-left: -160%;
   background: conic-gradient(
     from 0deg,
-    var(--color-border) 0deg, var(--color-border) 255deg,
-    rgba(214, 184, 255, 0.3) 275deg,
+    transparent 0deg, transparent 255deg,
+    rgba(214, 184, 255, 0.4) 275deg,
     var(--color-accent-light) 300deg,
     var(--color-accent) 312deg,
-    rgba(214, 184, 255, 0.3) 330deg,
-    var(--color-border) 345deg, var(--color-border) 360deg
+    rgba(214, 184, 255, 0.4) 330deg,
+    transparent 345deg, transparent 360deg
   );
-  animation: glow-spin 6s linear infinite;
+  animation: glow-spin 2.2s linear infinite;
+  opacity: 0;
+  transition: opacity 0.25s ease;
   z-index: 0;
 }
 .glow-field-wrap:focus-within::before {
-  animation-duration: 2.2s;
+  opacity: 1;
 }
 .glow-field-wrap > * {
   position: relative;

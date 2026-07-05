@@ -361,7 +361,7 @@ export default function ClonePage() {
         <div className="absolute bottom-6 w-full flex justify-center px-4 z-20 pointer-events-none">
           <div className="w-full max-w-2xl pointer-events-auto">
             <div className={`glow-input-wrap ${inputFocused ? 'focused' : ''}`}>
-              <div className="flex items-end gap-3 bg-card/95 backdrop-blur-xl rounded-[28px] p-3 pl-6 shadow-2xl">
+              <div className="flex items-end gap-3 bg-surface/95 border border-border backdrop-blur-xl rounded-[28px] p-3 pl-6 shadow-2xl">
                 <textarea
                   ref={textareaRef}
                   value={input}
