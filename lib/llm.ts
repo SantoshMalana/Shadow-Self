@@ -26,7 +26,7 @@ export async function generateChat(messages: any[], systemPrompt?: string): Prom
 
   if (!llmKeys || llmKeys === 'your-llm-api-key') {
     console.log('[LLM] LLM_API_KEY not set — falling back to local Ollama')
-    return ollamaChat(messages, systemPrompt || '')
+    return ollamaChat(messages.map((m: any) => ({ role: m.role, content: m.content })), systemPrompt || '')
   }
 
   // Determine a human-readable provider name for logs
