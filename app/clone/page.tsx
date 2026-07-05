@@ -360,7 +360,8 @@ export default function ClonePage() {
         {/* Input */}
         <div className="absolute bottom-6 w-full flex justify-center px-4 z-20 pointer-events-none">
           <div className="w-full max-w-2xl pointer-events-auto">
-              <div className="flex items-end gap-3 bg-surface/95 border border-border backdrop-blur-xl rounded-[28px] p-3 pl-6 shadow-2xl transition-shadow duration-200 focus-within:border-accent/60 focus-within:shadow-[0_0_0_3px_rgba(131,40,249,0.2),0_25px_50px_-12px_rgba(0,0,0,0.5)]">
+            <div className="glow-input-wrap">
+              <div className="flex items-end gap-3 bg-surface/95 border border-border backdrop-blur-xl rounded-[28px] p-3 pl-6 shadow-2xl">
                 <textarea
                   ref={textareaRef}
                   value={input}
@@ -368,7 +369,7 @@ export default function ClonePage() {
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) } }}
                   placeholder="Say something…"
                   rows={1}
-                  className="flex-1 bg-transparent border-none text-text-primary text-base focus:outline-none resize-none max-h-32 py-2.5 placeholder:text-text-faint leading-relaxed"
+                  className="flex-1 bg-transparent border-none text-text-primary text-base focus:outline-none !outline-none resize-none max-h-32 py-2.5 placeholder:text-text-faint leading-relaxed"
                 />
                 <div className="flex items-end gap-2.5 shrink-0 pb-0.5">
                   <VoiceInput onTranscription={sendMessage} mode="clone" disabled={loading} />
@@ -385,6 +386,7 @@ export default function ClonePage() {
                   </button>
                 </div>
               </div>
+            </div>
           </div>
         </div>
       </div>
