@@ -1,0 +1,18 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+    build:
+      commands:
+        - env | grep -e DATABASE_URL -e DIRECT_URL -e LLM_API_KEY -e LLM_BASE_URL -e LLM_MODEL -e EMBEDDING_API_KEY -e EMBEDDING_MODEL -e EMBEDDING_DIMENSIONS -e EMBEDDING_BASE_URL -e ELEVENLABS_API_KEY -e GROQ_API_KEY -e SENTRY_DSN -e SENTRY_ORG -e SENTRY_PROJECT -e SENTRY_AUTH_TOKEN -e SUPABASE_SERVICE_ROLE_KEY -e NEXT_PUBLIC_SUPABASE_URL -e NEXT_PUBLIC_SUPABASE_ANON_KEY -e NEXT_PUBLIC_APP_URL >> .env.production
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*
