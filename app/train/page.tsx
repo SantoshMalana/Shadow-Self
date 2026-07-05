@@ -4,6 +4,7 @@ import Link from 'next/link'
 import ChatBubble from '@/components/ChatBubble'
 import VoiceInput from '@/components/VoiceInput'
 import PersonalityStats from '@/components/PersonalityStats'
+import { getCloneCompleteness } from '@/lib/personality'
 import { getDailyQuestion } from '@/lib/questions'
 import { getUserState, updateUserName } from '@/app/actions/user'
 import UserMenu from '@/components/UserMenu'
@@ -17,7 +18,7 @@ interface Message {
 interface Personality {
   name?: string
   sessions: number
-  updated_at?: string
+  updatedAt?: string
   voiceId?: string
   communicationStyle: any
   thinkingPatterns: any
@@ -32,24 +33,7 @@ function truncateAtWord(text: string, max: number): string {
   return (lastSpace > 0 ? cut.slice(0, lastSpace) : cut) + '…'
 }
 
-function getCompleteness(p: Personality): number {
-  let score = 0
-  if (p.communicationStyle) {
-    score += Math.min((p.communicationStyle.tone?.length || 0) * 5, 20)
-    score += Math.min(p.communicationStyle.vocabulary?.length || 0, 15)
-  }
-  if (p.thinkingPatterns) {
-    score += Math.min((p.thinkingPatterns.values?.length || 0) * 3, 20)
-    score += Math.min(p.thinkingPatterns.opinions?.length || 0, 15)
-  }
-  if (p.emotionalProfile) {
-    score += Math.min((p.emotionalProfile.passionTopics?.length || 0) * 3, 15)
-  }
-  if (p.knowledgeDomains) {
-    score += Math.min(p.knowledgeDomains.length * 3, 15)
-  }
-  return Math.min(score, 100)
-}
+
 
 export default function TrainPage() {
   const [messages, setMessages] = useState<Message[]>([])
@@ -64,6 +48,7 @@ export default function TrainPage() {
   const [nameSet, setNameSet] = useState(false)
   const [speaking, setSpeaking] = useState(false)
   const [voiceEnabled, setVoiceEnabled] = useState(true)
+  const [inputFocused, setInputFocused] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const unlockedRef = useRef(false)
@@ -201,7 +186,7 @@ export default function TrainPage() {
     } finally { setLoading(false) }
   }
 
-  const completeness = personality ? getCompleteness(personality) : 0
+  const completeness = personality ? getCloneCompleteness(personality) : 0
 
   // FIX: a DB/session error now gets its own honest screen instead of
   // faking a user name and silently looping through the name gate.
@@ -245,13 +230,7 @@ export default function TrainPage() {
             {/* Identity — first thing the eye lands on */}
             {userState && (
               <Link href="/profile" className="flex items-center gap-3 px-1 group">
-                <div
-                  className="w-11 h-11 rounded-full flex-shrink-0"
-                  style={{
-                    background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, #8328f9 78%)',
-                    boxShadow: '0 0 15px -3px rgba(131,40,249,0.4)'
-                  }}
-                />
+                <div className="brand-orb w-11 h-11 flex-shrink-0" />
                 <div className="min-w-0">
                   <div className="text-[16px] font-bold text-text-primary truncate group-hover:text-accent-light transition-colors">
                     {userState.name}
@@ -282,10 +261,11 @@ export default function TrainPage() {
                     ))}
                   </div>
                   <div className="text-[13px] text-text-muted leading-relaxed font-medium">
-                    {userState.depthRung === 1 && "Surface-level facts and basic communication style."}
-                    {userState.depthRung === 2 && "Values, opinions, and core beliefs."}
-                    {userState.depthRung === 3 && "Emotional triggers and nuanced reactions."}
-                    {userState.depthRung >= 4 && "Deep behavioral cloning and instinctual logic."}
+                    {userState.depthRung === 1 && "Surface-level facts, communication style, and daily rhythms."}
+                    {userState.depthRung === 2 && "How you actually solve problems — reasoning, mental models, approach."}
+                    {userState.depthRung === 3 && "Values, beliefs, and opinions you hold but don't always say out loud."}
+                    {userState.depthRung === 4 && "Emotional triggers, frustrations, and how you're really doing."}
+                    {userState.depthRung >= 5 && "Vulnerable territory — failure, fear, pride, what you'd want remembered."}
                   </div>
                 </div>
               </div>
@@ -412,29 +392,33 @@ export default function TrainPage() {
         {/* Input */}
         <div className="absolute bottom-6 w-full flex justify-center px-4 z-20 pointer-events-none">
           <div className="w-full max-w-2xl pointer-events-auto">
-            <div className="flex items-center gap-3 bg-card/95 backdrop-blur-xl border border-border rounded-[28px] p-3 pl-6 shadow-2xl">
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={handleInput}
-                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) } }}
-                placeholder="Share your thoughts…"
-                rows={1}
-                className="flex-1 bg-transparent border-none text-text-primary text-base focus:outline-none resize-none max-h-32 py-2.5 placeholder:text-text-faint leading-relaxed"
-              />
-              <div className="flex items-center gap-2.5 shrink-0">
-                <VoiceInput onTranscription={sendMessage} mode="onboarding" disabled={loading} />
-                <button
-                  onClick={() => sendMessage(input)}
-                  disabled={loading || !input.trim()}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
-                    input.trim() && !loading
-                      ? 'bg-accent text-white hover:bg-accent-hover shadow-[0_2px_10px_-2px_rgba(131,40,249,0.6)] cursor-pointer active:scale-95'
-                      : 'bg-surface text-text-faint cursor-not-allowed'
-                  }`}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </button>
+            <div className={`glow-input-wrap ${inputFocused ? 'focused' : ''}`}>
+              <div className="flex items-end gap-3 bg-card/95 backdrop-blur-xl rounded-[28px] p-3 pl-6 shadow-2xl">
+                <textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={handleInput}
+                  onFocus={() => setInputFocused(true)}
+                  onBlur={() => setInputFocused(false)}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) } }}
+                  placeholder="Share your thoughts…"
+                  rows={1}
+                  className="flex-1 bg-transparent border-none text-text-primary text-base focus:outline-none resize-none max-h-32 py-2.5 placeholder:text-text-faint leading-relaxed"
+                />
+                <div className="flex items-end gap-2.5 shrink-0 pb-0.5">
+                  <VoiceInput onTranscription={sendMessage} mode="onboarding" disabled={loading} />
+                  <button
+                    onClick={() => sendMessage(input)}
+                    disabled={loading || !input.trim()}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
+                      input.trim() && !loading
+                        ? 'bg-accent text-white hover:bg-accent-hover shadow-[0_2px_10px_-2px_rgba(131,40,249,0.6)] cursor-pointer active:scale-95'
+                        : 'bg-surface text-text-faint cursor-not-allowed'
+                    }`}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </button>
+                </div>
               </div>
             </div>
             <div className="text-center mt-3 text-xs text-text-faint font-medium">

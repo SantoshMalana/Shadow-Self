@@ -48,6 +48,7 @@ export default function SettingsPage() {
     setExporting(true)
     try {
       const res = await fetch('/api/account/export')
+      if (!res.ok) throw new Error('Export request failed')
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -57,6 +58,7 @@ export default function SettingsPage() {
       URL.revokeObjectURL(url)
     } catch (err) {
       console.error('Export error:', err)
+      alert('Export failed. Please try again.')
     }
     setExporting(false)
   }
@@ -64,10 +66,15 @@ export default function SettingsPage() {
   const handleDelete = async () => {
     setDeleting(true)
     try {
-      await fetch('/api/account/delete', { method: 'DELETE' })
+      const res = await fetch('/api/account/delete', { method: 'DELETE' })
+      const data = await res.json()
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Deletion failed')
+      }
       window.location.href = '/login'
     } catch (err) {
       console.error('Delete error:', err)
+      alert('Something went wrong deleting your account. Please try again, or contact support if this keeps happening.')
       setDeleting(false)
     }
   }

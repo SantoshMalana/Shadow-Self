@@ -10,7 +10,11 @@ export async function GET() {
 
     const personality = await getPersonality(user.id)
     const stats = await getMemoryStats(user.id)
-    return NextResponse.json({ ...personality, memoriesCount: stats.totalMemories })
+    return NextResponse.json({
+      ...personality,
+      name: user.name,
+      memoriesCount: stats.totalMemories
+    })
   } catch (error: any) {
     console.error('API Personality GET error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })

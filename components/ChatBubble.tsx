@@ -19,8 +19,8 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
 
   if (isUser) {
     return (
-      <div className="ss-message flex justify-end mb-7">
-        <div className="max-w-[82%] px-4.5 py-3 rounded-2xl rounded-br-sm bg-accent-soft text-text-primary text-[15px] leading-[1.7] break-words">
+      <div className="ss-message flex justify-end mb-8">
+        <div className="max-w-[82%] px-4.5 py-3 rounded-[var(--radius-md)] rounded-br-sm bg-accent/15 border border-accent/25 text-text-primary text-[15px] leading-[1.7] break-words">
           {content}
         </div>
       </div>
