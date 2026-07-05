@@ -320,21 +320,6 @@ export default function ClonePage() {
               <span className="text-text-primary font-semibold shrink-0">Clone</span>
             </div>
 
-            <button
-              onClick={() => setVoiceEnabled(v => !v)}
-              className={`ml-auto flex items-center gap-2 px-3.5 py-2 rounded-full text-xs transition-all border cursor-pointer font-medium whitespace-nowrap ${
-                voiceEnabled ? 'bg-accent-soft border-accent/30 text-accent-light' : 'bg-surface/60 border-border text-text-faint hover:text-text-muted'
-              }`}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                {voiceEnabled ? (
-                  <path d="M11 5 6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/>
-                ) : (
-                  <path d="M11 5 6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"/>
-                )}
-              </svg>
-              {voiceEnabled ? 'Voice on' : 'Voice off'}
-            </button>
           </div>
         </header>
 
@@ -361,7 +346,7 @@ export default function ClonePage() {
         <div className="absolute bottom-6 w-full flex justify-center px-4 z-20 pointer-events-none">
           <div className="w-full max-w-2xl pointer-events-auto">
             <div className="glow-input-wrap">
-              <div className="flex items-end gap-3 bg-surface/95 border border-border backdrop-blur-xl rounded-[28px] p-3 pl-6 shadow-2xl">
+              <div className="flex items-center gap-2 bg-surface/95 border border-border backdrop-blur-xl rounded-[32px] p-2 pl-6 shadow-2xl">
                 <textarea
                   ref={textareaRef}
                   value={input}
@@ -369,9 +354,24 @@ export default function ClonePage() {
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) } }}
                   placeholder="Say something…"
                   rows={1}
-                  className="flex-1 bg-transparent border-none text-text-primary text-base focus:outline-none !outline-none resize-none max-h-32 py-2.5 placeholder:text-text-faint leading-relaxed"
+                  className="flex-1 bg-transparent border-none text-text-primary text-[15px] focus:outline-none !outline-none resize-none max-h-32 py-2 placeholder:text-text-faint leading-relaxed"
                 />
-                <div className="flex items-end gap-2.5 shrink-0 pb-0.5">
+                <div className="flex items-center gap-1.5 shrink-0 pr-1">
+                  <button
+                    onClick={() => setVoiceEnabled(v => !v)}
+                    title={voiceEnabled ? "Voice responses on" : "Voice responses off"}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                      voiceEnabled ? 'text-accent-light hover:bg-accent-soft' : 'text-text-faint hover:text-text-primary hover:bg-surface'
+                    }`}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      {voiceEnabled ? (
+                        <path d="M11 5 6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                      ) : (
+                        <path d="M11 5 6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"/>
+                      )}
+                    </svg>
+                  </button>
                   <VoiceInput onTranscription={sendMessage} mode="clone" disabled={loading} />
                   <button
                     onClick={() => sendMessage(input)}
