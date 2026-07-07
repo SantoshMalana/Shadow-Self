@@ -8,6 +8,9 @@ import { getCloneCompleteness } from '@/lib/personality-client'
 import { getDailyQuestion } from '@/lib/questions'
 import { getUserState, updateUserName } from '@/app/actions/user'
 import UserMenu from '@/components/UserMenu'
+import layoutStyles from '@/components/ChatLayout.module.css'
+import pageStyles from '@/app/page.module.css'
+import btnStyles from '@/components/Buttons.module.css'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -37,6 +40,7 @@ export default function ClonePage() {
   const [currentQuestion, setCurrentQuestion] = useState('')
   const [nameInput, setNameInput] = useState('')
   const [nameSet, setNameSet] = useState(false)
+  const [isInitializing, setIsInitializing] = useState(true)
   const [speaking, setSpeaking] = useState(false)
   const [voiceEnabled, setVoiceEnabled] = useState(true)
 
@@ -82,6 +86,7 @@ export default function ClonePage() {
         setLoadError('Unexpected error while loading your session.')
       } finally {
         setProfileLoading(false)
+        setIsInitializing(false)
       }
     }
     loadData()
@@ -101,16 +106,10 @@ export default function ClonePage() {
     if (!audioRef.current) return
     try {
       setSpeaking(true)
-      const res = await fetch('/api/synthesize', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, voiceId })
-      })
-      if (!res.ok) throw new Error('Synthesis failed')
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
+      const url = `/api/synthesize?text=${encodeURIComponent(text)}${voiceId ? `&voiceId=${encodeURIComponent(voiceId)}` : ''}`
       const audio = audioRef.current
       audio.src = url
-      audio.onended = () => { setSpeaking(false); URL.revokeObjectURL(url) }
+      audio.onended = () => setSpeaking(false)
       audio.onerror = () => setSpeaking(false)
       await audio.play()
     } catch { setSpeaking(false) }
@@ -153,14 +152,17 @@ export default function ClonePage() {
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
+
       setMessages(prev => [...prev, { role: 'assistant', content: data.response, turnGoal: data.turnGoal }])
+      setLoading(false) // Remove typing indicator immediately
+      if (voiceEnabled) speakText(data.response, personality?.voiceId) // Start audio stream immediately
+
       const refreshedUser = await getUserState()
       if (!('error' in refreshedUser)) setUserState(refreshedUser as any)
       try {
         const updated = await fetch('/api/personality').then(r => r.json())
         if (!updated.error) setPersonality(updated)
       } catch (e) { console.error("Failed to fetch updated personality", e) }
-      if (voiceEnabled) speakText(data.response, personality?.voiceId)
     } catch (err: any) {
       setMessages(prev => [...prev, { role: 'assistant', content: `⚠ ${err.message || 'API Error'}` }])
     } finally { setLoading(false) }
@@ -181,7 +183,7 @@ export default function ClonePage() {
           <p className="text-sm text-text-muted leading-relaxed mb-8">
             {loadError}. Please check your database connection and try again.
           </p>
-          <Link href="/" className="btn-primary-lg">← Back home</Link>
+          <Link href="/" className={btnStyles.btnPrimaryLg}>← Back home</Link>
         </div>
       </div>
     )
@@ -190,10 +192,44 @@ export default function ClonePage() {
   return (
     <div className="h-screen flex bg-bg font-sans text-sm relative overflow-hidden text-text-primary">
 
+      {/* Name Gate Overlay */}
+      {!nameSet && !isInitializing && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
+          <div className={`${pageStyles.lightFx} opacity-50`} aria-hidden="true">
+            <div className={pageStyles.raySource} />
+            <div className={pageStyles.rays} />
+          </div>
+          <div className={`${layoutStyles.nameGateCard} relative z-10`}>
+            <div className={layoutStyles.nameGateIcon}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
+                <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
+              </svg>
+            </div>
+            <h2 className={layoutStyles.nameGateTitle}>Who are we cloning?</h2>
+            <p className={layoutStyles.nameGateDesc}>Confirm your name to begin.</p>
+            <div className={layoutStyles.nameGateForm}>
+              <input
+                type="text"
+                value={nameInput}
+                onChange={e => setNameInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && saveName()}
+                placeholder="Full name…"
+                autoFocus
+                className={layoutStyles.nameGateInput}
+              />
+              <button onClick={saveName} className={`${btnStyles.btnPrimaryLg} justify-center flex-shrink-0`}>
+                Begin →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Left Sidebar */}
       {nameSet && (
-        <aside className="ss-sidebar hidden lg:flex">
-          <div className="flex flex-col gap-6 overflow-y-auto min-h-0">
+        <aside className={`${layoutStyles.ssSidebar} hidden lg:flex`}>
+          <div className="flex flex-col gap-6 overflow-y-auto min-h-0 flex-1">
             <div className="flex items-center gap-3 px-1">
               <Link href="/train" className="text-text-muted hover:text-text-primary transition-colors flex items-center gap-2 font-medium text-[13px]">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
@@ -203,23 +239,10 @@ export default function ClonePage() {
               <span className="font-semibold text-text-primary tracking-wide text-[13px]">Clone</span>
             </div>
 
-            {/* Identity */}
-            {userState && (
-              <Link href="/profile" className="flex items-center gap-3 px-1 group">
-                <div className="brand-orb w-11 h-11 flex-shrink-0" />
-                <div className="min-w-0">
-                  <div className="text-[16px] font-bold text-text-primary truncate group-hover:text-accent-light transition-colors">
-                    {userState.name}
-                  </div>
-                  <div className="text-[11px] text-text-faint">View profile</div>
-                </div>
-              </Link>
-            )}
-
             {userState && (
               <div>
                 <div className="text-[10px] text-text-faint tracking-widest mb-3 font-bold uppercase">Trust Depth</div>
-                <div className="ss-sidebar-card">
+                <div className={layoutStyles.ssSidebarCard}>
                   <div className="flex justify-between items-center mb-4">
                     <span className="text-lg font-bold text-text-primary tracking-tight">Level {userState.depthRung}</span>
                     <span className="text-xs font-medium text-text-faint">/ 5</span>
@@ -248,7 +271,7 @@ export default function ClonePage() {
             )}
 
             <div>
-              <div className="text-[10px] text-text-faint tracking-widest font-bold mb-3 uppercase">Clone Profile</div>
+              <div className="text-[10px] text-text-faint tracking-widest font-bold uppercase mb-3">Clone Profile</div>
               {personality ? (
                 <PersonalityStats personality={personality} completeness={completeness} />
               ) : profileLoading ? (
@@ -259,13 +282,14 @@ export default function ClonePage() {
             </div>
           </div>
 
-          <div className="mt-auto pt-4 flex flex-col gap-3">
-            <Link href="/train" className="btn-primary-lg justify-center">
+          <div className="mt-auto pt-4 border-t border-border/40 flex flex-col gap-4">
+            <Link href="/train" className={`${btnStyles.btnPrimaryLg} justify-center w-full`}>
               Continue Training
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </Link>
-            <div className="bg-surface/60 border border-border rounded-[14px] p-2">
-              <UserMenu name={userState?.name} showIdentity={false} />
+            
+            <div className="px-1">
+              <UserMenu name={userState?.name} showIdentity={true} />
             </div>
           </div>
         </aside>
@@ -273,53 +297,20 @@ export default function ClonePage() {
 
       {/* Main Area */}
       <div className="flex-1 flex flex-col relative overflow-hidden bg-bg">
-        <div className="light-fx opacity-40" aria-hidden="true">
-          <div className="ray-source" />
-          <div className="rays" />
+        <div className={`${pageStyles.lightFx} opacity-40`} aria-hidden="true">
+          <div className={pageStyles.raySource} />
+          <div className={pageStyles.rays} />
         </div>
 
-        {/* Name Gate Overlay */}
-        {!nameSet && (
-          <div className="absolute inset-0 flex items-center justify-center p-6 z-30 bg-bg overflow-hidden">
-            <div className="light-fx opacity-50" aria-hidden="true">
-              <div className="ray-source" />
-              <div className="rays" />
-            </div>
-            <div className="name-gate-card relative z-10">
-              <div className="name-gate-icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
-                  <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
-                </svg>
-              </div>
-              <h2 className="name-gate-title">Who are we cloning?</h2>
-              <p className="name-gate-desc">Confirm your name to begin.</p>
-              <div className="name-gate-form">
-                <input
-                  type="text"
-                  value={nameInput}
-                  onChange={e => setNameInput(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && saveName()}
-                  placeholder="Full name…"
-                  autoFocus
-                  className="name-gate-input"
-                />
-                <button onClick={saveName} className="btn-primary-lg justify-center flex-shrink-0">
-                  Begin →
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {/* Top Header */}
-        <header className="border-b border-border bg-bg/80 backdrop-blur-md shrink-0 z-20 relative">
+        <header className="lg:hidden border-b border-border bg-bg/80 backdrop-blur-md shrink-0 z-20 relative">
           <div className="max-w-2xl mx-auto flex items-center px-4 sm:px-6 h-[64px]">
-            <div className="lg:hidden flex items-center gap-4 min-w-0">
+            <div className="flex items-center gap-4 min-w-0">
               <Link href="/train" className="text-text-muted shrink-0">Back</Link>
               <span className="text-text-primary font-semibold shrink-0">Clone</span>
             </div>
-
           </div>
         </header>
 
@@ -343,10 +334,10 @@ export default function ClonePage() {
         </div>
 
         {/* Input */}
-        <div className="absolute bottom-6 w-full flex justify-center px-4 z-20 pointer-events-none">
-          <div className="w-full max-w-2xl pointer-events-auto">
-            <div className="glow-input-wrap">
-              <div className="flex items-center gap-2 bg-surface/95 border border-border backdrop-blur-xl rounded-[32px] p-2 pl-6 shadow-2xl">
+        <div className="absolute bottom-8 w-full flex justify-center px-4 z-20 pointer-events-none">
+          <div className="w-full max-w-3xl pointer-events-auto">
+            <div className={layoutStyles.glowInputWrap}>
+              <div className="flex items-center gap-3 bg-surface/95 border border-border backdrop-blur-xl rounded-[32px] p-2 pl-6 shadow-2xl">
                 <textarea
                   ref={textareaRef}
                   value={input}
@@ -354,9 +345,9 @@ export default function ClonePage() {
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) } }}
                   placeholder="Say something…"
                   rows={1}
-                  className="flex-1 bg-transparent border-none text-text-primary text-[15px] focus:outline-none !outline-none resize-none max-h-32 py-2 placeholder:text-text-faint leading-relaxed"
+                  className="flex-1 bg-transparent border-none text-text-primary text-[16px] focus:outline-none !outline-none resize-none max-h-32 leading-[40px] m-0 p-0 placeholder:text-text-faint overflow-y-auto"
                 />
-                <div className="flex items-center gap-1.5 shrink-0 pr-1">
+                <div className="flex items-center gap-1.5 shrink-0 pr-1 h-[40px]">
                   <button
                     onClick={() => setVoiceEnabled(v => !v)}
                     title={voiceEnabled ? "Voice responses on" : "Voice responses off"}

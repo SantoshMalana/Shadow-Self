@@ -3,6 +3,9 @@
 import { useActionState } from 'react'
 import { signup } from '@/app/actions/auth'
 import Link from 'next/link'
+import formStyles from '@/components/Forms.module.css'
+import btnStyles from '@/components/Buttons.module.css'
+import pageStyles from '@/app/page.module.css'
 
 export default function SignupPage() {
   const [state, action, isPending] = useActionState(
@@ -15,18 +18,18 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 relative">
-      <div className="light-fx" aria-hidden="true">
-        <div className="ray-source" />
-        <div className="rays" />
+      <div className={pageStyles.lightFx} aria-hidden="true">
+        <div className={pageStyles.raySource} />
+        <div className={pageStyles.rays} />
       </div>
 
       <div className="w-full max-w-[400px] relative z-10">
         <div className="flex items-center justify-center gap-2.5 mb-12">
-          <span className="brand-orb w-7 h-7 shrink-0" />
+          <span className="w-7 h-7 shrink-0 rounded-full shadow-[var(--shadow-glow-sm)]" style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, var(--color-accent) 78%)' }} />
           <span className="font-bold text-lg tracking-tight">Shadow Shelf</span>
         </div>
 
-        <div className="ss-card p-9 sm:p-10 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.65),0_0_0_1px_rgba(131,40,249,0.08)]">
+        <div className="bg-card border border-border rounded-[var(--radius-lg)] p-9 sm:p-10 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.65),0_0_0_1px_rgba(131,40,249,0.08)]">
           <h1 className="text-2xl font-bold text-center mb-1.5">Create your clone</h1>
           <p className="text-sm text-text-muted text-center mb-8">Your first entry takes about four minutes.</p>
 
@@ -38,7 +41,7 @@ export default function SignupPage() {
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
                 </svg>
                 <input id="name" name="name" type="text" required placeholder="Your full name"
-                  className="ss-input" />
+                  className={formStyles.ssInput} />
               </div>
             </div>
             <div>
@@ -48,7 +51,7 @@ export default function SignupPage() {
                   <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
                 </svg>
                 <input id="email" name="email" type="email" required placeholder="you@example.com"
-                  className="ss-input" />
+                  className={formStyles.ssInput} />
               </div>
             </div>
             <div>
@@ -58,7 +61,7 @@ export default function SignupPage() {
                   <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
                 <input id="password" name="password" type="password" required minLength={8} placeholder="At least 8 characters"
-                  className="ss-input" />
+                  className={formStyles.ssInput} />
               </div>
             </div>
 
@@ -66,7 +69,7 @@ export default function SignupPage() {
               <p className="text-sm text-red-400 bg-red-950/30 border border-red-900/40 px-3 py-2 rounded-[var(--radius-md)]">{state.error}</p>
             )}
 
-            <button type="submit" disabled={isPending} className="btn-primary-lg justify-center mt-2 w-full py-4 text-[15px] disabled:opacity-50">
+            <button type="submit" disabled={isPending} className={`${btnStyles.btnPrimaryLg} justify-center mt-2 w-full py-4 text-[15px] disabled:opacity-50`}>
               {isPending ? 'Creating…' : 'Create your clone →'}
             </button>
           </form>

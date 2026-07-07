@@ -1,0 +1,33 @@
+/* Autofill override — Chrome/Edge ignore normal styles on autofilled
+   fields unless you hijack this exact pseudo-class combo */
+.ssInput:-webkit-autofill,
+.ssInput:-webkit-autofill:hover,
+.ssInput:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-text-primary);
+  -webkit-box-shadow: 0 0 0px 1000px var(--color-surface) inset;
+  box-shadow: 0 0 0px 1000px var(--color-surface) inset;
+  transition: background-color 9999s ease-in-out 0s;
+  caret-color: var(--color-text-primary);
+}
+
+/* Form field focus glow — simple box-shadow, no pseudo-elements.
+   The rotating-gradient approach caused floating arc artifacts;
+   box-shadow is how ChatGPT / Linear / Stripe handle this. */
+.ssInput {
+  width: 100%;
+  padding: 14px 16px 14px 48px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.ssInput::placeholder {
+  color: var(--color-text-faint);
+}
+.ssInput:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(131, 40, 249, 0.25), var(--shadow-glow-sm);
+}

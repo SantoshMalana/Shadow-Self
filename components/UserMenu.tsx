@@ -36,9 +36,8 @@ export default function UserMenu({
   return (
     <div className="w-full flex flex-col gap-1">
       {showIdentity && (
-        <Link
-          href="/profile"
-          className="px-2 py-2 mb-2 flex items-center gap-3 min-w-0 rounded-[14px] transition-colors hover:bg-surface"
+        <div
+          className="px-2 py-2 mb-2 flex items-center gap-3 min-w-0 rounded-[14px]"
         >
           <div
             className="w-9 h-9 rounded-full flex-shrink-0"
@@ -51,7 +50,7 @@ export default function UserMenu({
             <span className="text-[13px] font-semibold text-text-primary truncate">{displayName}</span>
             {email && <span className="text-[11px] text-text-faint truncate">{email}</span>}
           </div>
-        </Link>
+        </div>
       )}
 
       {navItems.map((item) => {

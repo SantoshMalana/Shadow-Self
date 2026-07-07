@@ -1,0 +1,29 @@
+.btnPill {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--color-accent); color: #fff; font-weight: 600; font-size: 14px;
+  padding: 10px 20px; border-radius: var(--radius-pill); text-decoration: none;
+  border: 1px solid var(--color-accent); transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 6px 20px -8px rgba(131,40,249,0.7); cursor: pointer;
+}
+.btnPill:hover { background: var(--color-accent-hover); border-color: var(--color-accent-hover); }
+
+.btnPrimaryLg {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-deep)); color: #fff;
+  font-weight: 600; font-size: 15px; padding: 14px 26px; border-radius: var(--radius-pill);
+  text-decoration: none; transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 10px 34px -10px rgba(131,40,249,0.75); cursor: pointer;
+}
+.btnPrimaryLg:hover {
+  background: linear-gradient(135deg, var(--color-accent-hover), var(--color-accent));
+  transform: translateY(-1px);
+  box-shadow: 0 14px 42px -8px rgba(131,40,249,0.9);
+}
+
+.btnGhost {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: transparent; color: var(--color-text-muted); font-weight: 500; font-size: 14.5px;
+  padding: 10px 20px; border-radius: var(--radius-pill); text-decoration: none;
+  border: 1px solid var(--color-border); transition: color 0.15s, border-color 0.15s; cursor: pointer;
+}
+.btnGhost:hover { color: var(--color-text-primary); border-color: var(--color-text-muted); }

@@ -2,46 +2,41 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDbUser } from '@/lib/auth'
 import { checkRateLimit } from '@/lib/rate-limit'
 
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     // 1. Secure the endpoint
     const user = await getDbUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return new NextResponse('Unauthorized', { status: 401 })
     }
 
     // 2. Strict rate limiting for TTS API
-    // Allow 20 TTS requests per minute per user
     const rateCheck = checkRateLimit(`synthesize:${user.id}`, 20, 60_000)
     if (!rateCheck.allowed) {
-      return NextResponse.json(
-        { error: 'Too many voice generations. Please wait a minute.' },
-        { status: 429 }
-      )
+      return new NextResponse('Too many voice generations. Please wait a minute.', { status: 429 })
     }
 
-    const { text, voiceId } = await req.json()
+    const url = new URL(req.url)
+    const text = url.searchParams.get('text')
+    const voiceId = url.searchParams.get('voiceId') || 'pNInz6obpgDQGcFmaJgB' // Adam (default)
 
     if (!text) {
-      return NextResponse.json({ error: 'No text provided' }, { status: 400 })
+      return new NextResponse('No text provided', { status: 400 })
     }
 
     const apiKeys = process.env.ELEVENLABS_API_KEY
     if (!apiKeys) {
-      return NextResponse.json({ error: 'ElevenLabs API key not configured' }, { status: 500 })
+      return new NextResponse('ElevenLabs API key not configured', { status: 500 })
     }
 
-    // Use provided voice ID or fall back to a default ElevenLabs voice
-    const targetVoiceId = voiceId || 'pNInz6obpgDQGcFmaJgB' // Adam (default)
-
-    // Using the internal API balancer for dynamic fallback
     const { withKeyRotation } = await import('@/lib/api-balancer')
     
-    const audioBuffer = await withKeyRotation(
+    // Return the response stream directly to enable fast streaming (1-2s latency)
+    return await withKeyRotation(
       apiKeys,
       async (key) => {
         const response = await fetch(
-          `https://api.elevenlabs.io/v1/text-to-speech/${targetVoiceId}`,
+          `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?optimize_streaming_latency=2`,
           {
             method: 'POST',
             headers: {
@@ -66,19 +61,20 @@ export async function POST(req: NextRequest) {
           throw new Error(`ElevenLabs error: ${response.status} - ${err}`)
         }
 
-        return await response.arrayBuffer()
+        return new NextResponse(response.body, {
+          headers: {
+            'Content-Type': 'audio/mpeg',
+            'Transfer-Encoding': 'chunked',
+            'Cache-Control': 'no-cache'
+          }
+        })
       },
       'ElevenLabs (TTS)'
     )
 
-    return new NextResponse(audioBuffer, {
-      headers: {
-        'Content-Type': 'audio/mpeg',
-        'Cache-Control': 'no-cache'
-      }
-    })
   } catch (error: any) {
     console.error('Synthesis error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return new NextResponse(error.message, { status: 500 })
   }
 }
+
