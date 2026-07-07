@@ -193,7 +193,7 @@
   border-radius: 24px; 
   background: rgba(0, 0, 0, 0.4);
 }
-.chatInputMock span { font-size: 14px; color: var(--color-text-faint); flex: 1; }
+.chatInputMock > span:first-child { font-size: 14px; color: var(--color-text-faint); flex: 1; }
 .chatSend {
   width: 32px; height: 32px; border-radius: 50%; background: var(--color-accent);
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
