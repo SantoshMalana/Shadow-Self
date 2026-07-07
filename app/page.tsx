@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import styles from './page.module.css'
@@ -10,7 +10,8 @@ export default function HomePage() {
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const [checkingAuth, setCheckingAuth] = useState(true)
-
+  const [chatStep, setChatStep] = useState(0)
+  
   useEffect(() => {
     setMounted(true)
     if (document.cookie.includes('sb-') && document.cookie.includes('-auth-token')) {
@@ -19,6 +20,36 @@ export default function HomePage() {
       setCheckingAuth(false)
     }
   }, [router])
+
+  useEffect(() => {
+    if (!mounted || checkingAuth) return
+
+    const sequence = [
+      { step: 1, delay: 600 },
+      { step: 2, delay: 1800 },
+      { step: 3, delay: 3800 },
+      { step: 4, delay: 6000 },
+      { step: 0, delay: 9500 }
+    ]
+
+    const runSequence = () => {
+      setChatStep(0)
+      const timeouts = sequence.map(({ step, delay }) => 
+        setTimeout(() => setChatStep(step), delay)
+      )
+      return timeouts
+    }
+
+    let currentTimeouts = runSequence()
+    const interval = setInterval(() => {
+      currentTimeouts = runSequence()
+    }, 9500)
+
+    return () => {
+      clearInterval(interval)
+      currentTimeouts.forEach(clearTimeout)
+    }
+  }, [mounted, checkingAuth])
 
   if (checkingAuth) return null
 
@@ -67,9 +98,18 @@ export default function HomePage() {
               <span className={styles.chatStatus}><span className={styles.chatDot} /> trained on 42 days</span>
             </div>
             <div className={styles.chatBody}>
-              <div className={`${styles.bubble} ${styles.user}`}>What would you tell me about taking the riskier job offer?</div>
-              <div className={`${styles.bubble} ${styles.clone}`}>Take it. You always regret the safe choice more once the boring version is actually living in front of you.</div>
-              <div className={`${styles.bubble} ${styles.user2}`}>That&apos;s exactly what I&apos;d say.</div>
+              {chatStep >= 1 && (
+                <div className={`${styles.bubble} ${styles.user}`}>What would you tell me about taking the riskier job offer?</div>
+              )}
+              {chatStep === 2 && (
+                <div className={`${styles.bubble} ${styles.clone} ${styles.typing}`}>...</div>
+              )}
+              {chatStep >= 3 && (
+                <div className={`${styles.bubble} ${styles.clone}`}>Take it. You always regret the safe choice more once the boring version is actually living in front of you.</div>
+              )}
+              {chatStep >= 4 && (
+                <div className={`${styles.bubble} ${styles.user2}`}>That&apos;s exactly what I&apos;d say.</div>
+              )}
             </div>
             <div className={styles.chatInputMock}>
               <span>Ask your clone anything…</span>
