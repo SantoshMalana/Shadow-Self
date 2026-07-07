@@ -69,7 +69,7 @@ export default function HomePage() {
             <div className={styles.chatBody}>
               <div className={`${styles.bubble} ${styles.user}`}>What would you tell me about taking the riskier job offer?</div>
               <div className={`${styles.bubble} ${styles.clone}`}>Take it. You always regret the safe choice more once the boring version is actually living in front of you.</div>
-              <div className={`${styles.bubble} ${styles.user}`}>That&apos;s exactly what I&apos;d say.</div>
+              <div className={`${styles.bubble} ${styles.user2}`}>That&apos;s exactly what I&apos;d say.</div>
             </div>
             <div className={styles.chatInputMock}>
               <span>Ask your clone anything…</span>
@@ -94,7 +94,7 @@ export default function HomePage() {
               { num: '2', title: 'Process', desc: 'A local model extracts your values, communication style, and emotional triggers into a cognitive profile.' },
               { num: '3', title: 'Clone', desc: 'Talk to your clone voice-to-voice, in your style, with your opinions and emotional depth.' },
             ].map(s => (
-              <div key={s.num} className={styles.stepCard}>
+              <div key={s.num} className={`${styles.stepCard} ${styles.glassCard}`}>
                 <div className={styles.stepNum}>{s.num}</div>
                 <h3>{s.title}</h3>
                 <p>{s.desc}</p>
@@ -121,7 +121,7 @@ export default function HomePage() {
               { icon: '⏱️', title: 'A few minutes a day', desc: 'No long intake forms. Small, daily answers are enough to start building depth.' },
               { icon: '🌱', title: 'Keeps learning', desc: 'There is no final version — your clone updates with every new conversation.' },
             ].map((f, i) => (
-              <div key={i} className={styles.featureCard}>
+              <div key={i} className={`${styles.featureCard} ${styles.glassCard}`}>
                 <div className={styles.featureDot}>{f.icon}</div>
                 <div>
                   <h3>{f.title}</h3>
@@ -146,7 +146,7 @@ export default function HomePage() {
               { title: 'Founders & Leaders', desc: 'Capture the decision-making framework that defines your company culture. New hires learn from how you actually think, not just what you wrote in a doc.', icon: '🎯' },
               { title: 'Everyone, Eventually', desc: 'The people who raised you. The mentor who shaped your career. A version of them that can still answer questions — built on real conversations, not guesses.', icon: '💜' },
             ].map((c, i) => (
-              <div key={i} className={styles.useCaseCard}>
+              <div key={i} className={`${styles.useCaseCard} ${styles.glassCard}`}>
                 <div style={{ fontSize: 24, marginBottom: 16 }}>{c.icon}</div>
                 <h3>{c.title}</h3>
                 <p>{c.desc}</p>
@@ -170,7 +170,7 @@ export default function HomePage() {
               { label: 'Depth tracking', desc: '5-rung trust system. Deeper questions unlock only with time.' },
               { label: 'You own the data', desc: 'Export or delete your cognitive trace at any time.' },
             ].map((t, i) => (
-              <div key={i} className={styles.trustCard}>
+              <div key={i} className={`${styles.trustCard} ${styles.glassCard}`}>
                 <div className={styles.stepNum} style={{ margin: '0 auto 16px' }}>{i + 1}</div>
                 <h3>{t.label}</h3>
                 <p>{t.desc}</p>
