@@ -4,6 +4,20 @@
   --font-sans: var(--font-inter), sans-serif;
   --font-mono: var(--font-jetbrains-mono), monospace;
 
+  /* Expose these to Tailwind so it generates bg-bg, text-text-primary, etc. */
+  --color-bg: var(--theme-bg);
+  --color-card: var(--theme-card);
+  --color-surface: var(--theme-surface);
+  --color-border: var(--theme-border);
+  --color-text-primary: var(--theme-text-primary);
+  --color-text-muted: var(--theme-text-muted);
+  --color-text-faint: var(--theme-text-faint);
+  --color-accent: var(--theme-accent);
+  --color-accent-deep: var(--theme-accent-deep);
+  --color-accent-light: var(--theme-accent-light);
+  --color-accent-hover: var(--theme-accent-hover);
+  --color-accent-soft: var(--theme-accent-soft);
+
   /* Radius scale */
   --radius-sm: 10px;
   --radius-md: 14px;
@@ -13,18 +27,18 @@
 
 :root {
   /* DARK MODE (Default) */
-  --color-bg: #07040d;
-  --color-card: #140f20;
-  --color-surface: #1c1530;
-  --color-border: #2b2145;
-  --color-text-primary: #f7f5fc;
-  --color-text-muted: #bcb3d6;
-  --color-text-faint: #8f84ab;
-  --color-accent: #8328f9;
-  --color-accent-deep: #4c1594;
-  --color-accent-light: #d6b8ff;
-  --color-accent-hover: #6f1edb;
-  --color-accent-soft: #23153f;
+  --theme-bg: #07040d;
+  --theme-card: #140f20;
+  --theme-surface: #1c1530;
+  --theme-border: #2b2145;
+  --theme-text-primary: #f7f5fc;
+  --theme-text-muted: #bcb3d6;
+  --theme-text-faint: #8f84ab;
+  --theme-accent: #8328f9;
+  --theme-accent-deep: #4c1594;
+  --theme-accent-light: #d6b8ff;
+  --theme-accent-hover: #6f1edb;
+  --theme-accent-soft: #23153f;
 
   /* Glassmorphism Variables */
   --glass-bg: rgba(255, 255, 255, 0.02);
@@ -41,18 +55,18 @@
 
 :root[data-theme="light"] {
   /* LIGHT MODE */
-  --color-bg: #f8f6fc;
-  --color-card: #ffffff;
-  --color-surface: #ede8f5;
-  --color-border: #d8d0e5;
-  --color-text-primary: #07040d;
-  --color-text-muted: #4a3e69;
-  --color-text-faint: #786b96;
-  --color-accent: #8328f9;
-  --color-accent-deep: #6f1edb;
-  --color-accent-light: #4c1594;
-  --color-accent-hover: #6014c2;
-  --color-accent-soft: #ebdfff;
+  --theme-bg: #f8f6fc;
+  --theme-card: #ffffff;
+  --theme-surface: #ede8f5;
+  --theme-border: #d8d0e5;
+  --theme-text-primary: #07040d;
+  --theme-text-muted: #4a3e69;
+  --theme-text-faint: #786b96;
+  --theme-accent: #8328f9;
+  --theme-accent-deep: #6f1edb;
+  --theme-accent-light: #4c1594;
+  --theme-accent-hover: #6014c2;
+  --theme-accent-soft: #ebdfff;
 
   /* Glassmorphism Variables */
   --glass-bg: rgba(0, 0, 0, 0.02);
