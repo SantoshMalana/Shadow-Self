@@ -17,7 +17,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const user = await getAuthUser(false)
 
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
