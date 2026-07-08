@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import styles from './page.module.css'
 import btnStyles from '@/components/Buttons.module.css'
+import ThemeToggle from '@/components/ThemeToggle'
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false)
@@ -71,6 +72,7 @@ export default function HomePage() {
           <div className={styles.navLinks}>
             <a href="#how">How it works</a>
             <a href="#about">About</a>
+            <ThemeToggle />
             <Link href="/login">Sign in</Link>
             <Link href="/signup" className={btnStyles.btnPill}>Create your clone</Link>
           </div>

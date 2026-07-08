@@ -1,6 +1,18 @@
 @import "tailwindcss";
 
 @theme {
+  --font-sans: var(--font-inter), sans-serif;
+  --font-mono: var(--font-jetbrains-mono), monospace;
+
+  /* Radius scale */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+}
+
+:root {
+  /* DARK MODE (Default) */
   --color-bg: #07040d;
   --color-card: #140f20;
   --color-surface: #1c1530;
@@ -14,19 +26,45 @@
   --color-accent-hover: #6f1edb;
   --color-accent-soft: #23153f;
 
-  --font-sans: var(--font-inter), sans-serif;
-  --font-mono: var(--font-jetbrains-mono), monospace;
+  /* Glassmorphism Variables */
+  --glass-bg: rgba(255, 255, 255, 0.02);
+  --glass-bg-hover: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-faint: rgba(255, 255, 255, 0.05);
+  --glass-shadow: rgba(0, 0, 0, 0.4);
 
-  /* Radius scale — the only three values the app should ever use */
-  --radius-sm: 10px;   /* small controls: pills, tags, badges */
-  --radius-md: 14px;   /* inputs, small cards, bubbles */
-  --radius-lg: 20px;   /* cards, modals, panels */
-  --radius-pill: 999px;
-
-  /* Accent glow — one shared intensity, used everywhere the accent needs to 'glow' */
+  /* Accent glow */
   --shadow-glow-sm: 0 0 8px rgba(131, 40, 249, 0.45);
   --shadow-glow-md: 0 4px 16px -4px rgba(131, 40, 249, 0.55);
   --shadow-glow-lg: 0 10px 34px -10px rgba(131, 40, 249, 0.75);
+}
+
+:root[data-theme="light"] {
+  /* LIGHT MODE */
+  --color-bg: #f8f6fc;
+  --color-card: #ffffff;
+  --color-surface: #ede8f5;
+  --color-border: #d8d0e5;
+  --color-text-primary: #07040d;
+  --color-text-muted: #4a3e69;
+  --color-text-faint: #786b96;
+  --color-accent: #8328f9;
+  --color-accent-deep: #6f1edb;
+  --color-accent-light: #4c1594;
+  --color-accent-hover: #6014c2;
+  --color-accent-soft: #ebdfff;
+
+  /* Glassmorphism Variables */
+  --glass-bg: rgba(0, 0, 0, 0.02);
+  --glass-bg-hover: rgba(0, 0, 0, 0.05);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-border-faint: rgba(0, 0, 0, 0.04);
+  --glass-shadow: rgba(0, 0, 0, 0.05);
+
+  /* Accent glow - reduced opacity for light backgrounds */
+  --shadow-glow-sm: 0 0 8px rgba(131, 40, 249, 0.25);
+  --shadow-glow-md: 0 4px 16px -4px rgba(131, 40, 249, 0.35);
+  --shadow-glow-lg: 0 10px 34px -10px rgba(131, 40, 249, 0.45);
 }
 
 /* ====== SCROLLBAR ====== */

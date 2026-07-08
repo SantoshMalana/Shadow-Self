@@ -14,6 +14,8 @@ Personal project (2026). Shadow Shelf is a full-stack AI app that builds a **per
 
 - **Training mode** — Daily-style questions; the system refines tone, values, opinions, vocabulary, and thinking style. Profile feedback in the UI.
 - **Clone mode** — Visitors chat with the clone in your style; optional voice input (Whisper) and voice output (ElevenLabs).
+- **Dashboard** — Premium glassmorphism dashboard to view cognitive profiles.
+- **Privacy Controls** — Full data export and hard-deletion capabilities, per-stream consent toggles.
 
 ---
 
@@ -22,59 +24,53 @@ Personal project (2026). Shadow Shelf is a full-stack AI app that builds a **per
 | Layer | Technology |
 | --- | --- |
 | App | [Next.js](https://nextjs.org) 16 (App Router), React 19, TypeScript |
-| UI | Tailwind CSS 4 |
-| LLM | [Ollama](https://ollama.com) — **Phi-3 Mini** (`phi3:mini`), local inference |
-| Speech-to-text | OpenAI **Whisper** API |
+| UI | Custom CSS Modules (Glassmorphism & Theming) |
+| LLM | OpenRouter API (model agnostic) |
+| Speech-to-text | **Whisper** API via Groq |
 | Text-to-speech | **ElevenLabs** API |
-| Data | **Prisma** 5 + **SQLite** (personality, messages, memories) |
+| Data | **Supabase** (PostgreSQL + pgvector for embeddings) |
+| Auth | **Supabase Auth** |
+| ORM | **Prisma** 5 |
 
 ---
 
 ## Prerequisites
 
 - [Node.js](https://nodejs.org) 18+
-- [Ollama](https://ollama.com) installed and running
+- Supabase Project (with `pgvector` and `pgcrypto` extensions enabled)
 
 ---
 
 ## Setup
 
-### 1. Ollama and model
+### 1. Install dependencies
 
 ```bash
-ollama pull phi3:mini
-ollama serve
-```
-
-### 2. Install dependencies
-
-```bash
-cd shadow-shelf
 npm install
 ```
 
-### 3. Environment variables
+### 2. Environment variables
 
 Create `.env.local` in the project root (this file is gitignored):
 
 ```env
-DATABASE_URL="file:./prisma/dev.db"
-OPENAI_API_KEY=your_openai_key
-ELEVENLABS_API_KEY=your_elevenlabs_key
+DATABASE_URL="postgresql://postgres.[YOUR_PROJECT]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?pgbouncer=true"
+NEXT_PUBLIC_SUPABASE_URL="https://[YOUR_PROJECT].supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
+
+GROQ_API_KEY="your_groq_key"
+ELEVENLABS_API_KEY="your_elevenlabs_key"
+OPENROUTER_API_KEY="your_openrouter_key"
+OPENROUTER_MODEL="anthropic/claude-3-haiku"
 ```
 
-- **OpenAI** — used for Whisper transcription (voice → text).
-- **ElevenLabs** — used for speech synthesis (clone voice output).
-
-Core text chat with Ollama can run **without** API keys; voice features need the keys above.
-
-### 4. Database
+### 3. Database
 
 ```bash
-npx prisma migrate dev
+npx prisma db push
 ```
 
-### 5. Run the dev server
+### 4. Run the dev server
 
 ```bash
 npm run dev
@@ -89,8 +85,11 @@ Open [http://localhost:3000](http://localhost:3000).
 | Path | Purpose |
 | --- | --- |
 | `/` | Landing |
-| `/train` | Training — build / refine the profile |
+| `/login` / `/signup` | Authentication |
+| `/train` | Training — build / refine the profile (Onboarding) |
 | `/clone` | Clone — talk to the cognitive clone |
+| `/profile` | Profile Dashboard — view the extracted cognitive model |
+| `/settings` | Settings & Consent Ledger — manage privacy, voice, data export |
 
 ---
 
@@ -111,17 +110,21 @@ shadow-shelf/
 │   ├── page.tsx
 │   ├── train/page.tsx
 │   ├── clone/page.tsx
+│   ├── profile/page.tsx
+│   ├── settings/page.tsx
 │   └── api/
-│       ├── chat/           # Ollama streaming chat
+│       ├── chat/           # RAG retrieval & OpenRouter streaming chat
 │       ├── personality/    # Profile CRUD
-│       ├── memory/         # Long-term memory snippets
-│       ├── transcribe/     # Whisper STT
+│       ├── memory/         # Long-term memory pgvector snippets
+│       ├── transcribe/     # Groq Whisper STT
 │       ├── synthesize/     # ElevenLabs TTS
+│       ├── account/        # Export & Delete logic
+│       ├── consent/        # Consent Ledger
 │       └── health/
-├── components/
-├── lib/                    # ollama, personality, prompts, prisma, …
+├── components/             # Reusable UI components (Glass cards, ThemeToggle)
+├── lib/                    # OpenRouter, Embeddings, Prisma, Rate Limit
 ├── prisma/
-│   ├── schema.prisma
+│   ├── schema.prisma       # Full multi-user PostgreSQL schema
 │   └── migrations/
-└── data/                   # seed / static assets as used by the app
+└── data/
 ```
