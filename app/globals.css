@@ -53,33 +53,7 @@
   --shadow-glow-lg: 0 10px 34px -10px rgba(131, 40, 249, 0.75);
 }
 
-:root[data-theme="light"] {
-  /* LIGHT MODE */
-  --theme-bg: #f8f6fc;
-  --theme-card: #ffffff;
-  --theme-surface: #ede8f5;
-  --theme-border: #d8d0e5;
-  --theme-text-primary: #07040d;
-  --theme-text-muted: #4a3e69;
-  --theme-text-faint: #786b96;
-  --theme-accent: #8328f9;
-  --theme-accent-deep: #6f1edb;
-  --theme-accent-light: #4c1594;
-  --theme-accent-hover: #6014c2;
-  --theme-accent-soft: #ebdfff;
 
-  /* Glassmorphism Variables */
-  --glass-bg: rgba(0, 0, 0, 0.02);
-  --glass-bg-hover: rgba(0, 0, 0, 0.05);
-  --glass-border: rgba(0, 0, 0, 0.08);
-  --glass-border-faint: rgba(0, 0, 0, 0.04);
-  --glass-shadow: rgba(0, 0, 0, 0.05);
-
-  /* Accent glow - reduced opacity for light backgrounds */
-  --shadow-glow-sm: 0 0 8px rgba(131, 40, 249, 0.25);
-  --shadow-glow-md: 0 4px 16px -4px rgba(131, 40, 249, 0.35);
-  --shadow-glow-lg: 0 10px 34px -10px rgba(131, 40, 249, 0.45);
-}
 
 /* ====== SCROLLBAR ====== */
 ::-webkit-scrollbar { width: 4px; }

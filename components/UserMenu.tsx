@@ -2,7 +2,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import SignOutButton from './SignOutButton'
-import ThemeToggle from './ThemeToggle'
 
 export default function UserMenu({
   name,
@@ -76,7 +75,6 @@ export default function UserMenu({
 
       <div className="pt-2 mt-1 border-t border-border flex items-center justify-between">
         <SignOutButton />
-        <ThemeToggle />
       </div>
     </div>
   )

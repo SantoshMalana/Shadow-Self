@@ -46,6 +46,11 @@ That's the bar. Everything in this document serves that bar. If a task doesn't m
 
 Stage 0 boundary — **do not build these yet, even if it seems easy**: camera/facial capture, HRV/GSR biometric ingestion, the specialist-agent distillation pipeline, the AI-lab data-licensing export, the inter-agent learning network. Building these now is scope creep against a 25-day clock.
 
+**The Future Vision (Stage 1 & 2 Roadmap):**
+1. **Zero Architecture System (Zero Knowledge):** A secure pipeline where raw clone data and personal identities are completely inaccessible, but cognitive metadata—thinking styles, intuition, and problem-solving frameworks—are still extracted anonymously without relying on raw labeled data.
+2. **Consent-Based Model Training:** A separate, explicit opt-in track where users can consent to provide labeled data to train foundational models on human reasoning.
+3. **The Senior Engineer Track:** A specialized distillation pipeline specifically focused on capturing the intuition, problem-solving journey, and tacit knowledge of senior software engineers to create highly specialized technical models.
+
 **Two flags for whenever Stage 1/2 planning resumes, not for now:** the EU AI Act Article 5(1)(f) mitigation described in Architecture V2 (routing to a safety-only extractor that can't output an emotion label) is a strong technical mitigation, not a certified compliance solution — the prohibition is generally read as covering the act of inference itself in a workplace context, not just what gets exposed downstream, and that distinction needs real regulatory counsel before it's stated as "solved" anywhere external. Separately, Stream 4 (AI-lab data licensing) carries a softer, more distant echo of the same Turing-overlap question that shelved the annotation-company idea — not urgent at Year 1–2+, but worth the same contract read before it goes live, not after.
 
 ---
