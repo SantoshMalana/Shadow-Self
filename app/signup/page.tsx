@@ -72,6 +72,13 @@ export default function SignupPage() {
             <button type="submit" disabled={isPending} className={`${btnStyles.btnPrimaryLg} justify-center mt-2 w-full py-4 text-[15px] disabled:opacity-50`}>
               {isPending ? 'Creating…' : 'Create your clone →'}
             </button>
+
+            <p className="text-[11px] text-center text-text-faint mt-2 leading-relaxed">
+              By continuing, you agree to our{' '}
+              <Link href="/terms" className="underline hover:text-text-primary transition-colors">Terms of Service</Link>
+              {' '}and{' '}
+              <Link href="/privacy" className="underline hover:text-text-primary transition-colors">Privacy Policy</Link>.
+            </p>
           </form>
         </div>
 

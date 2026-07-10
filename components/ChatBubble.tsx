@@ -12,10 +12,11 @@ interface ChatBubbleProps {
   isTyping?: boolean
   turnGoal?: string
   messageId?: string
+  memoriesUsed?: number
   depthRung?: 1 | 2 | 3 | 4 | 5
 }
 
-export default function ChatBubble({ role, content, mode, name, isTyping, turnGoal, messageId, depthRung = 1 }: ChatBubbleProps) {
+export default function ChatBubble({ role, content, mode, name, isTyping, turnGoal, messageId, memoriesUsed, depthRung = 1 }: ChatBubbleProps) {
   const isUser = role === 'user'
   const assistantName = mode === 'clone' ? (name || 'Clone') : 'Shadow Shelf'
 
@@ -50,6 +51,12 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
              <span className="text-[10px] px-2 py-0.5 bg-accent-soft border border-accent/30 text-accent-light rounded-full font-mono">
              Rung {depthRung}
            </span>
+          )}
+          {memoriesUsed && memoriesUsed > 0 && (
+            <span className="text-[10px] px-2 py-0.5 bg-surface border border-border text-text-muted rounded-full flex items-center gap-1">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              Recalled {memoriesUsed}
+            </span>
           )}
         </div>
 

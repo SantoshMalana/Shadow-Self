@@ -16,6 +16,8 @@ interface Message {
   role: 'user' | 'assistant'
   content: string
   turnGoal?: string
+  messageId?: string
+  memoriesUsed?: number
 }
 
 interface Personality {
@@ -86,7 +88,14 @@ export default function TrainPage() {
             setPersonality(pData)
             const q = getDailyQuestion(pData.sessions || 0, user.depthRung)
             setCurrentQuestion(q)
-            setMessages([{ role: 'assistant', content: `Let's continue. Here's your next question:\n\n"${q}"`, turnGoal: 'establish_baseline' }])
+
+            // Fetch chat history
+            const chatRes = await fetch('/api/chat?mode=onboarding').then(r => r.json())
+            if (chatRes.messages && chatRes.messages.length > 0) {
+              setMessages(chatRes.messages)
+            } else {
+              setMessages([{ role: 'assistant', content: `Let's continue. Here's your next question:\n\n"${q}"`, turnGoal: 'establish_baseline' }])
+            }
           }
         } catch (e) {
           const q = getDailyQuestion(0, user.depthRung)
@@ -167,7 +176,7 @@ export default function TrainPage() {
       const data = await res.json()
       if (data.error) throw new Error(data.error)
       
-      setMessages(prev => [...prev, { role: 'assistant', content: data.response, turnGoal: data.turnGoal }])
+      setMessages(prev => [...prev, { role: 'assistant', content: data.response, turnGoal: data.turnGoal, messageId: data.messageId, memoriesUsed: data.memoriesUsed }])
       setLoading(false) // Remove typing indicator immediately
       if (voiceEnabled) speakText(data.response, personality?.voiceId) // Start audio stream immediately
 
@@ -184,6 +193,22 @@ export default function TrainPage() {
     } catch (err: any) {
       setMessages(prev => [...prev, { role: 'assistant', content: `⚠ ${err.message || 'API Error'}` }])
     } finally { setLoading(false) }
+  }
+
+  const deleteTrait = async (category: string, index: number) => {
+    try {
+      const res = await fetch('/api/personality', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, traitIndex: index })
+      })
+      const data = await res.json()
+      if (!data.error && data.personality) {
+        setPersonality(data.personality)
+      }
+    } catch (err) {
+      console.error('Failed to delete trait:', err)
+    }
   }
 
   const completeness = personality ? getCloneCompleteness(personality) : 0
@@ -261,7 +286,7 @@ export default function TrainPage() {
             <div>
               <div className="text-[10px] text-text-faint tracking-widest font-bold mb-3 uppercase">Clone Profile</div>
               {personality ? (
-                <PersonalityStats personality={personality} completeness={completeness} />
+                <PersonalityStats personality={personality} completeness={completeness} onDeleteTrait={deleteTrait} />
               ) : profileLoading ? (
                 <div className="text-text-faint text-sm animate-pulse font-medium">Loading profile…</div>
               ) : (
@@ -321,6 +346,8 @@ export default function TrainPage() {
                 content={msg.content}
                 mode="onboarding"
                 turnGoal={msg.turnGoal}
+                messageId={msg.messageId}
+                memoriesUsed={msg.memoriesUsed}
                 depthRung={(userState?.depthRung as any) || 1}
               />
             ))}

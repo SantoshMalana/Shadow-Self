@@ -41,3 +41,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const user = await getDbUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const { category, traitIndex } = await req.json()
+    if (!category || typeof traitIndex !== 'number') {
+      return NextResponse.json({ error: 'Missing category or traitIndex' }, { status: 400 })
+    }
+
+    const personality = await getPersonality(user.id)
+    
+    if (personality[category] && Array.isArray(personality[category].traits)) {
+      personality[category].traits.splice(traitIndex, 1)
+      await savePersonality(user.id, personality)
+      return NextResponse.json({ success: true, personality })
+    }
+
+    return NextResponse.json({ error: 'Invalid category or trait format' }, { status: 400 })
+  } catch (error: any) {
+    console.error('API Personality DELETE error:', error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}

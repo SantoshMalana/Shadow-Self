@@ -11,6 +11,7 @@ interface PersonalityData {
 interface PersonalityStatsProps {
   personality: PersonalityData
   completeness: number
+  onDeleteTrait?: (category: string, index: number) => void
 }
 
 function StatRow({ label, value, max }: { label: string; value: number; max: number }) {
@@ -33,7 +34,7 @@ function StatRow({ label, value, max }: { label: string; value: number; max: num
   )
 }
 
-export default function PersonalityStats({ personality, completeness }: PersonalityStatsProps) {
+export default function PersonalityStats({ personality, completeness, onDeleteTrait }: PersonalityStatsProps) {
   const r = 22
   const circ = 2 * Math.PI * r
   const offset = circ - (completeness / 100) * circ
@@ -87,9 +88,18 @@ export default function PersonalityStats({ personality, completeness }: Personal
             {personality.communicationStyle.tone.slice(0, 5).map((t, i) => (
               <span
                 key={i}
-                className="bg-accent-soft border border-border text-text-primary px-2.5 py-1 text-[11px] rounded-full capitalize"
+                className="bg-accent-soft border border-border text-text-primary pl-2.5 pr-1.5 py-1 text-[11px] rounded-full capitalize flex items-center gap-1 group"
               >
                 {t}
+                {onDeleteTrait && (
+                  <button 
+                    onClick={() => onDeleteTrait('communicationStyle.tone', i)}
+                    className="text-text-faint hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Remove trait"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  </button>
+                )}
               </span>
             ))}
           </div>
@@ -103,9 +113,18 @@ export default function PersonalityStats({ personality, completeness }: Personal
             {personality.knowledgeDomains.slice(0, 4).map((d, i) => (
               <span
                 key={i}
-                className="bg-accent-soft border border-border text-text-primary px-2.5 py-1 text-[11px] rounded-full capitalize"
+                className="bg-accent-soft border border-border text-text-primary pl-2.5 pr-1.5 py-1 text-[11px] rounded-full capitalize flex items-center gap-1 group"
               >
                 {d}
+                {onDeleteTrait && (
+                  <button 
+                    onClick={() => onDeleteTrait('knowledgeDomains', i)}
+                    className="text-text-faint hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Remove domain"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  </button>
+                )}
               </span>
             ))}
           </div>

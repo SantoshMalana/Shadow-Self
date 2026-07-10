@@ -42,12 +42,14 @@ export async function POST(req: NextRequest) {
         : undefined
 
     let systemPrompt = await getSystemPrompt(mode, user.depthRung, turnGoal)
+    let memoriesUsed = 0
 
     if ((mode === 'clone' || mode === 'onboarding') && messages.length > 0) {
       const lastUserMsg = [...messages].reverse().find((m: any) => m.role === 'user')
       if (lastUserMsg) {
         const memories = await recallMemories(user.id, lastUserMsg.content)
         if (memories.length > 0) {
+          memoriesUsed = memories.length
           systemPrompt += `\n\nRELEVANT MEMORIES FROM YOUR TRAINING:\n${memories.map((m, i) => `${i + 1}. ${m}`).join('\n')}\n\nDraw on these naturally — don't quote them verbatim.`
         }
       }
@@ -64,7 +66,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    await prisma.message.create({
+    const savedMessage = await prisma.message.create({
       data: { userId: user.id, role: 'assistant', content: response, mode: mode ?? 'clone', turnGoal },
     })
 
@@ -99,9 +101,38 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ response, turnGoal })
+    return NextResponse.json({ response, turnGoal, messageId: savedMessage.id, memoriesUsed })
   } catch (error: any) {
     console.error('Chat API error:', error)
     return NextResponse.json({ error: error.message || 'Failed to get response from LLM' }, { status: 500 })
+  }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const user = await getDbUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const { searchParams } = new URL(req.url)
+    const mode = searchParams.get('mode') || 'clone'
+
+    const messages = await prisma.message.findMany({
+      where: { userId: user.id, mode },
+      orderBy: { createdAt: 'asc' },
+      take: 50,
+    })
+
+    // Map Prisma models to the simple Message interface expected by frontend
+    const history = messages.map(msg => ({
+      role: msg.role,
+      content: msg.content,
+      turnGoal: msg.turnGoal || undefined,
+      messageId: msg.id
+    }))
+
+    return NextResponse.json({ messages: history })
+  } catch (error: any) {
+    console.error('Fetch history error:', error)
+    return NextResponse.json({ error: 'Failed to fetch history' }, { status: 500 })
   }
 }
