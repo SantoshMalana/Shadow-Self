@@ -53,11 +53,23 @@ export async function DELETE(req: NextRequest) {
     }
 
     const personality = await getPersonality(user.id)
+    const p = personality as any;
     
-    if (personality[category] && Array.isArray(personality[category].traits)) {
-      personality[category].traits.splice(traitIndex, 1)
-      await savePersonality(user.id, personality)
-      return NextResponse.json({ success: true, personality })
+    const parts = category.split('.')
+    let target = p
+    
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i]
+      if (i === parts.length - 1) {
+        if (Array.isArray(target[part])) {
+          target[part].splice(traitIndex, 1)
+          await savePersonality(user.id, personality)
+          return NextResponse.json({ success: true, personality })
+        }
+      } else {
+        if (!target[part]) break
+        target = target[part]
+      }
     }
 
     return NextResponse.json({ error: 'Invalid category or trait format' }, { status: 400 })
