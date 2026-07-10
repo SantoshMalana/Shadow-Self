@@ -121,7 +121,7 @@ shadow-shelf/
 │       ├── account/        # Export & Delete logic
 │       ├── consent/        # Consent Ledger
 │       └── health/
-├── components/             # Reusable UI components (Glass cards, ThemeToggle)
+├── components/             # Reusable UI components (Glass cards, ChatBubbles, etc.)
 ├── lib/                    # OpenRouter, Embeddings, Prisma, Rate Limit
 ├── prisma/
 │   ├── schema.prisma       # Full multi-user PostgreSQL schema
