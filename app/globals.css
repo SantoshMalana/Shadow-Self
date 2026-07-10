@@ -9,10 +9,8 @@
   --radius-md: 14px;
   --radius-lg: 20px;
   --radius-pill: 999px;
-}
 
-:root {
-  /* DARK MODE (Default) */
+  /* DIRECT DARK MODE COLORS for Tailwind v4 to generate bg-bg, text-text-primary, etc. */
   --color-bg: #07040d;
   --color-card: #140f20;
   --color-surface: #1c1530;
@@ -25,6 +23,11 @@
   --color-accent-light: #d6b8ff;
   --color-accent-hover: #6f1edb;
   --color-accent-soft: #23153f;
+}
+
+:root {
+  /* Force dark system scrollbars and defaults */
+  color-scheme: dark;
 
   /* Glassmorphism Variables */
   --glass-bg: rgba(255, 255, 255, 0.02);
