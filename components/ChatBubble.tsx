@@ -40,7 +40,7 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
   }
 
   return (
-    <div className={`ssMessage flex gap-3.5 mb-9 max-w-[90%]`}>
+    <div className={`ssMessage flex gap-4 mb-12 max-w-[95%]`}>
       {/* Avatar */}
       <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-1" style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, var(--color-accent) 78%)' }}>
         <span className="text-[11px] text-white font-bold">◈</span>
@@ -74,8 +74,8 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
           )}
         </div>
 
-        <div className="bg-surface border border-border rounded-2xl rounded-tl-sm px-5 py-3.5">
-          <div className="text-[15px] text-text-primary leading-[1.7] whitespace-pre-wrap break-words">
+        <div className="pt-1">
+          <div className="text-[15px] text-text-primary leading-[1.75] whitespace-pre-wrap break-words">
             {isTyping ? (
               <span className="flex gap-1.5 items-center py-2 h-6">
                 <span className="typingDot" />

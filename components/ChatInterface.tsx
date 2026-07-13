@@ -446,10 +446,14 @@ export default function ChatInterface({ mode }: ChatInterfaceProps) {
           </div>
         </div>
 
-        {/* Input */}
-        <div className="absolute bottom-8 w-full flex justify-center px-4 z-20 pointer-events-none">
-          <div className="w-full max-w-3xl pointer-events-auto">
-            <div className="glowInputWrap">
+        {/* Input & Gradient Overlay */}
+        <div className="absolute bottom-0 w-full z-20 pointer-events-none">
+          {/* Gradient fade to hide text slipping under the input */}
+          <div className="h-32 bg-gradient-to-t from-bg via-bg/80 to-transparent w-full" />
+          
+          <div className="absolute bottom-8 w-full flex justify-center px-4">
+            <div className="w-full max-w-3xl pointer-events-auto">
+              <div className="glowInputWrap">
               <div className="flex items-center gap-3 bg-surface/95 border border-border backdrop-blur-xl rounded-[32px] p-2 pl-6 shadow-2xl">
                 <textarea
                   ref={textareaRef}
@@ -499,6 +503,7 @@ export default function ChatInterface({ mode }: ChatInterfaceProps) {
               </div>
             )}
           </div>
+        </div>
         </div>
       </div>
     </div>
