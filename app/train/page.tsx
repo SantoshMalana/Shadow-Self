@@ -53,7 +53,8 @@ export default function TrainPage() {
   const [nameSet, setNameSet] = useState(false)
   const [isInitializing, setIsInitializing] = useState(true)
   const [speaking, setSpeaking] = useState(false)
-  const [voiceEnabled, setVoiceEnabled] = useState(true)
+  const [voiceEnabled, setVoiceEnabled] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const chatEndRef = useRef<HTMLDivElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -321,9 +322,9 @@ export default function TrainPage() {
 
 
 
-        {/* Top Header of Chat Area */}
+        {/* Top Header of Chat Area (Mobile) */}
         <header className="lg:hidden border-b border-border bg-bg/80 backdrop-blur-md shrink-0 z-20 relative">
-          <div className="max-w-2xl mx-auto flex items-center px-4 sm:px-6 h-[64px]">
+          <div className="max-w-2xl mx-auto flex items-center justify-between px-4 sm:px-6 h-[64px]">
             <div className="flex items-center gap-4 min-w-0">
               <Link href="/" className="text-text-muted shrink-0">Back</Link>
               <span className="text-text-primary font-semibold shrink-0">Training</span>
@@ -333,12 +334,64 @@ export default function TrainPage() {
                 </span>
               )}
             </div>
+            <button
+              onClick={() => setMobileMenuOpen(v => !v)}
+              className="w-10 h-10 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface transition-colors"
+              aria-label="Open menu"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
           </div>
         </header>
 
+        {/* Mobile Slide-Out Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden fixed inset-0 z-50">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
+            <aside className="absolute right-0 top-0 bottom-0 w-[280px] bg-card border-l border-border p-6 flex flex-col gap-6 overflow-y-auto animate-[slideInRight_0.2s_ease-out]">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-semibold text-text-primary">Menu</span>
+                <button onClick={() => setMobileMenuOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface transition-colors" aria-label="Close menu">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+
+              {userState && (
+                <div className="bg-surface rounded-xl p-4 border border-border">
+                  <div className="text-[10px] text-text-faint tracking-widest mb-2 font-bold uppercase">Trust Depth</div>
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-lg font-bold text-text-primary">Level {userState.depthRung}</span>
+                    <span className="text-xs text-text-faint">/ 5</span>
+                  </div>
+                  <div className="grid grid-cols-5 gap-1.5">
+                    {[1, 2, 3, 4, 5].map(level => (
+                      <div key={level} className={`h-1.5 rounded-full transition-colors ${level <= userState.depthRung ? 'bg-accent shadow-[0_0_8px_rgba(131,40,249,0.5)]' : 'bg-border'}`} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {personality && (
+                <div>
+                  <div className="text-[10px] text-text-faint tracking-widest font-bold mb-3 uppercase">Clone Profile</div>
+                  <PersonalityStats personality={personality} completeness={completeness} onDeleteTrait={deleteTrait} />
+                </div>
+              )}
+
+              <div className="flex flex-col gap-2 mt-auto pt-4 border-t border-border/40">
+                <Link href="/clone" onClick={() => setMobileMenuOpen(false)} className={`${btnStyles.btnPrimaryLg} justify-center w-full`}>
+                  Talk to Clone
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </Link>
+                <UserMenu name={userState?.name} showIdentity={true} />
+              </div>
+            </aside>
+          </div>
+        )}
+
         {/* Chat Area */}
         <div className="flex-1 overflow-y-auto relative flex flex-col items-center chat-scroll">
-          <div className="w-full max-w-2xl flex-1 p-4 sm:p-8 pb-40">
+          <div className="w-full max-w-2xl flex-1 p-4 sm:p-8 pb-52">
             {messages.map((msg, i) => (
               <ChatBubble
                 key={i}

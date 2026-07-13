@@ -51,3 +51,9 @@
 .chat-scroll { overflow-y: auto; scroll-behavior: smooth; }
 .chat-scroll::-webkit-scrollbar { width: 4px; }
 .chat-scroll::-webkit-scrollbar-thumb { background: var(--color-surface); border-radius: 2px; }
+
+/* Mobile menu slide-in animation */
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
