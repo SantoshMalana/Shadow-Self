@@ -1,11 +1,16 @@
 'use client'
 
+/** Extract display value from plain string or ProvenancedTrait */
+function tv(t: any): string {
+  return typeof t === 'string' ? t : t?.value || ''
+}
+
 interface PersonalityData {
   sessions: number
-  communicationStyle: { tone: string[]; vocabulary: string[]; explanationStyle: string }
-  thinkingPatterns: { values: string[]; opinions: string[] }
-  emotionalProfile: { passionTopics: string[] }
-  knowledgeDomains: string[]
+  communicationStyle: { tone: any[]; vocabulary: any[]; explanationStyle: string }
+  thinkingPatterns: { decisionFramework?: any[]; values: any[]; opinions: any[] }
+  emotionalProfile: { passionTopics: any[] }
+  knowledgeDomains: any[]
 }
 
 interface PersonalityStatsProps {
@@ -38,6 +43,7 @@ export default function PersonalityStats({ personality, completeness, onDeleteTr
   const r = 22
   const circ = 2 * Math.PI * r
   const offset = circ - (completeness / 100) * circ
+  const journeyCount = personality.thinkingPatterns?.decisionFramework?.length || 0
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -67,6 +73,7 @@ export default function PersonalityStats({ personality, completeness, onDeleteTr
           <p className="text-[13px] text-text-primary font-semibold mb-0.5">Cognitive Profile</p>
           <p className="text-[11px] text-text-faint">
             {personality.sessions} session{personality.sessions !== 1 ? 's' : ''} logged
+            {journeyCount > 0 && ` · ${journeyCount} decision${journeyCount !== 1 ? 's' : ''} captured`}
           </p>
         </div>
       </div>
@@ -78,6 +85,7 @@ export default function PersonalityStats({ personality, completeness, onDeleteTr
         <StatRow label="Opinions" value={personality.thinkingPatterns?.opinions?.length || 0} max={20} />
         <StatRow label="Passions" value={personality.emotionalProfile?.passionTopics?.length || 0} max={10} />
         <StatRow label="Domains" value={personality.knowledgeDomains?.length || 0} max={10} />
+        <StatRow label="Decisions" value={journeyCount} max={15} />
       </div>
 
       {/* Tags */}
@@ -85,24 +93,30 @@ export default function PersonalityStats({ personality, completeness, onDeleteTr
         <div>
           <p className="text-[11px] text-accent-light font-semibold tracking-wider uppercase mb-2">Detected Tones</p>
           <div className="flex flex-wrap gap-1.5">
-            {personality.communicationStyle.tone.slice(0, 5).map((t, i) => (
-              <span
-                key={i}
-                className="bg-accent-soft border border-border text-text-primary pl-2.5 pr-1.5 py-1 text-[11px] rounded-full capitalize flex items-center gap-1 group"
-              >
-                {t}
-                {onDeleteTrait && (
-                  <button 
-                    onClick={() => onDeleteTrait('communicationStyle.tone', i)}
-                    className="text-text-faint hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:opacity-100"
-                    title="Remove trait"
-                    aria-label={`Remove trait ${t}`}
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                  </button>
-                )}
-              </span>
-            ))}
+            {personality.communicationStyle.tone.slice(0, 5).map((t: any, i: number) => {
+              const label = tv(t)
+              return (
+                <span
+                  key={i}
+                  className="bg-accent-soft border border-border text-text-primary pl-2.5 pr-1.5 py-1 text-[11px] rounded-full capitalize flex items-center gap-1 group"
+                >
+                  {label}
+                  {typeof t !== 'string' && t?.sourceId && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent/60 shrink-0" title={`Source: ${t.sourceId}`} />
+                  )}
+                  {onDeleteTrait && (
+                    <button 
+                      onClick={() => onDeleteTrait('communicationStyle.tone', i)}
+                      className="text-text-faint hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:opacity-100"
+                      title="Remove trait"
+                      aria-label={`Remove trait ${label}`}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                  )}
+                </span>
+              )
+            })}
           </div>
         </div>
       )}
@@ -111,24 +125,30 @@ export default function PersonalityStats({ personality, completeness, onDeleteTr
         <div>
           <p className="text-[11px] text-accent-light font-semibold tracking-wider uppercase mb-2">Knowledge Domains</p>
           <div className="flex flex-wrap gap-1.5">
-            {personality.knowledgeDomains.slice(0, 4).map((d, i) => (
-              <span
-                key={i}
-                className="bg-accent-soft border border-border text-text-primary pl-2.5 pr-1.5 py-1 text-[11px] rounded-full capitalize flex items-center gap-1 group"
-              >
-                {d}
-                {onDeleteTrait && (
-                  <button 
-                    onClick={() => onDeleteTrait('knowledgeDomains', i)}
-                    className="text-text-faint hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:opacity-100"
-                    title="Remove domain"
-                    aria-label={`Remove domain ${d}`}
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                  </button>
-                )}
-              </span>
-            ))}
+            {personality.knowledgeDomains.slice(0, 4).map((d: any, i: number) => {
+              const label = tv(d)
+              return (
+                <span
+                  key={i}
+                  className="bg-accent-soft border border-border text-text-primary pl-2.5 pr-1.5 py-1 text-[11px] rounded-full capitalize flex items-center gap-1 group"
+                >
+                  {label}
+                  {typeof d !== 'string' && d?.sourceId && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent/60 shrink-0" title={`Source: ${d.sourceId}`} />
+                  )}
+                  {onDeleteTrait && (
+                    <button 
+                      onClick={() => onDeleteTrait('knowledgeDomains', i)}
+                      className="text-text-faint hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:opacity-100"
+                      title="Remove domain"
+                      aria-label={`Remove domain ${label}`}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                  )}
+                </span>
+              )
+            })}
           </div>
         </div>
       )}

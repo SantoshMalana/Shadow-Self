@@ -134,7 +134,8 @@ export default function ChatInterface({ mode }: ChatInterfaceProps) {
     if (!audioRef.current) return
     try {
       setSpeaking(true)
-      const url = `/api/synthesize?text=${encodeURIComponent(text)}${voiceId ? \`&voiceId=\${encodeURIComponent(voiceId)}\` : ''}`
+      const voiceParam = voiceId ? `&voiceId=${encodeURIComponent(voiceId)}` : ''
+      const url = `/api/synthesize?text=${encodeURIComponent(text)}${voiceParam}`
       const audio = audioRef.current
       audio.src = url
       audio.onended = () => setSpeaking(false)

@@ -150,6 +150,16 @@ export default function SettingsPage() {
           <p className="text-xs text-text-faint">
             Downloads a complete JSON file containing all your messages, memories, personality profiles, feedback, and consent history.
           </p>
+          <Link
+            href="/data-asset"
+            className="flex items-center gap-3 px-5 py-3 rounded-xl text-sm font-medium transition-all
+              bg-accent/10 hover:bg-accent/20 border border-accent/20 text-accent-light hover:text-white"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+            View Your Data Asset Dashboard →
+          </Link>
         </section>
 
         {/* Danger Zone */}

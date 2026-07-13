@@ -18,20 +18,13 @@ const turnGoalLabels: Record<TurnGoal, string> = {
 
 const depthLabels = ['', 'surface', 'functional', 'personal', 'emotional', 'contradictory']
 
-import { getPersonality } from './personality'
-import { getDbUser } from './auth'
-
 export async function getSystemPrompt(
   mode: 'train' | 'clone' | 'onboarding',
+  name: string,
   depthRung: number = 1,
+  personality: any,
   turnGoal: TurnGoal = 'engage_only'
 ): Promise<string> {
-  const user = await getDbUser()
-  if (!user) throw new Error('Unauthorized')
-
-  const personality = await getPersonality(user.id)
-  const name = user.name || 'the user'
-
   if (mode === 'train' || mode === 'onboarding') {
     const rungLabel = depthLabels[depthRung] || 'surface'
     const goalText = turnGoalLabels[turnGoal] ?? turnGoalLabels.general
@@ -62,6 +55,7 @@ TECHNIQUE:
 - Reflect back what you're hearing before adding your own take
 - Keep responses short (2-3 sentences) — their answer is what matters
 - Never summarize what they said back to them verbatim
+- Avoid infinite looping: if the conversation on a specific topic feels complete or repetitive, naturally pivot to a new but related area. Do not ask the same question twice.
 
 DEPTH GATING:
 ${depthGatingText}
@@ -75,12 +69,14 @@ CURRENT GOAL FOR THIS TURN: ${goalText}`
 
   if (mode === 'clone') {
     const { communicationStyle, thinkingPatterns, emotionalProfile } = personality
+    // traitValue() handles both plain strings and ProvenancedTrait objects
+    const tv = (t: any): string => typeof t === 'string' ? t : t?.value || ''
 
-    const toneStr = communicationStyle.tone.join(', ') || 'natural and authentic'
-    const vocabStr = communicationStyle.vocabulary.slice(0, 20).join(', ') || 'everyday language'
-    const valuesStr = thinkingPatterns.values.slice(0, 15).join(', ') || 'integrity and depth'
-    const opinionsStr = thinkingPatterns.opinions.slice(-15).join('; ') || 'thoughtful perspectives'
-    const passionsStr = emotionalProfile.passionTopics.join(', ') || 'things that matter'
+    const toneStr = communicationStyle.tone.map(tv).filter(Boolean).join(', ') || 'natural and authentic'
+    const vocabStr = communicationStyle.vocabulary.slice(0, 20).map(tv).filter(Boolean).join(', ') || 'everyday language'
+    const valuesStr = thinkingPatterns.values.slice(0, 15).map(tv).filter(Boolean).join(', ') || 'integrity and depth'
+    const opinionsStr = thinkingPatterns.opinions.slice(-15).map(tv).filter(Boolean).join('; ') || 'thoughtful perspectives'
+    const passionsStr = emotionalProfile.passionTopics.map(tv).filter(Boolean).join(', ') || 'things that matter'
     const humorStr = emotionalProfile.humorStyle || 'subtle and dry'
     const explanationStyle = communicationStyle.explanationStyle || 'clear and direct'
 

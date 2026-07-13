@@ -8,7 +8,7 @@ import { getDbUser } from '@/lib/auth'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { determineTurnGoal } from '@/lib/turn-goal'
 import { maybeAdvanceDepthRung } from '@/lib/depth-rung'
-import { classifyEscalation } from '@/lib/escalation'
+import { classifyEscalation, type EscalationResult } from '@/lib/escalation'
 
 export async function POST(req: NextRequest) {
   try {
@@ -34,44 +34,38 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Conversation history too long. Please start a new session.' }, { status: 400 })
     }
 
-    const personality = await getPersonality(user.id)
+    const lastUserMsg = messages.length > 0 ? [...messages].reverse().find((m: any) => m.role === 'user') : null;
 
-    // Turn goal is now deterministic, not LLM-selected — see lib/turn-goal.ts
-    const turnGoal =
-      mode === 'onboarding' || mode === 'train'
-        ? await determineTurnGoal(user.id)
-        : undefined
+    // Parallelize pre-flight requests: turnGoal, memories, escalation classification, and personality
+    const [turnGoal, memories, escalation, personality] = await Promise.all([
+      (mode === 'onboarding' || mode === 'train') ? determineTurnGoal(user.id) : Promise.resolve(undefined),
+      ((mode === 'clone' || mode === 'onboarding') && lastUserMsg) ? recallMemories(user.id, lastUserMsg.content) : Promise.resolve([]),
+      lastUserMsg ? Promise.resolve(classifyEscalation(lastUserMsg.content)) : Promise.resolve({ shouldEscalate: false } as EscalationResult),
+      getPersonality(user.id)
+    ])
 
-    let systemPrompt = await getSystemPrompt(mode, user.depthRung, turnGoal)
-    let memoriesUsed = 0
-
-    if ((mode === 'clone' || mode === 'onboarding') && messages.length > 0) {
-      const lastUserMsg = [...messages].reverse().find((m: any) => m.role === 'user')
-      if (lastUserMsg) {
-        const memories = await recallMemories(user.id, lastUserMsg.content)
-        if (memories.length > 0) {
-          memoriesUsed = memories.length
-          systemPrompt += `\n\nRELEVANT MEMORIES FROM YOUR TRAINING:\n${memories.map((m, i) => `${i + 1}. ${m}`).join('\n')}\n\nDraw on these naturally — don't quote them verbatim.`
-        }
-      }
-    }
-
-    // Two-tier escalation: classify the latest user message to decide
-    // if we should route to a smarter/more expensive model.
-    const lastUserMsg2 = [...messages].reverse().find((m: any) => m.role === 'user')
-    const escalation = lastUserMsg2 ? classifyEscalation(lastUserMsg2.content) : { shouldEscalate: false }
     if (escalation.shouldEscalate) {
       console.log(`[Escalation] Triggered: ${escalation.reason} — routing to escalation model`)
     }
 
+    let systemPrompt = await getSystemPrompt(mode, user.name || 'the user', user.depthRung, personality, turnGoal as any)
+    let memoriesUsed = memories.length
+
+    if (memoriesUsed > 0) {
+      systemPrompt += `\n\nRELEVANT MEMORIES FROM YOUR TRAINING:\n${memories.map((m, i) => `${i + 1}. ${m}`).join('\n')}\n\nDraw on these naturally — don't quote them verbatim.`
+    }
+
     const response = await generateChat(messages, systemPrompt, { escalate: escalation.shouldEscalate })
 
+    // Save user message first so we have the ID for provenance
+    let userMessageId: string | undefined
     if (messages.length > 0) {
       const lastUserMsg = [...messages].reverse().find((m: any) => m.role === 'user')
       if (lastUserMsg) {
-        await prisma.message.create({
+        const saved = await prisma.message.create({
           data: { userId: user.id, role: 'user', content: lastUserMsg.content, mode: mode ?? 'clone' },
         })
+        userMessageId = saved.id
       }
     }
 
@@ -85,7 +79,7 @@ export async function POST(req: NextRequest) {
         // Execute background tasks independently to prevent cascading failures
         ;(async () => {
           try {
-            const updated = await extractTraits(question, lastUserMsg.content, personality)
+            const updated = await extractTraits(question, lastUserMsg.content, personality, userMessageId)
             await savePersonality(user.id, updated)
           } catch (err) {
             console.error('extractTraits task error:', err)

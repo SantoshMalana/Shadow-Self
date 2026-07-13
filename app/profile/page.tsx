@@ -16,6 +16,8 @@ export default async function ProfilePage() {
   const stats = await getMemoryStats(user.id)
   const completeness = getCloneCompleteness(personality)
 
+  const tv = (t: any): string => (typeof t === 'string' ? t : t?.value || '')
+
   return (
     <div className="min-h-screen bg-bg text-text-primary font-sans selection:bg-accent/30">
 
@@ -79,18 +81,20 @@ export default async function ProfilePage() {
             <div>
               <span className="text-xs text-text-faint uppercase tracking-wider mb-2 block">Tone</span>
               <div className="flex flex-wrap gap-2">
-                {personality.communicationStyle.tone.length > 0 ? personality.communicationStyle.tone.map(t => (
-                  <span key={t} className="px-2.5 py-1 text-sm bg-surface text-blue-200 rounded-md border border-border">{t}</span>
-                )) : <span className="text-sm text-text-faint italic">Gathering data...</span>}
+                {personality.communicationStyle.tone.length > 0 ? personality.communicationStyle.tone.map((t: any, i: number) => {
+                  const val = tv(t);
+                  return <span key={i} className="px-2.5 py-1 text-sm bg-surface text-blue-200 rounded-md border border-border">{val}</span>
+                }) : <span className="text-sm text-text-faint italic">Gathering data...</span>}
               </div>
             </div>
 
             <div>
               <span className="text-xs text-text-faint uppercase tracking-wider mb-2 block">Vocabulary</span>
               <div className="flex flex-wrap gap-2">
-                {personality.communicationStyle.vocabulary.length > 0 ? personality.communicationStyle.vocabulary.map(v => (
-                  <span key={v} className="px-2.5 py-1 text-sm bg-surface text-text-muted rounded-md border border-border">{v}</span>
-                )) : <span className="text-sm text-text-faint italic">Gathering data...</span>}
+                {personality.communicationStyle.vocabulary.length > 0 ? personality.communicationStyle.vocabulary.map((v: any, i: number) => {
+                  const val = tv(v);
+                  return <span key={i} className="px-2.5 py-1 text-sm bg-surface text-text-muted rounded-md border border-border">{val}</span>
+                }) : <span className="text-sm text-text-faint italic">Gathering data...</span>}
               </div>
             </div>
 
@@ -112,18 +116,20 @@ export default async function ProfilePage() {
             <div>
               <span className="text-xs text-text-faint uppercase tracking-wider mb-2 block">Core Values</span>
               <div className="flex flex-wrap gap-2">
-                {personality.thinkingPatterns.values.length > 0 ? personality.thinkingPatterns.values.map(v => (
-                  <span key={v} className="px-2.5 py-1 text-sm bg-accent-soft text-accent-light rounded-md border border-accent/20">{v}</span>
-                )) : <span className="text-sm text-text-faint italic">Gathering data...</span>}
+                {personality.thinkingPatterns.values.length > 0 ? personality.thinkingPatterns.values.map((v: any, i: number) => {
+                  const val = tv(v);
+                  return <span key={i} className="px-2.5 py-1 text-sm bg-accent-soft text-accent-light rounded-md border border-accent/20">{val}</span>
+                }) : <span className="text-sm text-text-faint italic">Gathering data...</span>}
               </div>
             </div>
 
             <div>
               <span className="text-xs text-text-faint uppercase tracking-wider mb-2 block">Extracted Opinions</span>
               <ul className="space-y-2">
-                {personality.thinkingPatterns.opinions.length > 0 ? personality.thinkingPatterns.opinions.map((o, i) => (
-                  <li key={i} className="text-sm text-text-muted pl-3 border-l-2 border-border">{o}</li>
-                )) : <span className="text-sm text-text-faint italic">Gathering data...</span>}
+                {personality.thinkingPatterns.opinions.length > 0 ? personality.thinkingPatterns.opinions.map((o: any, i: number) => {
+                  const val = tv(o);
+                  return <li key={i} className="text-sm text-text-muted pl-3 border-l-2 border-border">{val}</li>
+                }) : <span className="text-sm text-text-faint italic">Gathering data...</span>}
               </ul>
             </div>
           </section>
@@ -137,9 +143,10 @@ export default async function ProfilePage() {
               </h3>
               <span className="text-xs text-text-faint uppercase tracking-wider mb-2 block">Passion Topics</span>
               <div className="flex flex-wrap gap-2 mb-4">
-                {personality.emotionalProfile.passionTopics.length > 0 ? personality.emotionalProfile.passionTopics.map(p => (
-                  <span key={p} className="px-2.5 py-1 text-sm bg-rose-500/10 text-rose-300 rounded-md border border-rose-500/20">{p}</span>
-                )) : <span className="text-sm text-text-faint italic">Gathering data...</span>}
+                {personality.emotionalProfile.passionTopics.length > 0 ? personality.emotionalProfile.passionTopics.map((p: any, i: number) => {
+                  const val = tv(p);
+                  return <span key={i} className="px-2.5 py-1 text-sm bg-rose-500/10 text-rose-300 rounded-md border border-rose-500/20">{val}</span>
+                }) : <span className="text-sm text-text-faint italic">Gathering data...</span>}
               </div>
 
               {personality.emotionalProfile.humorStyle && (
@@ -156,9 +163,10 @@ export default async function ProfilePage() {
                 Knowledge Domains
               </h3>
               <div className="flex flex-wrap gap-2">
-                {personality.knowledgeDomains.length > 0 ? personality.knowledgeDomains.map(d => (
-                  <span key={d} className="px-2.5 py-1 text-sm bg-surface text-text-muted rounded-md border border-border">{d}</span>
-                )) : <span className="text-sm text-text-faint italic">Gathering data...</span>}
+                {personality.knowledgeDomains.length > 0 ? personality.knowledgeDomains.map((d: any, i: number) => {
+                  const val = tv(d);
+                  return <span key={i} className="px-2.5 py-1 text-sm bg-surface text-text-muted rounded-md border border-border">{val}</span>
+                }) : <span className="text-sm text-text-faint italic">Gathering data...</span>}
               </div>
             </div>
           </section>

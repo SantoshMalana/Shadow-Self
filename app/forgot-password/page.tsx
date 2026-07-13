@@ -10,7 +10,7 @@ export default function ForgotPasswordPage() {
       const result = await resetPassword(formData)
       return result || { error: '' }
     },
-    { error: '', success: '' }
+    { error: '' } as any
   )
 
   return (

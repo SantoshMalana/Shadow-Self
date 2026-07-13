@@ -26,7 +26,7 @@ export default function UpdatePasswordPage() {
       const result = await updatePassword(formData)
       return result || { error: '' }
     },
-    { error: '', success: '' }
+    { error: '' } as any
   )
 
   if (!sessionChecked) return null
