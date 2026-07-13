@@ -5,7 +5,7 @@ import { getEmbedding } from '@/lib/embeddings'
  * Stores a new memory into the pgvector Memory table.
  */
 export async function storeMemory(userId: string, content: string, category: string = 'general') {
-  console.log(`[Memory] Storing memory for ${userId}...`)
+
   
   // 1. Get embedding
   const embedding = await getEmbedding(content)
@@ -22,14 +22,14 @@ export async function storeMemory(userId: string, content: string, category: str
     )
   `
   
-  console.log(`[Memory] Successfully stored.`)
+
 }
 
 /**
  * Recalls memories using vector similarity search (cosine distance).
  */
 export async function recallMemories(userId: string, query: string, limit = 5): Promise<string[]> {
-  console.log(`[Memory] Recalling memories for ${userId}...`)
+
   
   // 1. Embed the query
   const queryEmbedding = await getEmbedding(query)

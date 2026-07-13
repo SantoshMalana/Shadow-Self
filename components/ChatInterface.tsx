@@ -144,8 +144,11 @@ export default function ChatInterface({ mode }: ChatInterfaceProps) {
     } catch { setSpeaking(false) }
   }
 
+  const [nameSaving, setNameSaving] = useState(false)
+
   const saveName = async () => {
-    if (!nameInput.trim()) return
+    if (!nameInput.trim() || nameSaving) return
+    setNameSaving(true)
     try {
       const result = await updateUserName(nameInput.trim())
       if ('error' in result) {
@@ -163,8 +166,11 @@ export default function ChatInterface({ mode }: ChatInterfaceProps) {
       
       setMessages([{ role: 'assistant', content: responseMsg, turnGoal: 'establish_baseline' }])
       if (voiceEnabled) speakText(responseMsg)
-    } catch (err: any) {
-      setLoadError(err.message || 'Unknown error while saving your name.')
+    } catch (err) {
+      console.error("Failed to save name", err)
+      setLoadError("Failed to save your name.")
+    } finally {
+      setNameSaving(false)
     }
   }
 
@@ -273,8 +279,12 @@ export default function ChatInterface({ mode }: ChatInterfaceProps) {
                 autoFocus
                 className="nameGateInput"
               />
-              <button onClick={saveName} className={`btnPrimaryLg justify-center flex-shrink-0`}>
-                Begin →
+              <button 
+                onClick={saveName} 
+                disabled={nameSaving || !nameInput.trim()}
+                className={`btnPrimaryLg justify-center flex-shrink-0 ${nameSaving ? 'opacity-70 cursor-not-allowed' : ''}`}
+              >
+                {nameSaving ? 'Starting…' : 'Begin →'}
               </button>
             </div>
           </div>
@@ -459,7 +469,7 @@ export default function ChatInterface({ mode }: ChatInterfaceProps) {
                   ref={textareaRef}
                   value={input}
                   onChange={handleInput}
-                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) } }}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!loading) sendMessage(input) } }}
                   placeholder={isClone ? "Say something…" : "Share your thoughts…"}
                   rows={1}
                   className="flex-1 bg-transparent border-none text-text-primary text-[16px] focus:outline-none !outline-none resize-none max-h-32 leading-[40px] m-0 p-0 placeholder:text-text-faint overflow-y-auto"

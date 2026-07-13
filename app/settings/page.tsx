@@ -113,6 +113,9 @@ export default function SettingsPage() {
                     <p className="text-text-faint text-xs mt-0.5">{s.description}</p>
                   </div>
                   <button
+                    role="switch"
+                    aria-checked={consents[s.key] || false}
+                    aria-label={`Toggle consent for ${s.label}`}
                     onClick={() => toggleConsent(s.key)}
                     disabled={saving === s.key}
                     className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none ${

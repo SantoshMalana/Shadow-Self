@@ -1,6 +1,6 @@
 import { Ollama } from 'ollama'
 
-export const ollama = new Ollama({ host: 'http://localhost:11434' })
+export const ollama = new Ollama({ host: process.env.OLLAMA_HOST || 'http://127.0.0.1:11434' })
 
 export async function chat(
   messages: { role: string; content: string }[],

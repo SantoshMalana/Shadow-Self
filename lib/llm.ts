@@ -29,7 +29,7 @@ export async function generateChat(messages: any[], systemPrompt?: string, optio
   const model = (options?.escalate && escalationModel) ? escalationModel : primaryModel
 
   if (!llmKeys || llmKeys === 'your-llm-api-key') {
-    console.log('[LLM] LLM_API_KEY not set — falling back to local Ollama')
+    // Fall back to local Ollama
     return ollamaChat(messages.map((m: any) => ({ role: m.role, content: m.content })), systemPrompt || '')
   }
 
@@ -42,7 +42,6 @@ export async function generateChat(messages: any[], systemPrompt?: string, optio
     ? 'OpenRouter'
     : 'LLM Provider'
 
-  console.log(`[LLM] Using ${providerName} — model: ${model}`)
 
   const formattedMessages: { role: string; content: string }[] = []
   if (systemPrompt) {
@@ -67,7 +66,7 @@ export async function generateChat(messages: any[], systemPrompt?: string, optio
       if (useMultiModel) {
         body.models = [model, ...fallbackModels]
         body.route = 'fallback'
-        console.log(`[LLM] Multi-model fallback enabled: ${[model, ...fallbackModels].join(' → ')}`)
+
       }
 
       const response = await fetch(`${baseUrl}/chat/completions`, {

@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     ])
 
     if (escalation.shouldEscalate) {
-      console.log(`[Escalation] Triggered: ${escalation.reason} — routing to escalation model`)
+
     }
 
     let systemPrompt = await getSystemPrompt(mode, user.name || 'the user', user.depthRung, personality, turnGoal as any)

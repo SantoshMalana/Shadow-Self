@@ -95,8 +95,11 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
 function FeedbackButtons({ messageId }: { messageId: string }) {
   const [state, setState] = useState<'idle' | 'up' | 'down' | 'correcting' | 'sent'>('idle')
   const [correction, setCorrection] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const submitFeedback = async (rating: 'up' | 'down', correctionText?: string) => {
+    if (isSubmitting) return
+    setIsSubmitting(true)
     try {
       await fetch('/api/feedback', {
         method: 'POST',
@@ -106,6 +109,9 @@ function FeedbackButtons({ messageId }: { messageId: string }) {
       setState('sent')
     } catch (err) {
       console.error('Feedback error:', err)
+      setState('idle')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -125,18 +131,21 @@ function FeedbackButtons({ messageId }: { messageId: string }) {
           onChange={e => setCorrection(e.target.value)}
           placeholder="How should the clone have responded?"
           rows={2}
-          className="w-full px-4 py-3 text-[13px] bg-bg border border-border text-text-primary resize-y focus:outline-none focus:border-accent placeholder:text-text-faint rounded-[var(--radius-md)]"
+          disabled={isSubmitting}
+          className="w-full px-4 py-3 text-[13px] bg-bg border border-border text-text-primary resize-y focus:outline-none focus:border-accent placeholder:text-text-faint rounded-[var(--radius-md)] disabled:opacity-50"
         />
         <div className="flex gap-2">
           <button
             onClick={() => submitFeedback('down', correction)}
-            className={`btnPill text-xs py-2 px-4`}
+            disabled={isSubmitting || !correction.trim()}
+            className={`btnPill text-xs py-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            Submit
+            {isSubmitting ? 'Submitting…' : 'Submit'}
           </button>
           <button
             onClick={() => setState('idle')}
-            className={`btnGhost text-xs py-2 px-4`}
+            disabled={isSubmitting}
+            className={`btnGhost text-xs py-2 px-4 disabled:opacity-50`}
           >
             Cancel
           </button>
@@ -149,13 +158,15 @@ function FeedbackButtons({ messageId }: { messageId: string }) {
     <div className="mt-3 flex gap-4">
       <button
         onClick={() => { setState('up'); submitFeedback('up') }}
-        className="text-xs text-text-faint hover:text-accent-light cursor-pointer transition-colors flex items-center gap-1.5"
+        disabled={isSubmitting}
+        className="text-xs text-text-faint hover:text-accent-light cursor-pointer transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         👍 Accurate
       </button>
       <button
         onClick={() => setState('correcting')}
-        className="text-xs text-text-faint hover:text-accent-light cursor-pointer transition-colors flex items-center gap-1.5"
+        disabled={isSubmitting}
+        className="text-xs text-text-faint hover:text-accent-light cursor-pointer transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         ✏️ Correct
       </button>
