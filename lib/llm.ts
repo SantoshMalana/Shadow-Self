@@ -19,10 +19,14 @@ import { withKeyRotation } from './api-balancer'
  *
  * Falls back to local Ollama if LLM_API_KEY is not set.
  */
-export async function generateChat(messages: any[], systemPrompt?: string): Promise<string> {
+export async function generateChat(messages: any[], systemPrompt?: string, options?: { escalate?: boolean }): Promise<string> {
   const llmKeys = process.env.LLM_API_KEY
   const baseUrl = (process.env.LLM_BASE_URL || 'https://api.groq.com/openai/v1').replace(/\/$/, '')
-  const model   = process.env.LLM_MODEL || 'openai/gpt-oss-120b'
+
+  // Two-tier model selection: use escalation model for high-intensity messages
+  const escalationModel = process.env.LLM_ESCALATION_MODEL
+  const primaryModel = process.env.LLM_MODEL || 'openai/gpt-oss-120b'
+  const model = (options?.escalate && escalationModel) ? escalationModel : primaryModel
 
   if (!llmKeys || llmKeys === 'your-llm-api-key') {
     console.log('[LLM] LLM_API_KEY not set — falling back to local Ollama')
@@ -49,13 +53,30 @@ export async function generateChat(messages: any[], systemPrompt?: string): Prom
   return withKeyRotation(
     llmKeys,
     async (key) => {
+      // Multi-model fallback: if LLM_FALLBACK_MODELS is set,
+      // use OpenRouter's native route:"fallback" with a models array.
+      // This cascades through models if the primary one fails or is overloaded.
+      const fallbackModels = process.env.LLM_FALLBACK_MODELS?.split(',').map(m => m.trim()).filter(Boolean) || []
+      const useMultiModel = fallbackModels.length > 0 && baseUrl.includes('openrouter')
+
+      const body: Record<string, any> = {
+        model,
+        messages: formattedMessages,
+      }
+
+      if (useMultiModel) {
+        body.models = [model, ...fallbackModels]
+        body.route = 'fallback'
+        console.log(`[LLM] Multi-model fallback enabled: ${[model, ...fallbackModels].join(' → ')}`)
+      }
+
       const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${key}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ model, messages: formattedMessages }),
+        body: JSON.stringify(body),
       })
 
       if (!response.ok) {

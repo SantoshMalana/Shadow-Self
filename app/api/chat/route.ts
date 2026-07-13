@@ -8,6 +8,7 @@ import { getDbUser } from '@/lib/auth'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { determineTurnGoal } from '@/lib/turn-goal'
 import { maybeAdvanceDepthRung } from '@/lib/depth-rung'
+import { classifyEscalation } from '@/lib/escalation'
 
 export async function POST(req: NextRequest) {
   try {
@@ -55,7 +56,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const response = await generateChat(messages, systemPrompt)
+    // Two-tier escalation: classify the latest user message to decide
+    // if we should route to a smarter/more expensive model.
+    const lastUserMsg2 = [...messages].reverse().find((m: any) => m.role === 'user')
+    const escalation = lastUserMsg2 ? classifyEscalation(lastUserMsg2.content) : { shouldEscalate: false }
+    if (escalation.shouldEscalate) {
+      console.log(`[Escalation] Triggered: ${escalation.reason} — routing to escalation model`)
+    }
+
+    const response = await generateChat(messages, systemPrompt, { escalate: escalation.shouldEscalate })
 
     if (messages.length > 0) {
       const lastUserMsg = [...messages].reverse().find((m: any) => m.role === 'user')

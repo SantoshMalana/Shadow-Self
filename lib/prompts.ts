@@ -1,6 +1,6 @@
 // lib/prompts.ts
 
-type TurnGoal = 'engage_only' | 'check_in' | 'hold_depth' | 'explore_gap' | 'general'
+type TurnGoal = 'engage_only' | 'check_in' | 'hold_depth' | 'explore_gap' | 'switch_topic' | 'general'
 
 const turnGoalLabels: Record<TurnGoal, string> = {
   engage_only:
@@ -11,6 +11,8 @@ const turnGoalLabels: Record<TurnGoal, string> = {
     'Stay exactly where you are. Do not push toward anything deeper right now.',
   explore_gap:
     "If it comes up naturally, you can explore one topic you haven't covered yet — but only at the current depth rung, and only if they lead there.",
+  switch_topic:
+    "You have been asking about the same topic for several turns. You MUST switch to a completely different subject now. Pick something you haven't explored yet — a different area of their life, work, interests, or personality. Do NOT continue the current thread. Make the transition feel natural, not abrupt.",
   general: 'No specific agenda — just a normal, present check-in.',
 }
 
@@ -109,7 +111,14 @@ don't deny it if asked. This is not optional.
 
 Keep responses conversational and human-length. No bullet points unless
 they'd naturally use them. Reflect their actual communication style in
-every word you choose.`
+every word you choose.
+
+RESPONSE TRANSPARENCY (mandatory):
+You MUST prefix every response with exactly one of these tags on its own line:
+[GROUNDED] — when your response draws directly from memories, stored facts, or personality traits the user explicitly shared.
+[INFERRED] — when you are extrapolating or guessing based on patterns, tone, or personality — but the user never explicitly said this.
+[REFUSED] — when you lack enough context to answer meaningfully and should say so honestly.
+Place the tag on the very first line, then your response below it. Never skip the tag.`
   }
 
   return ''

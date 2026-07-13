@@ -20,6 +20,17 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
   const isUser = role === 'user'
   const assistantName = mode === 'clone' ? (name || 'Clone') : 'Shadow Shelf'
 
+  // Parse Output Composer transparency tags from clone responses
+  const tagMatch = !isUser ? content.match(/^\[(GROUNDED|INFERRED|REFUSED)\]\s*/i) : null
+  const transparencyTag = tagMatch ? tagMatch[1].toUpperCase() as 'GROUNDED' | 'INFERRED' | 'REFUSED' : null
+  const cleanContent = tagMatch ? content.slice(tagMatch[0].length) : content
+
+  const tagStyles: Record<string, { bg: string; border: string; text: string; label: string }> = {
+    GROUNDED: { bg: 'bg-emerald-950/50', border: 'border-emerald-700/40', text: 'text-emerald-400', label: '◆ Grounded' },
+    INFERRED: { bg: 'bg-amber-950/50', border: 'border-amber-700/40', text: 'text-amber-400', label: '◇ Inferred' },
+    REFUSED:  { bg: 'bg-red-950/50', border: 'border-red-700/40', text: 'text-red-400', label: '✕ Refused' },
+  }
+
   if (isUser) {
     return (
       <div className={`${styles.ssMessage} flex justify-end mb-8`}>
@@ -58,6 +69,11 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
               Recalled {memoriesUsed}
             </span>
           )}
+          {transparencyTag && tagStyles[transparencyTag] && (
+            <span className={`text-[10px] px-2 py-0.5 ${tagStyles[transparencyTag].bg} border ${tagStyles[transparencyTag].border} ${tagStyles[transparencyTag].text} rounded-full font-medium`}>
+              {tagStyles[transparencyTag].label}
+            </span>
+          )}
         </div>
 
         <div className="bg-surface border border-border rounded-2xl rounded-tl-sm px-5 py-3.5">
@@ -68,7 +84,7 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
                 <span className={styles.typingDot} />
                 <span className={styles.typingDot} />
               </span>
-            ) : content}
+            ) : cleanContent}
           </div>
         </div>
 
