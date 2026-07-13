@@ -34,7 +34,7 @@ export default function CloneAvatar({ name, isSpeaking = false, completeness = 0
           isSpeaking 
             ? 'border-accent/50 shadow-[0_0_30px_rgba(131,40,249,0.25)] scale-105' 
             : 'border-border shadow-xl'
-        }`} style={{ background: 'radial-gradient(circle at 32% 28%, #2b2145, #140f20 70%)' }}>
+        }`} style={{ background: 'radial-gradient(circle at 32% 28%, var(--color-border), var(--color-card) 70%)' }}>
           <span className={`text-[22px] font-light tracking-[0.1em] transition-colors duration-500 ${
             isSpeaking ? 'text-accent-light' : 'text-text-faint'
           }`}>
@@ -51,7 +51,7 @@ export default function CloneAvatar({ name, isSpeaking = false, completeness = 0
             <circle
               cx="38" cy="38" r="36"
               fill="none"
-              stroke={completeness > 70 ? '#8328f9' : '#4c1594'}
+              stroke={completeness > 70 ? 'var(--color-accent)' : 'var(--color-accent-deep)'}
               strokeWidth="1.5"
               strokeLinecap="round"
               strokeDasharray={2 * Math.PI * 36}

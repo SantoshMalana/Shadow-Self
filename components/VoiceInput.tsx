@@ -101,7 +101,7 @@ export default function VoiceInput({ onTranscription, mode = 'train', disabled }
       <button
         onClick={toggleRecording}
         disabled={disabled || transcribing}
-        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 relative ${
+        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-light ${
           recording 
             ? 'bg-red-500/90 text-white shadow-[0_0_20px_rgba(239,68,68,0.5)] scale-110 animate-pulse' 
             : 'bg-accent-soft text-text-faint hover:text-accent-light hover:bg-accent-soft/80'

@@ -1,17 +1,47 @@
 'use client'
 
-import { useActionState } from 'react'
-import { login } from '@/app/actions/auth'
+import { useActionState, useEffect, useState } from 'react'
+import { updatePassword } from '@/app/actions/auth'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 
-export default function LoginPage() {
+export default function UpdatePasswordPage() {
+  const router = useRouter()
+  const [sessionChecked, setSessionChecked] = useState(false)
+  const [hasSession, setHasSession] = useState(false)
+
+  useEffect(() => {
+    async function checkSession() {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      setHasSession(!!session)
+      setSessionChecked(true)
+    }
+    checkSession()
+  }, [])
+
   const [state, action, isPending] = useActionState(
     async (_prevState: any, formData: FormData) => {
-      const result = await login(formData)
+      const result = await updatePassword(formData)
       return result || { error: '' }
     },
-    { error: '' }
+    { error: '', success: '' }
   )
+
+  if (!sessionChecked) return null
+
+  if (!hasSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 bg-bg text-text-primary">
+        <div className="text-center">
+          <h2 className="text-xl font-bold mb-3">Invalid or expired link</h2>
+          <p className="text-text-muted mb-6">Please request a new password reset link.</p>
+          <Link href="/forgot-password" className="btnPrimaryLg">Request New Link</Link>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 relative">
@@ -27,30 +57,27 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-card border border-border rounded-[var(--radius-lg)] p-9 sm:p-10 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.65),0_0_0_1px_rgba(131,40,249,0.08)]">
-          <h1 className="text-2xl font-bold text-center mb-1.5">Welcome back</h1>
-          <p className="text-sm text-text-muted text-center mb-8">Sign in to continue your trace.</p>
+          <h1 className="text-2xl font-bold text-center mb-1.5">Update password</h1>
+          <p className="text-sm text-text-muted text-center mb-8">Enter your new password below.</p>
 
           <form action={action} className="flex flex-col gap-5">
             <div>
-              <label htmlFor="email" className="block text-xs font-semibold text-text-muted mb-2 uppercase tracking-wider">Email</label>
-              <div className="relative">
-                <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-text-faint pointer-events-none z-10" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-                </svg>
-                <input id="email" name="email" type="email" required placeholder="you@example.com"
-                  className="ssInput" />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label htmlFor="password" className="block text-xs font-semibold text-text-muted uppercase tracking-wider">Password</label>
-                <Link href="/forgot-password" className="text-xs text-accent-light hover:text-text-primary transition-colors font-medium">Forgot password?</Link>
-              </div>
+              <label htmlFor="password" className="block text-xs font-semibold text-text-muted mb-2 uppercase tracking-wider">New Password</label>
               <div className="relative">
                 <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-text-faint pointer-events-none z-10" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
-                <input id="password" name="password" type="password" required placeholder="••••••••"
+                <input id="password" name="password" type="password" required minLength={8} placeholder="At least 8 characters"
+                  className="ssInput" />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="confirmPassword" className="block text-xs font-semibold text-text-muted mb-2 uppercase tracking-wider">Confirm New Password</label>
+              <div className="relative">
+                <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-text-faint pointer-events-none z-10" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <input id="confirmPassword" name="confirmPassword" type="password" required minLength={8} placeholder="Confirm your password"
                   className="ssInput" />
               </div>
             </div>
@@ -60,15 +87,10 @@ export default function LoginPage() {
             )}
 
             <button type="submit" disabled={isPending} className={`btnPrimaryLg justify-center mt-2 w-full py-4 text-[15px] disabled:opacity-50`}>
-              {isPending ? 'Signing in…' : 'Sign in'}
+              {isPending ? 'Updating…' : 'Update Password'}
             </button>
           </form>
         </div>
-
-        <p className="text-center text-sm text-text-muted mt-7">
-          Don&apos;t have an account?{' '}
-          <Link href="/signup" className="text-accent-light hover:text-text-primary transition-colors font-medium">Create one</Link>
-        </p>
       </div>
     </div>
   )

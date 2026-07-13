@@ -42,7 +42,7 @@ export default function UserMenu({
           <div
             className="w-9 h-9 rounded-full flex-shrink-0"
             style={{
-              background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, #8328f9 78%)',
+              background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, var(--color-accent) 78%)',
               boxShadow: '0 0 15px -3px rgba(131,40,249,0.4)'
             }}
           />

@@ -1,14 +1,12 @@
 import Link from 'next/link'
-import layoutStyles from '@/components/ChatLayout.module.css'
-import pageStyles from '@/app/page.module.css'
 
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-bg flex flex-col font-sans relative overflow-hidden text-text-primary">
       {/* Ambient background */}
-      <div className={`${pageStyles.lightFx} opacity-40`} aria-hidden="true">
-        <div className={pageStyles.raySource} />
-        <div className={pageStyles.rays} />
+      <div className={`lightFx opacity-40`} aria-hidden="true">
+        <div className="raySource" />
+        <div className="rays" />
       </div>
 
       <header className="border-b border-border bg-bg/80 backdrop-blur-md z-20 relative px-6 py-4">

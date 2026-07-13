@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import styles from './ChatBubble.module.css'
-import btnStyles from './Buttons.module.css'
 
 interface ChatBubbleProps {
   role: 'user' | 'assistant'
@@ -33,7 +31,7 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
 
   if (isUser) {
     return (
-      <div className={`${styles.ssMessage} flex justify-end mb-8`}>
+      <div className={`ssMessage flex justify-end mb-8`}>
         <div className="max-w-[82%] px-4.5 py-3 rounded-[var(--radius-md)] rounded-br-sm bg-accent/15 border border-accent/25 text-text-primary text-[15px] leading-[1.7] break-words">
           {content}
         </div>
@@ -42,9 +40,9 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
   }
 
   return (
-    <div className={`${styles.ssMessage} flex gap-3.5 mb-9 max-w-[90%]`}>
+    <div className={`ssMessage flex gap-3.5 mb-9 max-w-[90%]`}>
       {/* Avatar */}
-      <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-1" style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, #8328f9 78%)' }}>
+      <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-1" style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, var(--color-accent) 78%)' }}>
         <span className="text-[11px] text-white font-bold">◈</span>
       </div>
 
@@ -80,9 +78,9 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
           <div className="text-[15px] text-text-primary leading-[1.7] whitespace-pre-wrap break-words">
             {isTyping ? (
               <span className="flex gap-1.5 items-center py-2 h-6">
-                <span className={styles.typingDot} />
-                <span className={styles.typingDot} />
-                <span className={styles.typingDot} />
+                <span className="typingDot" />
+                <span className="typingDot" />
+                <span className="typingDot" />
               </span>
             ) : cleanContent}
           </div>
@@ -132,13 +130,13 @@ function FeedbackButtons({ messageId }: { messageId: string }) {
         <div className="flex gap-2">
           <button
             onClick={() => submitFeedback('down', correction)}
-            className={`${btnStyles.btnPill} text-xs py-2 px-4`}
+            className={`btnPill text-xs py-2 px-4`}
           >
             Submit
           </button>
           <button
             onClick={() => setState('idle')}
-            className={`${btnStyles.btnGhost} text-xs py-2 px-4`}
+            className={`btnGhost text-xs py-2 px-4`}
           >
             Cancel
           </button>

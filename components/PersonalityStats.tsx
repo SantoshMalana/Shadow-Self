@@ -46,11 +46,11 @@ export default function PersonalityStats({ personality, completeness, onDeleteTr
       <div className="flex items-center gap-4">
         <div className="relative shrink-0">
           <svg width="52" height="52" viewBox="0 0 52 52">
-            <circle cx="26" cy="26" r={r} fill="none" stroke="#2b2145" strokeWidth="2" />
+            <circle cx="26" cy="26" r={r} fill="none" stroke="var(--color-border)" strokeWidth="2" />
             <circle
               cx="26" cy="26" r={r}
               fill="none"
-              stroke={completeness > 60 ? '#8328f9' : '#4c1594'}
+              stroke={completeness > 60 ? 'var(--color-accent)' : 'var(--color-accent-deep)'}
               strokeWidth="2"
               strokeLinecap="round"
               strokeDasharray={circ}
@@ -94,8 +94,9 @@ export default function PersonalityStats({ personality, completeness, onDeleteTr
                 {onDeleteTrait && (
                   <button 
                     onClick={() => onDeleteTrait('communicationStyle.tone', i)}
-                    className="text-text-faint hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="text-text-faint hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:opacity-100"
                     title="Remove trait"
+                    aria-label={`Remove trait ${t}`}
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                   </button>
@@ -119,8 +120,9 @@ export default function PersonalityStats({ personality, completeness, onDeleteTr
                 {onDeleteTrait && (
                   <button 
                     onClick={() => onDeleteTrait('knowledgeDomains', i)}
-                    className="text-text-faint hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="text-text-faint hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:opacity-100"
                     title="Remove domain"
+                    aria-label={`Remove domain ${d}`}
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                   </button>
