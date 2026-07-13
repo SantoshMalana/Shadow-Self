@@ -80,10 +80,10 @@ export default function HomePage() {
       {/* HERO */}
       <header className={styles.heroSection} style={{ opacity: mounted ? 1 : 0, transition: 'opacity 1s' }}>
         <div className={styles.wrap}>
-          <span className={styles.eyebrow}>Cognitive Legacy Platform</span>
-          <h1 className={styles.gradientHeading}>The people who shape us shouldn&apos;t have to disappear.</h1>
+          <span className={styles.eyebrow}>For Engineers Who Think For a Living</span>
+          <h1 className={styles.gradientHeading}>Your debugging instinct took years to build. Don&apos;t let it disappear.</h1>
           <p className={styles.heroSub}>
-            Shadow Shelf builds a living AI clone from daily conversation — your thinking style, your voice, your opinions. Talk to it while you&apos;re here. Let others talk to it when you&apos;re not.
+            Shadow Shelf captures the reasoning journey behind your decisions — not just the final answer. Through daily conversations, it builds a cognitive clone that thinks like you, debates like you, and remembers what you&apos;d forget.
           </p>
           <div className={styles.heroActions}>
             <Link href="/signup" className={btnStyles.btnPrimaryLg}>Create your clone →</Link>
@@ -130,9 +130,9 @@ export default function HomePage() {
           </div>
           <div className={styles.stepsGrid}>
             {[
-              { num: '1', title: 'Train', desc: 'Answer a few daily questions. Share how you think, decide, and feel — every answer deepens your clone.' },
-              { num: '2', title: 'Process', desc: 'A local model extracts your values, communication style, and emotional triggers into a cognitive profile.' },
-              { num: '3', title: 'Clone', desc: 'Talk to your clone voice-to-voice, in your style, with your opinions and emotional depth.' },
+              { num: '1', title: 'Talk', desc: 'Have natural conversations. Share how you debug, decide, and think through problems — a few minutes a day is enough.' },
+              { num: '2', title: 'Learn', desc: 'The system extracts your reasoning patterns, communication style, values, and opinions into a structured cognitive profile that grows over time.' },
+              { num: '3', title: 'Clone', desc: 'Talk to your cognitive twin. It responds in your voice, your tone, with your actual opinions — grounded in real memories, not guesses.' },
             ].map(s => (
               <div key={s.num} className={`${styles.stepCard} ${styles.glassCard}`}>
                 <div className={styles.stepNum}>{s.num}</div>
@@ -149,17 +149,17 @@ export default function HomePage() {
         <div className={styles.wrap}>
           <div className={styles.sectionHead} style={{ maxWidth: 580 }}>
             <span className={styles.sectionLabel}>What is Shadow Shelf?</span>
-            <h2 className={styles.sectionTitle} style={{ marginBottom: 20 }}>A cognitive trace, not a chatbot.</h2>
+            <h2 className={styles.sectionTitle} style={{ marginBottom: 20 }}>The journey matters more than the answer.</h2>
             <p style={{ fontSize: 16, color: 'var(--color-text-muted)', lineHeight: 1.7 }}>
-              Most AI clones scrape your social media and guess. Shadow Shelf works differently — it sits with you, daily, learning the actual reasoning behind your decisions. The wrong turns you took while debugging. The values you&apos;d fight for. The tone you use when you&apos;re tired versus when you&apos;re sharp.
+              Every AI model on earth is trained on final answers — Stack Overflow posts, Wikipedia articles, published papers. But the most valuable knowledge lives in the journey: the wrong turns, the hunches, the "I&apos;ve seen this before" moments. Shadow Shelf captures that process through natural conversation, building the only AI that knows how you actually think.
             </p>
           </div>
           <div className={styles.featuresGrid}>
             {[
-              { icon: '🔒', title: 'Private by default', desc: 'Your data is processed locally first. We extract the cognitive profile — not raw transcripts.' },
-              { icon: '🎙️', title: 'Your real voice', desc: 'Speaks in your cadence and phrasing — not a generic narrator reading a script.' },
-              { icon: '⏱️', title: 'A few minutes a day', desc: 'No long intake forms. Small, daily answers are enough to start building depth.' },
-              { icon: '🌱', title: 'Keeps learning', desc: 'There is no final version — your clone updates with every new conversation.' },
+              { icon: '🔒', title: 'Zero-Trust Architecture', desc: 'Your data is siloed to your account. We use vector embeddings — numerical representations, not raw text — for memory retrieval. You can delete everything at any time.' },
+              { icon: '🧠', title: 'Learns the journey', desc: 'Captures the reasoning process behind decisions — the wrong turns, the tradeoffs, the intuition — not just the polished final answer.' },
+              { icon: '🎙️', title: 'Your real voice', desc: 'Speaks in your cadence and phrasing. Debates in your style. Uses your actual vocabulary, not a generic AI tone.' },
+              { icon: '🌱', title: 'Gets smarter daily', desc: 'Every conversation deepens the cognitive profile. There is no final version — your clone evolves as you do.' },
             ].map((f, i) => (
               <div key={i} className={`${styles.featureCard} ${styles.glassCard}`}>
                 <div className={styles.featureDot}>{f.icon}</div>
@@ -240,6 +240,8 @@ export default function HomePage() {
           <div className={styles.footerLinks}>
             <Link href="/train">Onboarding</Link>
             <Link href="/clone">Clone</Link>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
             <Link href="/login">Sign in</Link>
           </div>
         </div>
