@@ -86,6 +86,7 @@ shadow-shelf/
 │   ├── questions.ts
 │   ├── rate-limit.ts
 │   ├── turn-goal.ts
+│   ├── zero-knowledge.ts
 │   └── supabase/
 │       ├── admin.ts
 │       ├── client.ts

@@ -146,3 +146,18 @@ model Feedback {
   @@index([messageId])
   @@map("feedback")
 }
+
+// ─── AnonymousCognitiveModel ───────────────────────────────────────────────────
+// Stage 1: Zero Knowledge Distillation
+// Completely anonymous table with no relation to User.
+// Stores abstract problem-solving frameworks/intuitions extracted from sanitized chats.
+
+model AnonymousCognitiveModel {
+  id        String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  insight   String
+  embedding Unsupported("vector(768)")?
+  domain    String?
+  createdAt DateTime                       @default(now()) @map("created_at")
+
+  @@map("anonymous_cognitive_model")
+}

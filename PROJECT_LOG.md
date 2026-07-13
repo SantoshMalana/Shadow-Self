@@ -162,3 +162,20 @@ Updates: Implemented Light Mode architecture with full glassmorphism support and
   - **Data Asset Dashboard:** Created `/api/data-asset` and `/data-asset` dashboard UI to visualize provenance, decisions, and consent as an immutable ledger, proving the "Data as an Asset" value proposition.
 
 All 23 tasks on the master fix list are now successfully integrated and the build is completely type-clean.
+
+## Stage 1: Zero Knowledge Distillation
+**Status:** Completed
+**Completed:** 2026-07-14
+
+### What Changed
+- Added `AnonymousCognitiveModel` table to `prisma/schema.prisma` — completely anonymous, NO foreign key to `User`.
+- Created `lib/zero-knowledge.ts` — full sanitization → extraction → embedding → anonymous storage pipeline.
+- Wired into `app/api/chat/route.ts` as a background task alongside `storeMemory` and `extractTraits`.
+- Updated `PROJECT_ARCHITECTURE.md` file tree.
+
+### Design Decisions
+- The `AnonymousCognitiveModel` table has zero traceability by design — no `userId` column, no relation, no cascade.
+- The pipeline runs two sequential LLM passes: first a "shredder" pass strips all PII/company/tech names, then an "extractor" pass distills the cognitive framework.
+- Domain tagging (e.g., `debugging`, `systems_architecture`, `security`) is extracted alongside each insight for future clustering.
+- Embedding failures are non-fatal — insights are stored without vectors if the embedding API is unavailable.
+- The pipeline is fire-and-forget: it never blocks the user's chat response.

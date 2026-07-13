@@ -9,6 +9,7 @@ import { checkRateLimit } from '@/lib/rate-limit'
 import { determineTurnGoal } from '@/lib/turn-goal'
 import { maybeAdvanceDepthRung } from '@/lib/depth-rung'
 import { classifyEscalation, type EscalationResult } from '@/lib/escalation'
+import { processAndStoreZeroKnowledge } from '@/lib/zero-knowledge'
 
 export async function POST(req: NextRequest) {
   try {
@@ -99,6 +100,15 @@ export async function POST(req: NextRequest) {
             await maybeAdvanceDepthRung(user.id)
           } catch (err) {
             console.error('maybeAdvanceDepthRung task error:', err)
+          }
+        })();
+
+        // Zero Knowledge Distillation — extract anonymous cognitive insights
+        ;(async () => {
+          try {
+            await processAndStoreZeroKnowledge(lastUserMsg.content)
+          } catch (err) {
+            console.error('zeroKnowledge task error:', err)
           }
         })();
       }
