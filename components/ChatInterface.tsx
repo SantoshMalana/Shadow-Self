@@ -426,7 +426,7 @@ export default function ChatInterface({ mode }: ChatInterfaceProps) {
 
         {/* Chat Area */}
         <div className="flex-1 overflow-y-auto relative flex flex-col items-center chat-scroll">
-          <div className="w-full max-w-2xl flex-1 p-4 sm:p-8 pb-52">
+          <div className="w-full max-w-2xl flex-1 p-4 sm:p-8">
             {messages.map((msg, i) => (
               <ChatBubble
                 key={i}
@@ -441,6 +441,7 @@ export default function ChatInterface({ mode }: ChatInterfaceProps) {
               />
             ))}
             {loading && <ChatBubble role="assistant" content="" mode={mode} isTyping depthRung={(userState?.depthRung as any) || 1} />}
+            <div className="h-48 sm:h-56" aria-hidden="true" />
             <div ref={chatEndRef} />
           </div>
         </div>
