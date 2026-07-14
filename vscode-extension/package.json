@@ -1,0 +1,73 @@
+{
+  "name": "shadow-shelf",
+  "displayName": "Shadow Shelf — Jarvis Mode",
+  "description": "Your personal AI companion that silently watches and helps when you're stuck. Powered by Shadow Shelf.",
+  "version": "0.1.0",
+  "publisher": "ShadowShelf",
+  "icon": "assets/icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["AI", "Other"],
+  "keywords": ["ai", "assistant", "productivity", "shadow shelf", "jarvis"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "shadowShelf.setApiKey",
+        "title": "Shadow Shelf: Set API Key"
+      },
+      {
+        "command": "shadowShelf.clearApiKey",
+        "title": "Shadow Shelf: Clear API Key & Sign Out"
+      },
+      {
+        "command": "shadowShelf.showStatus",
+        "title": "Shadow Shelf: Show Scout Status"
+      }
+    ],
+    "configuration": {
+      "title": "Shadow Shelf",
+      "properties": {
+        "shadowShelf.serverUrl": {
+          "type": "string",
+          "default": "https://shadowshelfai.com",
+          "description": "Shadow Shelf server URL. Leave as default unless self-hosting."
+        },
+        "shadowShelf.idleThresholdSeconds": {
+          "type": "number",
+          "default": 120,
+          "description": "How long (in seconds) before a pause is considered an idle event. Default is 2 minutes."
+        },
+        "shadowShelf.fileHopWindowSeconds": {
+          "type": "number",
+          "default": 60,
+          "description": "Time window (in seconds) to measure file hop rate. Default is 1 minute."
+        },
+        "shadowShelf.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable Scout telemetry."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "npx @vscode/vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SantoshMalana/Shadow-Self"
+  },
+  "license": "MIT"
+}
