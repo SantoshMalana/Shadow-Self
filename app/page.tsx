@@ -261,7 +261,7 @@ export default function HomePage() {
           </div>
 
           <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '12.5px', color: 'var(--color-text-faint)' }}>
-            Download the .vsix file · Open VS Code · Press Ctrl+Shift+P → "Install from VSIX" · Enter your API key
+            Download the .vsix file · Open VS Code · Press Ctrl+Shift+P → "Install from VSIX" · Click "Sign In" to connect instantly
           </p>
         </div>
       </section>
