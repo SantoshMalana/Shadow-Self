@@ -14,6 +14,7 @@ export default function SettingsPage() {
   const [consents, setConsents] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
+  const [apiKey, setApiKey] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [exporting, setExporting] = useState(false)
@@ -26,8 +27,24 @@ export default function SettingsPage() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
+      
+    fetch('/api/user/apikey')
+      .then(r => r.json())
+      .then(data => setApiKey(data.apiKey))
+      .catch(console.error)
   }, [])
 
+  const generateApiKey = async () => {
+    try {
+      const res = await fetch('/api/user/apikey', { method: 'POST' })
+      const data = await res.json()
+      setApiKey(data.apiKey)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  // ... (keeping toggleConsent, handleExport, handleDelete below)
   const toggleConsent = async (stream: string) => {
     const newValue = !consents[stream]
     setSaving(stream)
@@ -82,7 +99,6 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-bg text-text-primary font-sans">
 
-      {/* Nav header — previously missing entirely, this page was a dead end */}
       <header className="border-b border-border bg-bg/80 backdrop-blur-md px-6 sm:px-10 h-[60px] flex items-center gap-4 sticky top-0 z-20">
         <Link href="/train" className="text-text-muted hover:text-text-primary transition-colors flex items-center gap-2 font-medium">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
@@ -96,8 +112,32 @@ export default function SettingsPage() {
 
         <div>
           <h1 className="text-3xl font-light tracking-tight text-text-primary">Settings</h1>
-          <p className="text-text-muted mt-1">Data consent, export, and account management.</p>
+          <p className="text-text-muted mt-1">Data consent, API keys, export, and account management.</p>
         </div>
+
+        {/* API Key */}
+        <section className="ss-card p-6 space-y-4">
+          <h2 className="text-sm font-medium text-text-faint uppercase tracking-widest">API Key (Jarvis Mode)</h2>
+          <p className="text-sm text-text-muted">
+            Use this API key to connect the Shadow Shelf VS Code extension to your account. Do not share this key with anyone.
+          </p>
+          <div className="flex items-center gap-4">
+            <input 
+              type="text" 
+              readOnly 
+              value={apiKey || 'Loading...'} 
+              className="flex-1 bg-surface border border-border rounded-xl px-4 py-3 text-sm font-mono text-text-primary"
+            />
+            {apiKey ? (
+              <button onClick={() => navigator.clipboard.writeText(apiKey)} className="btnGhost px-4 py-3 rounded-xl whitespace-nowrap">
+                Copy
+              </button>
+            ) : null}
+          </div>
+          <button onClick={generateApiKey} className="text-sm text-accent hover:text-accent-hover font-medium">
+            {apiKey ? 'Regenerate API Key' : 'Generate API Key'}
+          </button>
+        </section>
 
         {/* Consent Toggles */}
         <section className="ss-card p-6 space-y-1">
