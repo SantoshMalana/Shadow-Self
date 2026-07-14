@@ -1,19 +1,35 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { handleFrictionPing } from '@/lib/scout/pipeline'
 import { FrictionPing } from '@/lib/scout/types'
+import { resolveApiKey } from '@/lib/scout/auth'
+import { createClient } from '@/lib/supabase/server'
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    // Validate body...
+
+    // Try API key auth first (VS Code extension)
+    let userId = await resolveApiKey(req)
+
+    // Fall back to session auth (web app internal calls)
+    if (!userId) {
+      const supabase = await createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      userId = user?.id ?? body.userId
+    }
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const ping: FrictionPing = {
-      userId: body.userId, // In production, get this from auth context
+      userId,
       signalType: body.signalType,
       value: body.value,
       context: body.context,
     }
 
-    // Fire and forget so we don't block the client
+    // Fire and forget — never block the caller
     handleFrictionPing(ping).catch(err => {
       console.error('Failed to process friction ping:', err)
     })
