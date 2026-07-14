@@ -44,7 +44,9 @@ That's the bar. Everything in this document serves that bar. If a task doesn't m
 | Voice | ElevenLabs (out) + Whisper via Groq (in) — unchanged from MVP |
 | Hosting | Vercel now; AWS pursued in parallel for Activate credits, not gating |
 
-Stage 0 boundary — **do not build these yet, even if it seems easy**: camera/facial capture, HRV/GSR biometric ingestion, the specialist-agent distillation pipeline, the AI-lab data-licensing export, the inter-agent learning network. Building these now is scope creep against a 25-day clock.
+Stage 0 boundary — **do not build these yet, even if it seems easy**: the specialist-agent distillation pipeline, the AI-lab data-licensing export, the inter-agent learning network. Building these now is scope creep against a 25-day clock.
+
+*(Note: As of July 14, 2026, **Camera/Facial Capture** and **HRV/GSR Biometric Ingestion** have been completely SCRAPPED from the long-term vision. They are permanent liabilities that will cause massive privacy backlash among senior engineers. We are a cognitive-first platform, not spyware.)*
 
 **The Future Vision (Stage 1 & 2 Roadmap):**
 1. **Zero Architecture System (Zero Knowledge):** A secure pipeline where raw clone data and personal identities are completely inaccessible, but cognitive metadata—thinking styles, intuition, and problem-solving frameworks—are still extracted anonymously without relying on raw labeled data.

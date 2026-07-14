@@ -179,3 +179,14 @@ All 23 tasks on the master fix list are now successfully integrated and the buil
 - Domain tagging (e.g., `debugging`, `systems_architecture`, `security`) is extracted alongside each insight for future clustering.
 - Embedding failures are non-fatal — insights are stored without vectors if the embedding API is unavailable.
 - The pipeline is fire-and-forget: it never blocks the user's chat response.
+
+### July 14, 2026 - Scout Architecture Implemented
+- **Zero-Knowledge Pivot:** Removed Camera/Facial Capture and Biometrics from the roadmap due to privacy concerns.
+- **Jarvis Mode (The Scout):** Implemented the 6-stage verification pipeline for proactive developer interventions.
+- **Stages Built:** Signal Collection, Personal Anomaly Filter, Workflow Boundary Gate, Content Confidence Scoring, LLM Self-Critique, Tiered Affordance Selection.
+- **Audit:** Fully integrated end-to-end PipelineAuditLog for monitoring funnel drop-off and model calibration.
+
+### July 14, 2026 - Codebase Audit & Hardening
+- **Type Safety:** Full typecheck passed (0 errors) across the entire Next.js project.
+- **pgvector Integration:** Replaced Scout mock memory with actual pgvector raw SQL similarity search against both personal memories and the AnonymousCognitiveModel abstract layer.
+- **Final Verification:** Next.js production build succeeded with no warnings.

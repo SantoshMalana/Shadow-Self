@@ -40,6 +40,12 @@ model User {
   consentEntries      ConsentLedger[]
   feedbacks           Feedback[]
 
+  // Scout Relations
+  personalBaselines    PersonalBaseline[]
+  queuedFrictionEvents QueuedFrictionEvent[]
+  scoutTrustLedgers    ScoutTrustLedger[]
+  pipelineAuditLogs    PipelineAuditLog[]
+
   @@map("users")
 }
 
@@ -160,4 +166,69 @@ model AnonymousCognitiveModel {
   createdAt DateTime                       @default(now()) @map("created_at")
 
   @@map("anonymous_cognitive_model")
+}
+
+// ─── Scout Models ──────────────────────────────────────────────────────────────
+// Stage 2: Personal Anomaly Filter baseline
+model PersonalBaseline {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  signalType  String   @map("signal_type") // e.g., 'idle_seconds', 'undo_ratio'
+  mean        Float
+  stddev      Float
+  sampleCount Int      @map("sample_count")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, signalType])
+  @@map("scout_personal_baselines")
+}
+
+// Stage 3: Workflow-Boundary Gate queue
+model QueuedFrictionEvent {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  signalType String   @map("signal_type")
+  detectedAt DateTime @default(now()) @map("detected_at")
+  expiresAt  DateTime @map("expires_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@map("scout_queued_events")
+}
+
+// Stage 6: Tiered Affordance Ledger
+model ScoutTrustLedger {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  signalType String   @map("signal_type")
+  tier       Int      @default(0) // 0: Silent, 1: Gutter icon, 2: Proactive voice
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, signalType])
+  @@map("scout_trust_ledgers")
+}
+
+// Audit Framework: The pipeline log
+model PipelineAuditLog {
+  id                      String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                  String   @map("user_id") @db.Uuid
+  signalType              String   @map("signal_type")
+  stage1Raw               Json     @map("stage1_raw")
+  stage2AnomalyScore      Float?   @map("stage2_anomaly_score")
+  stage3BoundaryReached   String?  @map("stage3_boundary_reached")
+  stage4StuckConfidence   Float?   @map("stage4_stuck_confidence")
+  stage4ContentConfidence Float?   @map("stage4_content_confidence")
+  stage5Verdict           String?  @map("stage5_verdict") // SHOW, HOLD, DISCARD
+  finalOutcome            String   @map("final_outcome")
+  userFeedback            String?  @map("user_feedback")
+  timestamp               DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, timestamp])
+  @@map("scout_pipeline_audit_logs")
 }
