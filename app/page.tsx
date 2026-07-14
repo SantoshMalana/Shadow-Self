@@ -218,6 +218,54 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* JARVIS MODE — VS Code Extension Download */}
+      <section className="ssSection" style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(99,102,241,0.05) 100%)' }}>
+        <div className="wrap">
+          <div className="sectionHead">
+            <span className="sectionLabel">Jarvis Mode</span>
+            <h2 className="sectionTitle">Your AI watches while you work.</h2>
+            <p className="sectionSub" style={{ maxWidth: 560, margin: '0 auto 48px' }}>
+              Install the Shadow Shelf VS Code Extension. It silently watches your editor —
+              idle patterns, file hops, terminal errors — and only speaks up when it's
+              genuinely confident it can help. No pop-ups. No noise.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '48px' }}>
+            {[
+              { icon: '🕵️', label: 'Silent by default', desc: 'Tier 0 shadow mode — logs insights, never interrupts.' },
+              { icon: '🧠', label: '6-stage verification', desc: 'Every intervention passes anomaly, boundary, vector search, and LLM self-critique before you see it.' },
+              { icon: '🔒', label: 'API key auth', desc: 'Your key lives in VS Code\'s encrypted SecretStorage. Never plain text.' },
+              { icon: '📊', label: 'Earns trust over time', desc: 'Scout advances from silent → gutter icon → voice only after proving accuracy.' },
+            ].map((f, i) => (
+              <div key={i} className="glassCard" style={{ flex: '1 1 200px', maxWidth: 260, textAlign: 'center', padding: '28px 20px' }}>
+                <div style={{ fontSize: '32px', marginBottom: '12px' }}>{f.icon}</div>
+                <h3 style={{ fontSize: '15px', fontWeight: 600, marginBottom: '8px', color: 'var(--color-text)' }}>{f.label}</h3>
+                <p style={{ fontSize: '13.5px', color: 'var(--color-text-muted)', lineHeight: 1.6 }}>{f.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <a
+              href="/shadow-shelf-0.1.0.vsix"
+              download
+              className="btnPrimaryLg"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}
+            >
+              <span>⬇</span> Download VS Code Extension
+            </a>
+            <Link href="/settings" className="btnSecondaryLg" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+              Get your API Key →
+            </Link>
+          </div>
+
+          <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '12.5px', color: 'var(--color-text-faint)' }}>
+            Download the .vsix file · Open VS Code · Press Ctrl+Shift+P → "Install from VSIX" · Enter your API key
+          </p>
+        </div>
+      </section>
+
       {/* FINAL CTA */}
       <section className="ssSection">
         <div className="wrap">
