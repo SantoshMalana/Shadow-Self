@@ -255,8 +255,8 @@ export default function HomePage() {
             >
               <span>⬇</span> Download VS Code Extension
             </a>
-            <Link href="/settings" className="btnGhost" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '0 24px', height: '48px', borderRadius: '24px' }}>
-              Get your API Key →
+            <Link href="/vscode-auth" className="btnGhost" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '0 24px', height: '48px', borderRadius: '24px' }}>
+              Connect VS Code →
             </Link>
           </div>
 
