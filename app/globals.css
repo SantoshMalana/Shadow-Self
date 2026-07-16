@@ -114,12 +114,12 @@
 
 .btnPill {
   display: inline-flex; align-items: center; gap: 7px;
-  background: var(--color-accent-purple); color: #fff; font-weight: 600; font-size: 14px;
+  background: #111827; color: #fff; font-weight: 600; font-size: 14px;
   padding: 10px 20px; border-radius: var(--radius-pill); text-decoration: none;
-  border: 1px solid var(--color-accent-purple); transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
-  box-shadow: 0 6px 20px -8px rgba(131,40,249,0.35); cursor: pointer;
+  border: 1px solid #000; transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer;
 }
-.btnPill:hover { background: var(--color-accent-deep); border-color: var(--color-accent-deep); }
+.btnPill:hover { background: #000; border-color: #000; }
 .btnGhost:hover { background: var(--color-surface); }
 
 /* Unified Avatar Gradient */
@@ -129,15 +129,15 @@
 
 .btnPrimaryLg {
   display: inline-flex; align-items: center; gap: 8px;
-  background: var(--color-accent-purple); color: #fff;
+  background: #111827; color: #fff;
   font-weight: 600; font-size: 15px; padding: 14px 26px; border-radius: var(--radius-pill);
   text-decoration: none; transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 10px 34px -10px rgba(131,40,249,0.35); cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.1); cursor: pointer;
 }
 .btnPrimaryLg:hover {
-  background: var(--color-accent-deep);
+  background: #000;
   transform: translateY(-1px);
-  box-shadow: 0 14px 42px -8px rgba(131,40,249,0.5);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 .btnPrimaryLg:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
@@ -391,31 +391,7 @@
   background: rgba(255, 255, 255, 0.9);
 }
 
-.glow-button {
-  position: relative;
-  background: linear-gradient(135deg, var(--color-accent-purple), var(--color-accent-deep));
-  color: white;
-  border-radius: var(--radius-pill);
-  transition: all 0.2s ease;
-  z-index: 1;
-}
-.glow-button::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  border-radius: inherit;
-  background: inherit;
-  filter: blur(12px);
-  opacity: 0.6;
-  z-index: -1;
-  transition: opacity 0.2s ease;
-}
-.glow-button:hover {
-  transform: translateY(-1px);
-}
-.glow-button:hover::before {
-  opacity: 0.9;
-}
+
 
 /* Steps */
 .stepsGrid {

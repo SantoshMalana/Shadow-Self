@@ -84,7 +84,7 @@ export default function HomePage() {
             Generic AI is trained by crowds to be harmless and boring. Shadow Shelf is a cognitive clone trained by <i>you</i>. We capture your precise reasoning, debate style, and actual expertise — so you don't have to explain yourself twice.
           </p>
           <div className="heroActions">
-            <Link href="/signup" className="btnPrimaryLg glow-button" style={{ padding: '12px 28px', fontSize: '15px' }}>Create your clone →</Link>
+            <Link href="/signup" className="btnPrimaryLg" style={{ padding: '12px 28px', fontSize: '15px' }}>Create your clone →</Link>
             <Link href="/login" className="btnGhost">Sign in</Link>
           </div>
 
@@ -318,7 +318,7 @@ export default function HomePage() {
             <h2 className="sectionTitle" style={{ maxWidth: 460, margin: '0 auto 28px' }}>
               Your first entry takes about four minutes.
             </h2>
-            <Link href="/signup" className="btnPrimaryLg glow-button" style={{ padding: '12px 28px', fontSize: '15px' }}>Create your clone →</Link>
+            <Link href="/signup" className="btnPrimaryLg" style={{ padding: '12px 28px', fontSize: '15px' }}>Create your clone →</Link>
           </div>
         </div>
       </section>
