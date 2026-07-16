@@ -10,6 +10,20 @@ import { getCloneCompleteness } from '@/lib/personality-client'
 import { getDailyQuestion } from '@/lib/questions'
 import { getUserState, updateUserName } from '@/app/actions/user'
 
+const THINKING_LABELS = [
+  'Recalling memories…',
+  'Analyzing patterns…',
+  'Synthesizing thoughts…',
+  'Formulating response…',
+  'Thinking deeply…',
+]
+
+function getTimeBasedGreeting(name?: string): string {
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+  return name ? `${greeting}, ${name}` : greeting
+}
+
 interface Message {
   role: 'user' | 'assistant'
   content: string
@@ -37,12 +51,20 @@ function truncateAtWord(text: string, max: number): string {
 }
 
 interface ChatInterfaceProps {
-  mode: 'onboarding' | 'clone' | 'jarvis'
+  mode: 'train' | 'onboarding' | 'clone' | 'jarvis'
   chatId?: string
 }
 
 // Mode-specific config
 const modeConfig = {
+  train: {
+    label: 'The Interviewer',
+    welcomeTitle: (name: string) => `Hey ${name}, let's train your twin.`,
+    welcomeSub: `Answer a few questions. I'll extract your reasoning, values, and voice — building a cognitive clone that thinks just like you.`,
+    placeholder: 'Share your thoughts…',
+    accentColor: 'bg-[var(--color-accent-purple)]',
+    pill: 'Training',
+  },
   onboarding: {
     label: 'The Interviewer',
     welcomeTitle: (name: string) => `Hey ${name}, let's train your twin.`,
@@ -86,6 +108,9 @@ export default function ChatInterface({ mode, chatId }: ChatInterfaceProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
   const [nameSaving, setNameSaving] = useState(false)
+  const [thinkingLabel, setThinkingLabel] = useState('')
+  const [extractionToast, setExtractionToast] = useState<string | null>(null)
+  const thinkingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const router = useRouter()
   const chatEndRef = useRef<HTMLDivElement>(null)
@@ -207,6 +232,13 @@ export default function ChatInterface({ mode, chatId }: ChatInterfaceProps) {
     setInput('')
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
     setLoading(true)
+    // Start cycling through thinking labels
+    let labelIndex = 0
+    setThinkingLabel(THINKING_LABELS[0])
+    thinkingIntervalRef.current = setInterval(() => {
+      labelIndex = (labelIndex + 1) % THINKING_LABELS.length
+      setThinkingLabel(THINKING_LABELS[labelIndex])
+    }, 1800)
     try {
       const res = await fetch('/api/chat', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -225,27 +257,37 @@ export default function ChatInterface({ mode, chatId }: ChatInterfaceProps) {
       }
 
       setLoading(false)
+      if (thinkingIntervalRef.current) clearInterval(thinkingIntervalRef.current)
+      setThinkingLabel('')
       if (voiceEnabled) speakText(data.response, personality?.voiceId)
       
       // Non-blocking background refresh of user state + personality
       ;(async () => {
         try {
-          const refreshedUser = await getUserState()
-          if (!('error' in refreshedUser)) setUserState(refreshedUser as any)
-        } catch (e) { /* silent */ }
-      })()
-      ;(async () => {
-        try {
-          const updated = await fetch('/api/personality').then(r => r.json())
-          if (!updated.error) {
-            setPersonality(updated)
-            setCurrentQuestion(getDailyQuestion(updated.sessions || 0, userState?.depthRung || 1))
+          const [newUserState, newPersonality] = await Promise.all([
+            getUserState(), 
+            fetch('/api/personality').then(r => r.json()).catch(() => null)
+          ])
+          if (newUserState) setUserState(newUserState as any)
+          if (newPersonality) {
+            // Check for new traits
+            const oldScore = personality ? getCloneCompleteness(personality) : 0
+            const newScore = getCloneCompleteness(newPersonality)
+            if (newScore > oldScore && oldScore > 0) {
+              setExtractionToast('Learned a new trait')
+              setTimeout(() => setExtractionToast(null), 3000)
+            }
+            setPersonality(newPersonality)
           }
-        } catch (e) { /* silent */ }
+        } catch (e) { /* ignore */ }
       })()
     } catch (err: any) {
       setMessages(prev => [...prev, { role: 'assistant', content: `⚠ ${err.message || 'API Error'}` }])
-    } finally { setLoading(false) }
+    } finally {
+      setLoading(false)
+      if (thinkingIntervalRef.current) clearInterval(thinkingIntervalRef.current)
+      setThinkingLabel('')
+    }
   }
 
   const deleteTrait = async (category: string, index: number) => {
@@ -388,6 +430,16 @@ export default function ChatInterface({ mode, chatId }: ChatInterfaceProps) {
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-purple-100/30 rounded-full blur-[120px] opacity-50" />
           </div>
 
+          {/* Extraction Toast */}
+          {extractionToast && (
+            <div className="absolute top-20 right-6 z-50 animate-fade-in-up">
+              <div className="bg-emerald-950/80 border border-emerald-700/50 text-emerald-400 px-4 py-2 rounded-full text-[13px] font-medium shadow-lg flex items-center gap-2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+                {extractionToast}
+              </div>
+            </div>
+          )}
+
           {/* ── Top Header ── */}
           <header className="shrink-0 border-b border-border bg-white/80 backdrop-blur-md z-20 relative">
             <div className="max-w-3xl mx-auto px-6 h-[60px] flex items-center justify-between">
@@ -490,7 +542,9 @@ export default function ChatInterface({ mode, chatId }: ChatInterfaceProps) {
                   )}
                 </div>
                 <h1 className="text-3xl font-bold text-text-primary tracking-tight text-center mb-3">
-                  {cfg.welcomeTitle(userName)}
+                  {mode === 'train' || mode === 'onboarding' 
+                    ? getTimeBasedGreeting(userName)
+                    : cfg.welcomeTitle(userName)}
                 </h1>
                 <p className="text-text-muted text-base text-center max-w-md leading-relaxed mb-8">
                   {cfg.welcomeSub}
@@ -509,9 +563,19 @@ export default function ChatInterface({ mode, chatId }: ChatInterfaceProps) {
                     {truncateAtWord(currentQuestion, 70)}
                   </button>
                 )}
+                {mode === 'train' && (
+                  <div className="flex flex-wrap gap-2 justify-center max-w-lg">
+                    {["Tell me a bit about how you think.", "I want to share something that's been on my mind.", "Let's explore a new topic."].map(s => (
+                      <button key={s} onClick={() => { setInput(s); textareaRef.current?.focus() }}
+                        className="px-3.5 py-2 bg-surface border border-border rounded-xl text-xs text-text-muted hover:text-text-primary hover:border-emerald-300 transition-all">
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {mode === 'clone' && (
                   <div className="flex flex-wrap gap-2 justify-center max-w-lg">
-                    {["What decision would you make differently?", "How do you approach hard problems?", "What do you think about AI?"].map(s => (
+                    {[`What would ${userName || 'I'} say about...`, "How do you approach hard problems?", "What do you think about AI?"].map(s => (
                       <button key={s} onClick={() => { setInput(s); textareaRef.current?.focus() }}
                         className="px-3.5 py-2 bg-surface border border-border rounded-xl text-xs text-text-muted hover:text-text-primary hover:border-emerald-300 transition-all">
                         {s}
@@ -559,7 +623,7 @@ export default function ChatInterface({ mode, chatId }: ChatInterfaceProps) {
                     depthRung={(userState?.depthRung as any) || 1}
                   />
                 ))}
-                {loading && <ChatBubble role="assistant" content="" mode={mode} isTyping depthRung={(userState?.depthRung as any) || 1} />}
+                {loading && <ChatBubble role="assistant" content="" mode={mode} isTyping thinkingLabel={thinkingLabel} depthRung={(userState?.depthRung as any) || 1} />}
                 <div className="h-48" aria-hidden="true" />
                 <div ref={chatEndRef} />
               </div>

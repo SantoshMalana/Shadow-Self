@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
 
     const [turnGoal, memories, escalation, personality] = await Promise.all([
       (mode === 'onboarding' || mode === 'train') ? determineTurnGoal(user.id) : Promise.resolve(undefined),
-      ((mode === 'clone' || mode === 'onboarding') && lastUserMsg) ? recallMemories(user.id, lastUserMsg.content) : Promise.resolve([]),
+      lastUserMsg ? recallMemories(user.id, lastUserMsg.content) : Promise.resolve([]),
       lastUserMsg ? Promise.resolve(classifyEscalation(lastUserMsg.content)) : Promise.resolve({ shouldEscalate: false } as EscalationResult),
       getPersonality(user.id)
     ])
@@ -82,7 +82,13 @@ export async function POST(req: NextRequest) {
     let memoriesUsed = memories.length
 
     if (memoriesUsed > 0) {
-      systemPrompt += `\n\nRELEVANT MEMORIES FROM YOUR TRAINING:\n${memories.map((m, i) => `${i + 1}. ${m}`).join('\n')}\n\nDraw on these naturally — don't quote them verbatim.`
+      const memoryInstructions = (mode === 'train' || mode === 'onboarding')
+        ? `You remember these things from previous conversations. Use them to show continuity — reference past topics naturally, build on what you already know, and avoid re-asking things you've already learned. This is what makes you feel like a companion, not a stranger.`
+        : (mode === 'clone')
+        ? `Draw on these naturally — don't quote them verbatim. Use them to ground your responses in real context.`
+        : `Use these as context for your response where relevant.`
+      
+      systemPrompt += `\n\nRELEVANT MEMORIES FROM PREVIOUS CONVERSATIONS:\n${memories.map((m, i) => `${i + 1}. ${m}`).join('\n')}\n\n${memoryInstructions}`
     }
 
     let response = await generateChat(messages, systemPrompt, { escalate: escalation.shouldEscalate })
@@ -101,30 +107,42 @@ export async function POST(req: NextRequest) {
       data: { userId: user.id, role: 'assistant', content: response, mode: mode ?? 'clone', turnGoal, chatSessionId: activeChatId },
     })
 
-    if ((mode === 'train' || mode === 'onboarding' || mode === 'jarvis') && question && lastUserMsg) {
-        if (mode === 'train' || mode === 'onboarding') {
-          ;(async () => {
-            try {
-              const updated = await extractTraits(question, lastUserMsg.content, personality, userMessageId)
-              await savePersonality(user.id, updated)
-            } catch (err) { console.error('extractTraits task error:', err) }
-          })();
-          ;(async () => {
-            try {
-              await storeMemory(user.id, `Q: ${question}\nA: ${lastUserMsg.content}`, 'qa')
-            } catch (err) { console.error('storeMemory task error:', err) }
-          })();
-          ;(async () => {
-            try {
-              await maybeAdvanceDepthRung(user.id)
-            } catch (err) { console.error('maybeAdvanceDepthRung task error:', err) }
-          })();
-        }
+    if (lastUserMsg) {
+      // Always store user messages as memories for cross-session continuity
+      ;(async () => {
+        try {
+          // Only store messages with meaningful content (> 20 chars)
+          if (lastUserMsg.content.length > 20) {
+            const memoryContent = question
+              ? `Q: ${question}\nA: ${lastUserMsg.content}`
+              : lastUserMsg.content
+            await storeMemory(user.id, memoryContent, mode === 'jarvis' ? 'technical' : 'conversation')
+          }
+        } catch (err) { console.error('storeMemory task error:', err) }
+      })()
+    }
+
+    if ((mode === 'train' || mode === 'onboarding') && lastUserMsg) {
         ;(async () => {
           try {
-            await processAndStoreZeroKnowledge(lastUserMsg.content)
-          } catch (err) { console.error('zeroKnowledge task error:', err) }
+            const q = question || 'Free conversation'
+            const updated = await extractTraits(q, lastUserMsg.content, personality, userMessageId)
+            await savePersonality(user.id, updated)
+          } catch (err) { console.error('extractTraits task error:', err) }
         })();
+        ;(async () => {
+          try {
+            await maybeAdvanceDepthRung(user.id)
+          } catch (err) { console.error('maybeAdvanceDepthRung task error:', err) }
+        })();
+    }
+
+    if (lastUserMsg && lastUserMsg.content.length > 30) {
+      ;(async () => {
+        try {
+          await processAndStoreZeroKnowledge(lastUserMsg.content)
+        } catch (err) { console.error('zeroKnowledge task error:', err) }
+      })()
     }
 
     // Update the ChatSession updatedAt timestamp so it jumps to top

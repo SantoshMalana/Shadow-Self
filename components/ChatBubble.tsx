@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 interface ChatBubbleProps {
   role: 'user' | 'assistant'
@@ -8,13 +10,14 @@ interface ChatBubbleProps {
   mode: string
   name?: string
   isTyping?: boolean
+  thinkingLabel?: string
   turnGoal?: string
   messageId?: string
   memoriesUsed?: number
   depthRung?: 1 | 2 | 3 | 4 | 5
 }
 
-export default function ChatBubble({ role, content, mode, name, isTyping, turnGoal, messageId, memoriesUsed, depthRung = 1 }: ChatBubbleProps) {
+export default function ChatBubble({ role, content, mode, name, isTyping, thinkingLabel, turnGoal, messageId, memoriesUsed, depthRung = 1 }: ChatBubbleProps) {
   const isUser = role === 'user'
   const assistantName = mode === 'clone' ? (name || 'Clone') : 'Shadow Shelf'
 
@@ -77,19 +80,59 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
         <div className="pt-0.5">
           <div className="text-[15px] text-text-primary leading-[1.75] whitespace-pre-wrap break-words">
             {isTyping ? (
-              <span className="flex gap-1.5 items-center py-2 h-6">
-                <span className="typingDot" />
-                <span className="typingDot" />
-                <span className="typingDot" />
+              <span className="flex gap-1.5 items-center py-2">
+                <span className="flex gap-1.5 items-center h-6">
+                  <span className="typingDot" />
+                  <span className="typingDot" />
+                  <span className="typingDot" />
+                </span>
+                {thinkingLabel && (
+                  <span className="text-[12px] text-text-faint ml-2 animate-fade-in-up">
+                    {thinkingLabel}
+                  </span>
+                )}
               </span>
-            ) : cleanContent}
+            ) : (
+              <div className="markdown-prose">
+                <ReactMarkdown 
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    p: ({node, ...props}) => <p className="mb-3 last:mb-0" {...props} />,
+                    a: ({node, ...props}) => <a className="text-[var(--color-accent)] hover:underline" {...props} />,
+                    ul: ({node, ...props}) => <ul className="list-disc pl-5 mb-3 space-y-1" {...props} />,
+                    ol: ({node, ...props}) => <ol className="list-decimal pl-5 mb-3 space-y-1" {...props} />,
+                    li: ({node, ...props}) => <li className="pl-1" {...props} />,
+                    strong: ({node, ...props}) => <strong className="font-semibold text-text-primary" {...props} />,
+                    code: ({node, className, children, ...props}) => {
+                      const match = /language-(\w+)/.exec(className || '')
+                      return !match ? (
+                        <code className="px-1.5 py-0.5 rounded bg-surface border border-border text-[13px] font-mono text-[var(--color-accent-purple)]" {...props}>
+                          {children}
+                        </code>
+                      ) : (
+                        <div className="my-4 rounded-xl overflow-hidden border border-border bg-[#1a1b26]">
+                          <div className="flex items-center px-4 py-2 bg-[#16161e] border-b border-white/5">
+                            <span className="text-xs text-text-muted font-mono">{match[1]}</span>
+                          </div>
+                          <div className="p-4 overflow-x-auto text-[13px] font-mono text-gray-300 leading-relaxed">
+                            <code {...props}>{children}</code>
+                          </div>
+                        </div>
+                      )
+                    }
+                  }}
+                >
+                  {cleanContent}
+                </ReactMarkdown>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Hover-to-reveal controls */}
-        {!isTyping && messageId && (
+        {!isTyping && (
           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <FeedbackButtons messageId={messageId} />
+            <FeedbackButtons messageId={messageId} content={cleanContent} />
           </div>
         )}
       </div>
@@ -97,10 +140,21 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
   )
 }
 
-function FeedbackButtons({ messageId }: { messageId: string }) {
+function FeedbackButtons({ messageId, content }: { messageId?: string, content: string }) {
   const [state, setState] = useState<'idle' | 'up' | 'down' | 'correcting' | 'sent'>('idle')
   const [correction, setCorrection] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(content)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (e) {
+      console.error('Failed to copy', e)
+    }
+  }
 
   const submitFeedback = async (rating: 'up' | 'down', correctionText?: string) => {
     if (isSubmitting) return
@@ -161,19 +215,29 @@ function FeedbackButtons({ messageId }: { messageId: string }) {
 
   return (
     <div className="mt-3 flex gap-4">
+      {messageId && (
+        <>
+          <button
+            onClick={() => { setState('up'); submitFeedback('up') }}
+            disabled={isSubmitting}
+            className="text-xs text-text-faint hover:text-accent-light cursor-pointer transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            👍 Accurate
+          </button>
+          <button
+            onClick={() => setState('correcting')}
+            disabled={isSubmitting}
+            className="text-xs text-text-faint hover:text-accent-light cursor-pointer transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            ✏️ Correct
+          </button>
+        </>
+      )}
       <button
-        onClick={() => { setState('up'); submitFeedback('up') }}
-        disabled={isSubmitting}
-        className="text-xs text-text-faint hover:text-accent-light cursor-pointer transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+        onClick={handleCopy}
+        className="text-xs text-text-faint hover:text-accent-light cursor-pointer transition-colors flex items-center gap-1.5"
       >
-        👍 Accurate
-      </button>
-      <button
-        onClick={() => setState('correcting')}
-        disabled={isSubmitting}
-        className="text-xs text-text-faint hover:text-accent-light cursor-pointer transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        ✏️ Correct
+        {copied ? '✓ Copied' : '📋 Copy'}
       </button>
     </div>
   )
