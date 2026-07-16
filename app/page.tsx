@@ -154,13 +154,29 @@ export default function HomePage() {
           </div>
           <div className="featuresGrid">
             {[
-              { icon: '🔒', title: 'Zero-Trust Architecture', desc: 'Your data is siloed to your account. We use vector embeddings — numerical representations, not raw text — for memory retrieval. You can delete everything at any time.' },
-              { icon: '🧠', title: 'Learns the journey', desc: 'Captures the reasoning process behind decisions — the wrong turns, the tradeoffs, the intuition — not just the polished final answer.' },
-              { icon: '🎙️', title: 'Your real voice', desc: 'Speaks in your cadence and phrasing. Debates in your style. Uses your actual vocabulary, not a generic AI tone.' },
-              { icon: '🌱', title: 'Gets smarter daily', desc: 'Every conversation deepens the cognitive profile. There is no final version — your clone evolves as you do.' },
+              { 
+                icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, 
+                title: 'Zero-Trust Architecture', 
+                desc: 'Your data is siloed to your account. We use vector embeddings — numerical representations, not raw text — for memory retrieval. You can delete everything at any time.' 
+              },
+              { 
+                icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>, 
+                title: 'Learns the journey', 
+                desc: 'Captures the reasoning process behind decisions — the wrong turns, the tradeoffs, the intuition — not just the polished final answer.' 
+              },
+              { 
+                icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>, 
+                title: 'Your real voice', 
+                desc: 'Speaks in your cadence and phrasing. Debates in your style. Uses your actual vocabulary, not a generic AI tone.' 
+              },
+              { 
+                icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>, 
+                title: 'Gets smarter daily', 
+                desc: 'Every conversation deepens the cognitive profile. There is no final version — your clone evolves as you do.' 
+              },
             ].map((f, i) => (
               <div key={i} className={`featureCard glassCard`}>
-                <div className="featureDot">{f.icon}</div>
+                <div className="featureDot text-[var(--color-accent-purple)]">{f.icon}</div>
                 <div>
                   <h3>{f.title}</h3>
                   <p>{f.desc}</p>
@@ -180,12 +196,24 @@ export default function HomePage() {
           </div>
           <div className="useCasesGrid">
             {[
-              { title: 'Engineers & Architects', desc: 'Preserve the debugging instincts and architectural decisions that take years to develop. Your team can query your reasoning long after you move on.', icon: '⚙️' },
-              { title: 'Founders & Leaders', desc: 'Capture the decision-making framework that defines your company culture. New hires learn from how you actually think, not just what you wrote in a doc.', icon: '🎯' },
-              { title: 'Everyone, Eventually', desc: 'The people who raised you. The mentor who shaped your career. A version of them that can still answer questions — built on real conversations, not guesses.', icon: '💜' },
+              { 
+                title: 'Engineers & Architects', 
+                desc: 'Preserve the debugging instincts and architectural decisions that take years to develop. Your team can query your reasoning long after you move on.', 
+                icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m14 7 3-3 3 3-3 3-3-3Z"/><path d="M14 7V3h7v4"/><path d="M10 14 3 21"/><path d="m3 14 7 7"/></svg>
+              },
+              { 
+                title: 'Founders & Leaders', 
+                desc: 'Capture the decision-making framework that defines your company culture. New hires learn from how you actually think, not just what you wrote in a doc.', 
+                icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+              },
+              { 
+                title: 'Everyone, Eventually', 
+                desc: 'The people who raised you. The mentor who shaped your career. A version of them that can still answer questions — built on real conversations, not guesses.', 
+                icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              },
             ].map((c, i) => (
               <div key={i} className={`useCaseCard glassCard`}>
-                <div style={{ fontSize: 24, marginBottom: 16 }}>{c.icon}</div>
+                <div className="text-[var(--color-accent-purple)]" style={{ marginBottom: 16 }}>{c.icon}</div>
                 <h3>{c.title}</h3>
                 <p>{c.desc}</p>
               </div>
@@ -233,13 +261,29 @@ export default function HomePage() {
 
           <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '48px' }}>
             {[
-              { icon: '🕵️', label: 'Silent by default', desc: 'Tier 0 shadow mode — logs insights, never interrupts.' },
-              { icon: '🧠', label: '6-stage verification', desc: 'Every intervention passes anomaly, boundary, vector search, and LLM self-critique before you see it.' },
-              { icon: '🔒', label: 'API key auth', desc: 'Your key lives in VS Code\'s encrypted SecretStorage. Never plain text.' },
-              { icon: '📊', label: 'Earns trust over time', desc: 'Scout advances from silent → gutter icon → voice only after proving accuracy.' },
+              { 
+                icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12h3l3 -9 5 18 3 -9h5"/></svg>, 
+                label: 'Silent by default', 
+                desc: 'Tier 0 shadow mode — logs insights, never interrupts.' 
+              },
+              { 
+                icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12l2 2 4 -4"/><circle cx="12" cy="12" r="10"/></svg>, 
+                label: '6-stage verification', 
+                desc: 'Every intervention passes anomaly, boundary, vector search, and LLM self-critique before you see it.' 
+              },
+              { 
+                icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, 
+                label: 'API key auth', 
+                desc: 'Your key lives in VS Code\'s encrypted SecretStorage. Never plain text.' 
+              },
+              { 
+                icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>, 
+                label: 'Earns trust over time', 
+                desc: 'Scout advances from silent → gutter icon → voice only after proving accuracy.' 
+              },
             ].map((f, i) => (
               <div key={i} className="glassCard" style={{ flex: '1 1 200px', maxWidth: 260, textAlign: 'center', padding: '28px 20px' }}>
-                <div style={{ fontSize: '32px', marginBottom: '12px' }}>{f.icon}</div>
+                <div className="text-[var(--color-accent-purple)]" style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>{f.icon}</div>
                 <h3 style={{ fontSize: '15px', fontWeight: 600, marginBottom: '8px', color: 'var(--color-text)' }}>{f.label}</h3>
                 <p style={{ fontSize: '13.5px', color: 'var(--color-text-muted)', lineHeight: 1.6 }}>{f.desc}</p>
               </div>

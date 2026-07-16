@@ -14,11 +14,18 @@ export async function DELETE() {
     // All-or-nothing: if any step fails, everything rolls back instead of
     // leaving the account half-deleted.
     await prisma.$transaction([
+      // Dependent tables first (to satisfy FK constraints)
       prisma.feedback.deleteMany({ where: { userId } }),
       prisma.consentLedger.deleteMany({ where: { userId } }),
       prisma.$executeRaw`DELETE FROM memories WHERE user_id = ${userId}::uuid`,
       prisma.message.deleteMany({ where: { userId } }),
+      prisma.chatSession.deleteMany({ where: { userId } }),
       prisma.personalityProfile.deleteMany({ where: { userId } }),
+      prisma.pipelineAuditLog.deleteMany({ where: { userId } }),
+      prisma.scoutDelivery.deleteMany({ where: { userId } }),
+      prisma.queuedFrictionEvent.deleteMany({ where: { userId } }),
+      prisma.scoutTrustLedger.deleteMany({ where: { userId } }),
+      prisma.personalBaseline.deleteMany({ where: { userId } }),
       prisma.user.delete({ where: { id: userId } }),
     ])
 

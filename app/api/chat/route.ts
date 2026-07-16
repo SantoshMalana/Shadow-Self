@@ -24,9 +24,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { messages, mode, question } = await req.json()
+    const { messages, mode, question, chatId } = await req.json()
     
-    // Safety check: Limit input length to prevent DoS or token blowout
     if (question && question.length > 2000) {
       return NextResponse.json({ error: 'Question too long.' }, { status: 400 })
     }
@@ -37,7 +36,39 @@ export async function POST(req: NextRequest) {
 
     const lastUserMsg = messages.length > 0 ? [...messages].reverse().find((m: any) => m.role === 'user') : null;
 
-    // Parallelize pre-flight requests: turnGoal, memories, escalation classification, and personality
+    let activeChatId = chatId
+
+    if (!activeChatId && lastUserMsg) {
+      // Generate a fast title from first 40 chars of message (no extra LLM call)
+      const quickTitle = lastUserMsg.content.trim().slice(0, 40).split(' ').slice(0, 5).join(' ')
+
+      const newSession = await prisma.chatSession.create({
+        data: {
+          userId: user.id,
+          mode: mode || 'clone',
+          title: quickTitle
+        }
+      })
+      activeChatId = newSession.id
+
+      // Fire-and-forget background LLM title refinement
+      ;(async () => {
+        try {
+          const titlePrompt = `Generate a very short 2-4 word summary title for this message. No quotes, no punctuation, no explanation.\nMessage: "${lastUserMsg.content.slice(0, 200)}"`
+          const aiTitle = await generateChat([{ role: 'user', content: titlePrompt }], 'You output only the title.', { escalate: false })
+          if (aiTitle?.trim()) {
+            await prisma.chatSession.update({
+              where: { id: newSession.id },
+              data: { title: aiTitle.trim().slice(0, 60) }
+            })
+          }
+        } catch (e) { /* title stays as quick title */ }
+      })()
+
+    } else if (!activeChatId) {
+      return NextResponse.json({ error: 'Cannot create empty chat session' }, { status: 400 })
+    }
+
     const [turnGoal, memories, escalation, personality] = await Promise.all([
       (mode === 'onboarding' || mode === 'train') ? determineTurnGoal(user.id) : Promise.resolve(undefined),
       ((mode === 'clone' || mode === 'onboarding') && lastUserMsg) ? recallMemories(user.id, lastUserMsg.content) : Promise.resolve([]),
@@ -45,9 +76,7 @@ export async function POST(req: NextRequest) {
       getPersonality(user.id)
     ])
 
-    if (escalation.shouldEscalate) {
-
-    }
+    // Crisis logic removed per AGENTS.md hard constraint.
 
     let systemPrompt = await getSystemPrompt(mode, user.name || 'the user', user.depthRung, personality, turnGoal as any)
     let memoriesUsed = memories.length
@@ -56,65 +85,55 @@ export async function POST(req: NextRequest) {
       systemPrompt += `\n\nRELEVANT MEMORIES FROM YOUR TRAINING:\n${memories.map((m, i) => `${i + 1}. ${m}`).join('\n')}\n\nDraw on these naturally — don't quote them verbatim.`
     }
 
-    const response = await generateChat(messages, systemPrompt, { escalate: escalation.shouldEscalate })
+    let response = await generateChat(messages, systemPrompt, { escalate: escalation.shouldEscalate })
 
-    // Save user message first so we have the ID for provenance
+    // Crisis handling removed.
+
     let userMessageId: string | undefined
-    if (messages.length > 0) {
-      const lastUserMsg = [...messages].reverse().find((m: any) => m.role === 'user')
-      if (lastUserMsg) {
-        const saved = await prisma.message.create({
-          data: { userId: user.id, role: 'user', content: lastUserMsg.content, mode: mode ?? 'clone' },
-        })
-        userMessageId = saved.id
-      }
+    if (lastUserMsg) {
+      const saved = await prisma.message.create({
+        data: { userId: user.id, role: 'user', content: lastUserMsg.content, mode: mode ?? 'clone', chatSessionId: activeChatId },
+      })
+      userMessageId = saved.id
     }
 
     const savedMessage = await prisma.message.create({
-      data: { userId: user.id, role: 'assistant', content: response, mode: mode ?? 'clone', turnGoal },
+      data: { userId: user.id, role: 'assistant', content: response, mode: mode ?? 'clone', turnGoal, chatSessionId: activeChatId },
     })
 
-    if ((mode === 'train' || mode === 'onboarding') && question && messages.length > 0) {
-      const lastUserMsg = [...messages].reverse().find((m: any) => m.role === 'user')
-      if (lastUserMsg) {
-        // Execute background tasks independently to prevent cascading failures
-        ;(async () => {
-          try {
-            const updated = await extractTraits(question, lastUserMsg.content, personality, userMessageId)
-            await savePersonality(user.id, updated)
-          } catch (err) {
-            console.error('extractTraits task error:', err)
-          }
-        })();
-
-        ;(async () => {
-          try {
-            await storeMemory(user.id, `Q: ${question}\nA: ${lastUserMsg.content}`, 'qa')
-          } catch (err) {
-            console.error('storeMemory task error:', err)
-          }
-        })();
-
-        ;(async () => {
-          try {
-            await maybeAdvanceDepthRung(user.id)
-          } catch (err) {
-            console.error('maybeAdvanceDepthRung task error:', err)
-          }
-        })();
-
-        // Zero Knowledge Distillation — extract anonymous cognitive insights
+    if ((mode === 'train' || mode === 'onboarding' || mode === 'jarvis') && question && lastUserMsg) {
+        if (mode === 'train' || mode === 'onboarding') {
+          ;(async () => {
+            try {
+              const updated = await extractTraits(question, lastUserMsg.content, personality, userMessageId)
+              await savePersonality(user.id, updated)
+            } catch (err) { console.error('extractTraits task error:', err) }
+          })();
+          ;(async () => {
+            try {
+              await storeMemory(user.id, `Q: ${question}\nA: ${lastUserMsg.content}`, 'qa')
+            } catch (err) { console.error('storeMemory task error:', err) }
+          })();
+          ;(async () => {
+            try {
+              await maybeAdvanceDepthRung(user.id)
+            } catch (err) { console.error('maybeAdvanceDepthRung task error:', err) }
+          })();
+        }
         ;(async () => {
           try {
             await processAndStoreZeroKnowledge(lastUserMsg.content)
-          } catch (err) {
-            console.error('zeroKnowledge task error:', err)
-          }
+          } catch (err) { console.error('zeroKnowledge task error:', err) }
         })();
-      }
     }
 
-    return NextResponse.json({ response, turnGoal, messageId: savedMessage.id, memoriesUsed })
+    // Update the ChatSession updatedAt timestamp so it jumps to top
+    await prisma.chatSession.update({
+      where: { id: activeChatId },
+      data: { updatedAt: new Date() }
+    })
+
+    return NextResponse.json({ response, turnGoal, messageId: savedMessage.id, memoriesUsed, chatId: activeChatId })
   } catch (error: any) {
     console.error('Chat API error:', error)
     return NextResponse.json({ error: error.message || 'Failed to get response from LLM' }, { status: 500 })
@@ -128,14 +147,24 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url)
     const mode = searchParams.get('mode') || 'clone'
+    const chatId = searchParams.get('chatId')
+
+    if (!chatId) {
+      return NextResponse.json({ messages: [] })
+    }
+
+    // Verify ownership
+    const session = await prisma.chatSession.findUnique({ where: { id: chatId }})
+    if (!session || session.userId !== user.id) {
+       return NextResponse.json({ error: 'Unauthorized or not found' }, { status: 404 })
+    }
 
     const messages = await prisma.message.findMany({
-      where: { userId: user.id, mode },
+      where: { userId: user.id, chatSessionId: chatId },
       orderBy: { createdAt: 'asc' },
-      take: 50,
+      take: 100,
     })
 
-    // Map Prisma models to the simple Message interface expected by frontend
     const history = messages.map(msg => ({
       role: msg.role,
       content: msg.content,

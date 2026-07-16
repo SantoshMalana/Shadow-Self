@@ -13,10 +13,10 @@
  * This is a fast, zero-latency keyword classifier — no LLM call required.
  */
 
+    // Crisis Signals deliberately removed per safety guidelines.
+
 const EMOTIONAL_SIGNALS = [
-  'suicide', 'kill myself', 'end it', 'self-harm', 'cutting',
-  'hopeless', 'worthless', 'can\'t go on', 'want to die',
-  'panic attack', 'breaking down', 'crying', 'devastated',
+  'worthless', 'panic attack', 'breaking down', 'crying', 'devastated',
   'terrified', 'deeply hurt', 'betrayed', 'abused',
   'depressed', 'anxiety', 'trauma', 'ptsd',
 ]
@@ -45,7 +45,7 @@ export type EscalationResult = {
 export function classifyEscalation(userMessage: string): EscalationResult {
   const lower = userMessage.toLowerCase()
 
-  // Check emotional intensity first (highest priority)
+  // Check general emotional intensity
   if (EMOTIONAL_SIGNALS.some(signal => lower.includes(signal))) {
     return { shouldEscalate: true, reason: 'emotional' }
   }

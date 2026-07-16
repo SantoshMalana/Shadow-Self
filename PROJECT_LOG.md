@@ -190,3 +190,26 @@ All 23 tasks on the master fix list are now successfully integrated and the buil
 - **Type Safety:** Full typecheck passed (0 errors) across the entire Next.js project.
 - **pgvector Integration:** Replaced Scout mock memory with actual pgvector raw SQL similarity search against both personal memories and the AnonymousCognitiveModel abstract layer.
 - **Final Verification:** Next.js production build succeeded with no warnings.
+
+### July 15, 2026 - Unified Navigation & Settings Overhaul
+- **Collapsible Sidebar (`Sidebar.tsx`):** Extracted the sidebar into a shared client component that renders across ALL modes (Home, Interviewer, Replica, Jarvis, Settings). Collapses to icon-only rail with smooth transitions. Settings link pinned to the bottom of the sidebar on every page.
+- **Mode-Specific Welcome Screens (`ChatInterface.tsx`):** Replaced the blank chat start with Claude-style contextual welcome screens per mode:
+  - Interviewer: "Hey [Name], let's train your twin."
+  - Replica: "Hey [Name], what's on your mind?"
+  - Jarvis: "Hey [Name], what are we cooking today?"
+  - Each includes quick-start prompt chips for the relevant mode.
+- **Context Panel:** Non-Jarvis modes now show a dedicated left context panel (Trust Depth progress + Clone Profile stats) alongside the chat column, replacing the old cluttered sidebar layout.
+- **Unified Top Header:** All chat modes now share a consistent top header bar showing mode label, depth indicator, and voice toggle.
+- **Settings Page Rebuild (`app/settings/page.tsx`):** Complete rewrite with inner tab navigation:
+  - Profile — name, avatar, email, link to full cognitive profile
+  - API Keys — VS Code extension key management with copy/regenerate
+  - Your Data — data dashboard link + JSON export
+  - Consent & Privacy — per-stream toggle switches with icons
+  - Danger Zone — delete account with confirmation flow
+- **`/api/user/profile` route:** New endpoint returning name + email for the settings profile tab.
+- **Removed UserMenu:** Removed the floating user menu from all views — replaced by direct Settings link in sidebar.
+
+### July 15, 2026 - Multi-Chat Sessions
+- **Database Schema Updates:** Added `ChatSession` model and migrated `Message` to include `chatSessionId` (with forced DB reset as approved).
+- **API Overhaul:** Updated `/api/chat` to auto-generate session titles via LLM and handle `chatId` routing. Added `/api/chats` for fetching history.
+- **UI Architecture:** The global `Sidebar` now polls and displays isolated chat threads per mode. Added `/[mode]/[chatId]` dynamic Next.js routing.

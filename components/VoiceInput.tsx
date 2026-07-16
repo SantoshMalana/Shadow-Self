@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react'
 
 interface VoiceInputProps {
   onTranscription: (text: string) => void
-  mode?: 'train' | 'clone' | 'onboarding'
+  mode?: 'train' | 'clone' | 'onboarding' | 'jarvis'
   disabled?: boolean
 }
 

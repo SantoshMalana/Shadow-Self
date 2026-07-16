@@ -4,7 +4,7 @@ import { FrictionPing, MIN_SAMPLES_FOR_BASELINE, ANOMALY_Z_SCORE_THRESHOLD } fro
 export async function processFrictionPing(ping: FrictionPing): Promise<boolean> {
   // We only do anomaly detection for numeric signals
   if (typeof ping.value !== 'number') {
-    return false // discrete signals like error_class handle logic differently, or just pass through to pipeline
+    return true // discrete signals like error_class pass through to pipeline automatically
   }
 
   const baseline = await db.personalBaseline.findUnique({

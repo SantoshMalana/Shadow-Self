@@ -56,7 +56,7 @@ export default function PersonalityStats({ personality, completeness, onDeleteTr
             <circle
               cx="26" cy="26" r={r}
               fill="none"
-              stroke={completeness > 60 ? 'var(--color-accent)' : 'var(--color-accent-deep)'}
+              stroke={completeness > 60 ? 'var(--color-accent)' : 'var(--color-text-faint)'}
               strokeWidth="2"
               strokeLinecap="round"
               strokeDasharray={circ}
@@ -91,23 +91,23 @@ export default function PersonalityStats({ personality, completeness, onDeleteTr
       {/* Tags */}
       {(personality.communicationStyle?.tone?.length || 0) > 0 && (
         <div>
-          <p className="text-[11px] text-accent-light font-semibold tracking-wider uppercase mb-2">Detected Tones</p>
+          <p className="text-[11px] text-text-muted font-semibold tracking-wider uppercase mb-2">Detected Tones</p>
           <div className="flex flex-wrap gap-1.5">
             {personality.communicationStyle.tone.slice(0, 5).map((t: any, i: number) => {
               const label = tv(t)
               return (
                 <span
                   key={i}
-                  className="bg-accent-soft border border-border text-text-primary pl-2.5 pr-1.5 py-1 text-[11px] rounded-full capitalize flex items-center gap-1 group"
+                  className="bg-surface border border-border text-text-primary pl-2.5 pr-1.5 py-1 text-[11px] rounded-full capitalize flex items-center gap-1 group"
                 >
                   {label}
                   {typeof t !== 'string' && t?.sourceId && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent/60 shrink-0" title={`Source: ${t.sourceId}`} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] shrink-0" title={`Source: ${t.sourceId}`} />
                   )}
                   {onDeleteTrait && (
                     <button 
                       onClick={() => onDeleteTrait('communicationStyle.tone', i)}
-                      className="text-text-faint hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:opacity-100"
+                      className="text-text-faint hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:opacity-100"
                       title="Remove trait"
                       aria-label={`Remove trait ${label}`}
                     >
@@ -123,23 +123,23 @@ export default function PersonalityStats({ personality, completeness, onDeleteTr
 
       {(personality.knowledgeDomains?.length || 0) > 0 && (
         <div>
-          <p className="text-[11px] text-accent-light font-semibold tracking-wider uppercase mb-2">Knowledge Domains</p>
+          <p className="text-[11px] text-text-muted font-semibold tracking-wider uppercase mb-2">Knowledge Domains</p>
           <div className="flex flex-wrap gap-1.5">
             {personality.knowledgeDomains.slice(0, 4).map((d: any, i: number) => {
               const label = tv(d)
               return (
                 <span
                   key={i}
-                  className="bg-accent-soft border border-border text-text-primary pl-2.5 pr-1.5 py-1 text-[11px] rounded-full capitalize flex items-center gap-1 group"
+                  className="bg-surface border border-border text-text-primary pl-2.5 pr-1.5 py-1 text-[11px] rounded-full capitalize flex items-center gap-1 group"
                 >
                   {label}
                   {typeof d !== 'string' && d?.sourceId && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent/60 shrink-0" title={`Source: ${d.sourceId}`} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] shrink-0" title={`Source: ${d.sourceId}`} />
                   )}
                   {onDeleteTrait && (
                     <button 
                       onClick={() => onDeleteTrait('knowledgeDomains', i)}
-                      className="text-text-faint hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:opacity-100"
+                      className="text-text-faint hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:opacity-100"
                       title="Remove domain"
                       aria-label={`Remove domain ${label}`}
                     >

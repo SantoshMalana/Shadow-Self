@@ -22,7 +22,7 @@ export default async function ProfilePage() {
     <div className="min-h-screen bg-bg text-text-primary font-sans selection:bg-accent/30">
 
       {/* Nav header — previously missing entirely, this page was a dead end */}
-      <header className="border-b border-border bg-bg/80 backdrop-blur-md px-6 sm:px-10 h-[60px] flex items-center gap-4 sticky top-0 z-20">
+      <header className="border-b border-border bg-white/80 backdrop-blur-md px-6 sm:px-10 h-[60px] flex items-center gap-4 sticky top-0 z-20">
         <Link href="/train" className="text-text-muted hover:text-text-primary transition-colors flex items-center gap-2 font-medium">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
           Back
@@ -36,15 +36,15 @@ export default async function ProfilePage() {
         {/* Header Section */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-light tracking-tight text-text-primary">
+            <h1 className="text-3xl font-bold tracking-tight text-text-primary">
               {user.name ? `${user.name}'s Profile` : 'Cognitive Profile'}
             </h1>
             <p className="text-text-muted mt-1">Real-time analysis of your digital clone.</p>
           </div>
 
           <div className="flex gap-4">
-            <div className="px-4 py-2 rounded-xl bg-accent-soft border border-accent/20 flex flex-col items-end">
-              <span className="text-xs uppercase tracking-wider text-accent-light font-medium">Trust Depth</span>
+            <div className="px-4 py-2 rounded-xl bg-[var(--color-accent-purple)]/10 border border-[var(--color-accent-purple)]/20 flex flex-col items-end">
+              <span className="text-xs uppercase tracking-wider text-[var(--color-accent-purple)] font-medium">Trust Depth</span>
               <span className="text-lg text-text-primary font-semibold">Rung {user.depthRung} / 5</span>
             </div>
             <div className="px-4 py-2 rounded-xl bg-surface border border-border flex flex-col items-end">
@@ -55,15 +55,15 @@ export default async function ProfilePage() {
         </header>
 
         {/* Completeness Bar */}
-        <section className="ss-card p-6 shadow-2xl shadow-black/50 backdrop-blur-xl">
+        <section className="bg-white border border-border rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] p-6">
           <div className="flex justify-between items-end mb-2">
             <h2 className="text-sm font-medium text-text-faint uppercase tracking-widest">Clone Completeness</h2>
-            <span className="text-2xl font-light text-text-primary">{completeness}%</span>
+            <span className="text-2xl font-bold text-text-primary">{completeness}%</span>
           </div>
-          <div className="w-full bg-bg rounded-full h-3 overflow-hidden border border-border/60">
+          <div className="w-full bg-surface rounded-full h-3 overflow-hidden border border-border">
             <div
               className="h-3 transition-all duration-1000 ease-out"
-              style={{ width: `${completeness}%`, background: 'linear-gradient(90deg, var(--accent), var(--accent-deep))' }}
+              style={{ width: `${completeness}%`, background: 'linear-gradient(90deg, var(--color-accent), var(--color-accent-hover))' }}
             />
           </div>
         </section>
@@ -72,9 +72,9 @@ export default async function ProfilePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
           {/* Communication Style */}
-          <section className="ss-card p-6 flex flex-col gap-4">
-            <h3 className="text-text-primary font-medium flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-400" />
+          <section className="bg-white border border-border rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] p-6 flex flex-col gap-4">
+            <h3 className="text-text-primary font-semibold flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-blue-500" />
               Communication Style
             </h3>
 
@@ -83,7 +83,7 @@ export default async function ProfilePage() {
               <div className="flex flex-wrap gap-2">
                 {personality.communicationStyle.tone.length > 0 ? personality.communicationStyle.tone.map((t: any, i: number) => {
                   const val = tv(t);
-                  return <span key={i} className="px-2.5 py-1 text-sm bg-surface text-blue-200 rounded-md border border-border">{val}</span>
+                  return <span key={i} className="px-2.5 py-1 text-sm bg-blue-50 text-blue-700 rounded-md border border-blue-200">{val}</span>
                 }) : <span className="text-sm text-text-faint italic">Gathering data...</span>}
               </div>
             </div>
@@ -107,9 +107,9 @@ export default async function ProfilePage() {
           </section>
 
           {/* Thinking Patterns */}
-          <section className="ss-card p-6 flex flex-col gap-4">
-            <h3 className="text-text-primary font-medium flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-accent" />
+          <section className="bg-white border border-border rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] p-6 flex flex-col gap-4">
+            <h3 className="text-text-primary font-semibold flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[var(--color-accent-purple)]" />
               Thinking Patterns
             </h3>
 
@@ -118,7 +118,7 @@ export default async function ProfilePage() {
               <div className="flex flex-wrap gap-2">
                 {personality.thinkingPatterns.values.length > 0 ? personality.thinkingPatterns.values.map((v: any, i: number) => {
                   const val = tv(v);
-                  return <span key={i} className="px-2.5 py-1 text-sm bg-accent-soft text-accent-light rounded-md border border-accent/20">{val}</span>
+                  return <span key={i} className="px-2.5 py-1 text-sm bg-[var(--color-accent-purple)]/10 text-[var(--color-accent-purple)] rounded-md border border-[var(--color-accent-purple)]/20">{val}</span>
                 }) : <span className="text-sm text-text-faint italic">Gathering data...</span>}
               </div>
             </div>
@@ -128,7 +128,7 @@ export default async function ProfilePage() {
               <ul className="space-y-2">
                 {personality.thinkingPatterns.opinions.length > 0 ? personality.thinkingPatterns.opinions.map((o: any, i: number) => {
                   const val = tv(o);
-                  return <li key={i} className="text-sm text-text-muted pl-3 border-l-2 border-border">{val}</li>
+                  return <li key={i} className="text-sm text-text-muted pl-3 border-l-2 border-[var(--color-accent-purple)]/30">{val}</li>
                 }) : <span className="text-sm text-text-faint italic">Gathering data...</span>}
               </ul>
             </div>
@@ -136,16 +136,16 @@ export default async function ProfilePage() {
 
           {/* Emotional & Knowledge */}
           <section className="flex flex-col gap-6">
-            <div className="ss-card p-6">
-              <h3 className="text-text-primary font-medium flex items-center gap-2 mb-4">
-                <span className="w-2 h-2 rounded-full bg-rose-400" />
+            <div className="bg-white border border-border rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] p-6">
+              <h3 className="text-text-primary font-semibold flex items-center gap-2 mb-4">
+                <span className="w-2 h-2 rounded-full bg-rose-500" />
                 Emotional Profile
               </h3>
               <span className="text-xs text-text-faint uppercase tracking-wider mb-2 block">Passion Topics</span>
               <div className="flex flex-wrap gap-2 mb-4">
                 {personality.emotionalProfile.passionTopics.length > 0 ? personality.emotionalProfile.passionTopics.map((p: any, i: number) => {
                   const val = tv(p);
-                  return <span key={i} className="px-2.5 py-1 text-sm bg-rose-500/10 text-rose-300 rounded-md border border-rose-500/20">{val}</span>
+                  return <span key={i} className="px-2.5 py-1 text-sm bg-rose-50 text-rose-700 rounded-md border border-rose-200">{val}</span>
                 }) : <span className="text-sm text-text-faint italic">Gathering data...</span>}
               </div>
 
@@ -157,9 +157,9 @@ export default async function ProfilePage() {
               )}
             </div>
 
-            <div className="ss-card p-6 flex-grow">
-              <h3 className="text-text-primary font-medium flex items-center gap-2 mb-4">
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <div className="bg-white border border-border rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] p-6 flex-grow">
+              <h3 className="text-text-primary font-semibold flex items-center gap-2 mb-4">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 Knowledge Domains
               </h3>
               <div className="flex flex-wrap gap-2">

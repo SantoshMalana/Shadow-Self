@@ -31,8 +31,8 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
 
   if (isUser) {
     return (
-      <div className={`ssMessage flex justify-end mb-8`}>
-        <div className="max-w-[82%] px-4.5 py-3 rounded-[var(--radius-md)] rounded-br-sm bg-accent/15 border border-accent/25 text-text-primary text-[15px] leading-[1.7] break-words">
+      <div className={`ssMessage flex justify-end mb-10`}>
+        <div className="max-w-[82%] px-5 py-3.5 rounded-[var(--radius-lg)] rounded-br-sm bg-accent/15 border border-accent/25 text-text-primary text-[15px] leading-[1.7] break-words shadow-sm">
           {content}
         </div>
       </div>
@@ -40,41 +40,41 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
   }
 
   return (
-    <div className={`ssMessage flex gap-4 mb-12 max-w-[95%]`}>
+    <div className="ssMessage group flex gap-4 mb-12 max-w-[95%]">
       {/* Avatar */}
-      <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-1" style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, var(--color-accent) 78%)' }}>
-        <span className="text-[11px] text-white font-bold">◈</span>
+      <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-1 shadow-sm" style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, var(--color-accent) 78%)' }}>
+        <span className="text-[11px] text-white font-bold tracking-tighter">◈</span>
       </div>
 
       <div className="flex-1 min-w-0 pt-0.5">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-xs font-semibold text-text-muted">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-[13px] font-semibold text-text-primary">
             {assistantName}
           </span>
           {turnGoal && process.env.NEXT_PUBLIC_DEBUG_MODE === 'true' && (
-            <span className="text-[10px] px-2 py-0.5 bg-accent-soft border border-border text-accent-light rounded-full font-mono">
+            <span className="text-[10px] px-2 py-0.5 bg-[var(--color-accent)]/20 text-[var(--color-accent-text)] rounded-full font-mono">
               {turnGoal}
             </span>
           )}
           {depthRung > 1 && (
-             <span className="text-[10px] px-2 py-0.5 bg-accent-soft border border-accent/30 text-accent-light rounded-full font-mono">
+             <span className="text-[10px] px-2 py-0.5 bg-[var(--color-accent-purple)]/10 text-[var(--color-accent-purple)] rounded-full font-mono">
              Rung {depthRung}
            </span>
           )}
           {memoriesUsed && memoriesUsed > 0 && (
-            <span className="text-[10px] px-2 py-0.5 bg-surface border border-border text-text-muted rounded-full flex items-center gap-1">
+            <span className="text-[10px] px-2 py-0.5 bg-surface text-text-muted rounded-full flex items-center gap-1">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
               Recalled {memoriesUsed}
             </span>
           )}
           {transparencyTag && tagStyles[transparencyTag] && (
-            <span className={`text-[10px] px-2 py-0.5 ${tagStyles[transparencyTag].bg} border ${tagStyles[transparencyTag].border} ${tagStyles[transparencyTag].text} rounded-full font-medium`}>
+            <span className={`text-[10px] px-2 py-0.5 ${tagStyles[transparencyTag].bg} ${tagStyles[transparencyTag].text} rounded-full font-medium`}>
               {tagStyles[transparencyTag].label}
             </span>
           )}
         </div>
 
-        <div className="pt-1">
+        <div className="pt-0.5">
           <div className="text-[15px] text-text-primary leading-[1.75] whitespace-pre-wrap break-words">
             {isTyping ? (
               <span className="flex gap-1.5 items-center py-2 h-6">
@@ -86,7 +86,12 @@ export default function ChatBubble({ role, content, mode, name, isTyping, turnGo
           </div>
         </div>
 
-        {!isTyping && messageId && <FeedbackButtons messageId={messageId} />}
+        {/* Hover-to-reveal controls */}
+        {!isTyping && messageId && (
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <FeedbackButtons messageId={messageId} />
+          </div>
+        )}
       </div>
     </div>
   )

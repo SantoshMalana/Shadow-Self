@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import prisma from '@/lib/prisma'
+import Script from 'next/script'
+import { prisma } from '@/lib/prisma'
 
 export default async function VSCodeAuthPage() {
   const supabase = await createClient()
@@ -32,7 +33,7 @@ export default async function VSCodeAuthPage() {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center p-6 font-sans">
         <div className="text-center space-y-4">
-          <p className="text-red-400">Error: Could not retrieve API key.</p>
+          <p className="text-red-600">Error: Could not retrieve API key.</p>
           <Link href="/settings" className="btnPrimaryLg">Go to Settings</Link>
         </div>
       </div>
@@ -46,15 +47,15 @@ export default async function VSCodeAuthPage() {
       
       {/* Background FX */}
       <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent/20 rounded-full blur-[120px]" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[var(--color-accent-purple)]/10 rounded-full blur-[120px]" />
       </div>
 
-      <div className="relative z-10 glassCard p-10 max-w-md w-full text-center space-y-8 animate-fade-in-up">
+      <div className="relative z-10 bg-white border border-border rounded-[var(--radius-lg)] p-10 max-w-md w-full text-center space-y-8 animate-fade-in-up shadow-[0_24px_60px_-20px_rgba(0,0,0,0.1)]">
         <div className="space-y-4">
-          <div className="w-16 h-16 mx-auto bg-accent/10 rounded-2xl flex items-center justify-center border border-accent/20 text-3xl shadow-[0_0_30px_rgba(139,92,246,0.2)]">
+          <div className="w-16 h-16 mx-auto bg-[var(--color-accent-purple)]/5 rounded-2xl flex items-center justify-center border border-[var(--color-accent-purple)]/10 text-3xl shadow-[0_0_30px_rgba(131,40,249,0.15)]">
             ⚡
           </div>
-          <h1 className="text-2xl font-semibold text-text-primary">Connect VS Code</h1>
+          <h1 className="text-2xl font-bold text-text-primary">Connect VS Code</h1>
           <p className="text-text-muted text-sm leading-relaxed">
             You're signed in as <strong className="text-text-primary">{user.name || session.user.email}</strong>. 
             Click the button below to instantly connect your editor to Jarvis Mode.
@@ -73,16 +74,13 @@ export default async function VSCodeAuthPage() {
         </p>
       </div>
 
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            // Auto-redirect after 1 second if they don't click
-            setTimeout(function() {
-              window.location.href = "${extensionLink}";
-            }, 1000);
-          `
-        }}
-      />
+      <Script id="auto-redirect" strategy="afterInteractive">
+        {`
+          setTimeout(function() {
+            window.location.href = "${extensionLink}";
+          }, 1000);
+        `}
+      </Script>
     </div>
   )
 }

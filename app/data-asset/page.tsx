@@ -203,8 +203,8 @@ export default function DataAssetPage() {
         )}
 
         {error && (
-          <div className="ss-card p-6 border-red-900/30 bg-red-950/20 text-center">
-            <p className="text-red-400 text-sm">{error}</p>
+          <div className="bg-red-50 border border-red-200 rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] p-6 text-center">
+            <p className="text-red-600 text-sm">{error}</p>
           </div>
         )}
 
@@ -218,8 +218,8 @@ export default function DataAssetPage() {
                 { label: 'Completeness', value: `${data.personality.completeness}%` },
                 { label: 'Decisions', value: data.journeys.length },
               ].map(s => (
-                <div key={s.label} className="ss-card p-4 text-center">
-                  <p className="text-2xl font-light text-text-primary">{s.value}</p>
+                <div key={s.label} className="bg-white border border-border rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] p-4 text-center">
+                  <p className="text-2xl font-bold text-text-primary">{s.value}</p>
                   <p className="text-[11px] text-text-faint uppercase tracking-wider mt-1">{s.label}</p>
                 </div>
               ))}
@@ -231,9 +231,9 @@ export default function DataAssetPage() {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all capitalize focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-light ${
+                  className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all capitalize focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-purple)] ${
                     activeTab === tab
-                      ? 'bg-card text-text-primary shadow-sm'
+                      ? 'bg-white border border-border shadow-sm text-text-primary'
                       : 'text-text-faint hover:text-text-muted'
                   }`}
                 >
@@ -246,7 +246,7 @@ export default function DataAssetPage() {
             {activeTab === 'provenance' && (
               <div className="space-y-2">
                 {allProvenance.length === 0 ? (
-                  <div className="ss-card p-8 text-center">
+                  <div className="bg-white border border-border rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] p-8 text-center">
                     <p className="text-text-faint text-sm">No provenanced traits yet. Chat more to build your cognitive profile!</p>
                   </div>
                 ) : (
@@ -277,7 +277,7 @@ export default function DataAssetPage() {
             {activeTab === 'journeys' && (
               <div className="space-y-3">
                 {data.journeys.length === 0 ? (
-                  <div className="ss-card p-8 text-center">
+                  <div className="bg-white border border-border rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] p-8 text-center">
                     <p className="text-text-faint text-sm">No decisions captured yet. When you describe how you solved a problem or made a choice, it will appear here.</p>
                   </div>
                 ) : (
@@ -287,7 +287,7 @@ export default function DataAssetPage() {
             )}
 
             {activeTab === 'consents' && (
-              <div className="ss-card p-6">
+              <div className="bg-white border border-border rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] p-6">
                 <h3 className="text-sm font-medium text-text-faint uppercase tracking-widest mb-4">Consent History</h3>
                 <ConsentTimeline entries={data.consents} />
                 <p className="text-[10px] text-text-faint mt-4">

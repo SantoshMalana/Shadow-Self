@@ -44,7 +44,7 @@ export default function UpdatePasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative">
+    <div className="min-h-screen flex items-center justify-center p-6 relative bg-bg">
       <div className="lightFx" aria-hidden="true">
         <div className="raySource" />
         <div className="rays" />
@@ -52,12 +52,12 @@ export default function UpdatePasswordPage() {
 
       <div className="w-full max-w-[400px] relative z-10">
         <div className="flex items-center justify-center gap-2.5 mb-12">
-          <span className="w-7 h-7 shrink-0 rounded-full shadow-[var(--shadow-glow-sm)]" style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, var(--color-accent) 78%)' }} />
-          <span className="font-bold text-lg tracking-tight">Shadow Shelf</span>
+          <span className="w-7 h-7 shrink-0 rounded-full shadow-[var(--shadow-glow-sm)]" style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, var(--color-accent-purple) 78%)' }} />
+          <span className="font-bold text-lg tracking-tight text-text-primary">Shadow Shelf</span>
         </div>
 
-        <div className="bg-card border border-border rounded-[var(--radius-lg)] p-9 sm:p-10 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.65),0_0_0_1px_rgba(131,40,249,0.08)]">
-          <h1 className="text-2xl font-bold text-center mb-1.5">Update password</h1>
+        <div className="bg-white border border-border rounded-[var(--radius-lg)] p-9 sm:p-10 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.1)]">
+          <h1 className="text-2xl font-bold text-center mb-1.5 text-text-primary">Update password</h1>
           <p className="text-sm text-text-muted text-center mb-8">Enter your new password below.</p>
 
           <form action={action} className="flex flex-col gap-5">
@@ -83,7 +83,7 @@ export default function UpdatePasswordPage() {
             </div>
 
             {state?.error && (
-              <p className="text-sm text-red-400 bg-red-950/30 border border-red-900/40 px-3 py-2 rounded-[var(--radius-md)]">{state.error}</p>
+              <p className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-[var(--radius-md)]">{state.error}</p>
             )}
 
             <button type="submit" disabled={isPending} className={`btnPrimaryLg justify-center mt-2 w-full py-4 text-[15px] disabled:opacity-50`}>

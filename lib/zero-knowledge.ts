@@ -122,7 +122,36 @@ export async function extractInsight(
 }
 
 /**
- * Full pipeline: sanitize → extract → embed → store anonymously.
+ * Verify that the text does not contain capitalized proper nouns that might be PII.
+ * Simple heuristic: Flags if it finds Capitalized words that aren't at the start of a sentence
+ * or part of common generic terms (like "API", "UI", "DOM", etc).
+ * Returns true if clean, false if potential PII detected.
+ */
+export function verifySanitization(text: string): boolean {
+  // Common safe acronyms
+  const safeList = ['API', 'UI', 'UX', 'DB', 'HTML', 'CSS', 'DOM', 'JSON', 'SQL', 'LLM', 'AI', 'AWS', 'GCP', 'PR']
+  
+  // Find words starting with a capital letter
+  const words = text.split(/\s+/)
+  
+  for (let i = 1; i < words.length; i++) { // Skip first word (often capitalized start of sentence)
+    const word = words[i].replace(/[^a-zA-Z]/g, '')
+    if (word.length > 1 && word[0] === word[0].toUpperCase() && word[1] === word[1].toLowerCase()) {
+      // It's a capitalized word (e.g., "John", "Google", "React")
+      // Check if it's the start of a new sentence (previous word ended in . ! ?)
+      const prevWord = words[i-1]
+      if (!prevWord.match(/[.!?]["']?$/)) {
+        if (!safeList.includes(word.toUpperCase())) {
+          return false // Potential leaked proper noun
+        }
+      }
+    }
+  }
+  return true
+}
+
+/**
+ * Full pipeline: sanitize → verify → extract → embed → store anonymously.
  * Designed to run as a fire-and-forget background task.
  * 
  * Returns true if an insight was successfully stored, false otherwise.
@@ -132,6 +161,12 @@ export async function processAndStoreZeroKnowledge(rawContent: string): Promise<
     // Step 1: Strip all PII
     const sanitized = await sanitizeText(rawContent)
     if (!sanitized) return false
+
+    // Step 2: Verify sanitization via second-pass heuristic
+    if (!verifySanitization(sanitized)) {
+      console.warn('[ZeroKnowledge] Sanitization verification failed, dropping text.')
+      return false
+    }
 
     // Step 2: Extract the cognitive framework
     const extracted = await extractInsight(sanitized)

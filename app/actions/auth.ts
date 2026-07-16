@@ -35,9 +35,8 @@ export async function login(formData: FormData) {
     return { error: error.message }
   }
 
-  // Redirect to chat (clone) or train based on preference.
-  // We'll default to /chat if they're logging in.
-  redirect('/clone')
+  // Redirect to central hub
+  redirect('/home')
 }
 
 export async function signup(formData: FormData) {
@@ -77,8 +76,8 @@ export async function signup(formData: FormData) {
     return { error: error.message }
   }
 
-  // After signup, redirect to onboarding/training
-  redirect('/train')
+  // After signup, redirect to central hub
+  redirect('/home')
 }
 
 export async function logout() {

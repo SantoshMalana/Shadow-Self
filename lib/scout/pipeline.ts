@@ -5,6 +5,8 @@ import { scoreConfidence } from './confidence'
 import { critiqueIntervention } from './critique'
 import { determineAffordanceTier } from './affordance'
 import { logPipelineAudit } from './audit'
+import { generateChat } from '@/lib/llm'
+import { prisma } from '@/lib/prisma'
 
 export async function handleFrictionPing(ping: FrictionPing) {
   // STAGE 1: Collection
@@ -37,7 +39,10 @@ export async function processWorkflowBoundary(userId: string, boundary: Workflow
   const queuedEvents = await checkQueueAtBoundary(userId, boundary)
   
   for (const event of queuedEvents) {
-    const pingStub: FrictionPing = { userId, signalType: event.signalType, value: 0 } // Rehydrate ping
+    // Rehydrate ping from queue (assuming event.rawPing holds the serialized FrictionPing)
+    const pingStub: FrictionPing = (event as any).rawPing 
+      ? (typeof (event as any).rawPing === 'string' ? JSON.parse((event as any).rawPing) : (event as any).rawPing)
+      : { userId, signalType: event.signalType, value: 0 }
 
     // STAGE 4: Content Confidence Scoring
     const scores = await scoreConfidence(userId, pingStub, true)
@@ -52,8 +57,15 @@ export async function processWorkflowBoundary(userId: string, boundary: Workflow
       continue
     }
 
-    // Candidate message generation (mocked)
-    const candidateText = `I noticed you're stuck on ${event.signalType}. Last time this happened...`
+    // STAGE 5: Candidate message generation (LLM)
+    let candidateText = ''
+    try {
+      const prompt = `You are Jarvis, an elite developer assistant. The user is stuck on this friction signal: ${event.signalType}. ${scores.memorySnippet ? `\n\nRelevant past context: ${scores.memorySnippet}` : ''}\n\nWrite a 1-sentence proactive suggestion to help them get unstuck. Be concise, technical, and helpful. No fluff.`
+      candidateText = await generateChat([{ role: 'user', content: prompt }])
+    } catch (err) {
+      console.error('Scout generation failed:', err)
+      continue
+    }
 
     // STAGE 5: LLM Self-Critique
     const verdict = await critiqueIntervention(candidateText, event.signalType, scores.memorySnippet || '', 10)
@@ -83,6 +95,17 @@ export async function processWorkflowBoundary(userId: string, boundary: Workflow
     })
 
     // EXECUTE INTERVENTION (trigger UI or TTS)
-    // console.log(`Triggering intervention at Tier ${tier}: ${candidateText}`)
+    try {
+      await prisma.scoutDelivery.create({
+        data: {
+          userId,
+          tier,
+          candidateText,
+          signalType: event.signalType,
+        }
+      })
+    } catch (err) {
+      console.error('Failed to create scout delivery:', err)
+    }
   }
 }

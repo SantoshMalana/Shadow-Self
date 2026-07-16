@@ -36,6 +36,7 @@ model User {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   messages            Message[]
+  chatSessions        ChatSession[]
   memories            Memory[]
   personalityProfiles PersonalityProfile[]
   consentEntries      ConsentLedger[]
@@ -46,6 +47,10 @@ model User {
   queuedFrictionEvents QueuedFrictionEvent[]
   scoutTrustLedgers    ScoutTrustLedger[]
   pipelineAuditLogs    PipelineAuditLog[]
+  scoutDeliveries      ScoutDelivery[]
+
+  // Safety
+
 
   @@map("users")
 }
@@ -76,22 +81,45 @@ model PersonalityProfile {
   @@map("personality_profiles")
 }
 
+// ─── ChatSession ────────────────────────────────────────────────────────────────
+// Represents an individual chat thread within a specific mode.
+
+model ChatSession {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  title     String?  // Auto-generated based on the first message
+  mode      String   // "onboarding", "companion", "train", "clone", "jarvis"
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@index([userId, mode, isActive])
+  @@index([updatedAt])
+  @@map("chat_sessions")
+}
+
 // ─── Message ───────────────────────────────────────────────────────────────────
 // Chat messages. Mode expanded from train/clone to include onboarding and companion.
 // turn_goal tracks the AI's determined goal for this turn (§5 determine_turn_goal).
 
 model Message {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  role      String // "user" or "assistant"
-  content   String
-  mode      String // "onboarding", "companion", "train", "clone"
-  turnGoal  String?  @map("turn_goal")
-  createdAt DateTime @default(now()) @map("created_at")
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  chatSessionId String   @map("chat_session_id") @db.Uuid
+  role          String   // "user" or "assistant"
+  content       String
+  mode          String   // "onboarding", "companion", "train", "clone", "jarvis"
+  turnGoal      String?  @map("turn_goal")
+  createdAt     DateTime @default(now()) @map("created_at")
 
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  feedbacks Feedback[]
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chatSession ChatSession @relation(fields: [chatSessionId], references: [id], onDelete: Cascade)
+  feedbacks   Feedback[]
 
+  @@index([chatSessionId, createdAt])
   @@index([userId, createdAt])
   @@map("messages")
 }
@@ -232,4 +260,22 @@ model PipelineAuditLog {
 
   @@index([userId, timestamp])
   @@map("scout_pipeline_audit_logs")
+}
+
+
+
+// ─── P1: Scout Deliveries ──────────────────────────────────────────────────────
+model ScoutDelivery {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  tier          Int
+  candidateText String   @map("candidate_text")
+  signalType    String   @map("signal_type")
+  read          Boolean  @default(false)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@map("scout_deliveries")
 }
