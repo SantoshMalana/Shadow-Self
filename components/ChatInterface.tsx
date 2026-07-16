@@ -78,7 +78,7 @@ const modeConfig = {
     welcomeTitle: (name: string) => `Hey ${name}, what's on your mind?`,
     welcomeSub: 'Your digital twin is ready. Ask it anything — it responds with your logic, your voice, and your actual opinions.',
     placeholder: 'Talk to your clone…',
-    accentColor: 'bg-emerald-600',
+    accentColor: 'bg-[var(--color-status)]',
     pill: 'Replica',
   },
   jarvis: {
@@ -427,13 +427,13 @@ export default function ChatInterface({ mode, chatId }: ChatInterfaceProps) {
 
           {/* Subtle gradient bg */}
           <div className="absolute inset-0 pointer-events-none z-0">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-purple-100/30 rounded-full blur-[120px] opacity-50" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-[var(--color-accent-purple)]/10 rounded-full blur-[120px] opacity-50" />
           </div>
 
           {/* Extraction Toast */}
           {extractionToast && (
             <div className="absolute top-20 right-6 z-50 animate-fade-in-up">
-              <div className="bg-emerald-950/80 border border-emerald-700/50 text-emerald-400 px-4 py-2 rounded-full text-[13px] font-medium shadow-lg flex items-center gap-2">
+              <div className="bg-surface/80 border border-[var(--color-status)]/30 text-[var(--color-status)] px-4 py-2 rounded-full text-[13px] font-medium shadow-lg flex items-center gap-2">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
                 {extractionToast}
               </div>
@@ -567,7 +567,7 @@ export default function ChatInterface({ mode, chatId }: ChatInterfaceProps) {
                   <div className="flex flex-wrap gap-2 justify-center max-w-lg">
                     {["Tell me a bit about how you think.", "I want to share something that's been on my mind.", "Let's explore a new topic."].map(s => (
                       <button key={s} onClick={() => { setInput(s); textareaRef.current?.focus() }}
-                        className="px-3.5 py-2 bg-surface border border-border rounded-xl text-xs text-text-muted hover:text-text-primary hover:border-emerald-300 transition-all">
+                        className="px-3.5 py-2 bg-surface border border-border rounded-xl text-xs text-text-muted hover:text-text-primary hover:border-[var(--color-status)] transition-all">
                         {s}
                       </button>
                     ))}
@@ -577,7 +577,7 @@ export default function ChatInterface({ mode, chatId }: ChatInterfaceProps) {
                   <div className="flex flex-wrap gap-2 justify-center max-w-lg">
                     {[`What would ${userName || 'I'} say about...`, "How do you approach hard problems?", "What do you think about AI?"].map(s => (
                       <button key={s} onClick={() => { setInput(s); textareaRef.current?.focus() }}
-                        className="px-3.5 py-2 bg-surface border border-border rounded-xl text-xs text-text-muted hover:text-text-primary hover:border-emerald-300 transition-all">
+                        className="px-3.5 py-2 bg-surface border border-border rounded-xl text-xs text-text-muted hover:text-text-primary hover:border-[var(--color-status)] transition-all">
                         {s}
                       </button>
                     ))}

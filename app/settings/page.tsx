@@ -249,7 +249,7 @@ export default function SettingsPage() {
                 <SectionCard title="Your Profile" icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}>
                   <div className="flex items-center gap-4 mb-5">
                     <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0"
-                      style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff40, #c084fc 35%, var(--color-accent) 78%)' }}>
+                      >
                       {userName ? userName.charAt(0).toUpperCase() : '?'}
                     </div>
                     <div>
@@ -335,7 +335,7 @@ export default function SettingsPage() {
             {activeSection === 'data' && (
               <>
                 <div className="bg-[var(--color-surface)] border border-border rounded-2xl p-5 flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-[var(--color-accent-soft)] flex items-center justify-center text-[var(--color-accent-purple)] shrink-0">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                   </div>
                   <div className="flex-1">
@@ -347,7 +347,7 @@ export default function SettingsPage() {
 
                 <SectionCard title="Cognitive Profile Data" icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>}>
                   <p className="text-sm text-text-muted mb-4">View and explore your stored cognitive profile — personality traits, memories, communication style, and more.</p>
-                  <Link href="/data-asset" className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-50 text-purple-700 border border-purple-200 rounded-xl text-sm font-medium hover:bg-purple-100 transition-colors">
+                  <Link href="/data-asset" className="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-accent-soft)]/50 text-[var(--color-accent-deep)] border border-[var(--color-accent-purple)]/20 rounded-xl text-sm font-medium hover:bg-[var(--color-accent-soft)] transition-colors">
                     Open Data Dashboard
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                   </Link>

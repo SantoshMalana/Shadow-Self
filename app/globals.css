@@ -34,7 +34,7 @@
   --color-accent-hover: #bde49c;
 
   /* ── Purple Accent (for landing, badges, avatar glow) ── */
-  --color-accent-purple: #8328f9;
+  --color-accent-purple: var(--color-accent-purple);
   --color-accent-deep: #4c1594;
   --color-accent-light: #d6b8ff;
   --color-accent-soft: #F3E8FF;
@@ -120,6 +120,12 @@
   box-shadow: 0 6px 20px -8px rgba(131,40,249,0.35); cursor: pointer;
 }
 .btnPill:hover { background: var(--color-accent-deep); border-color: var(--color-accent-deep); }
+.btnGhost:hover { background: var(--color-surface); }
+
+/* Unified Avatar Gradient */
+.avatar-gradient {
+  background: radial-gradient(circle at 32% 28%, #ffffff, var(--color-accent-light) 35%, var(--color-accent-purple) 78%);
+}
 
 .btnPrimaryLg {
   display: inline-flex; align-items: center; gap: 8px;
@@ -224,7 +230,7 @@
 .logo { display: flex; align-items: center; gap: 9px; }
 .logoMark {
   width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
-  background: radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, #8328f9 78%);
+  background: radial-gradient(circle at 32% 28%, #ffffff, var(--color-accent-light) 35%, var(--color-accent-purple) 78%);
   box-shadow: 0 0 12px var(--shadow-accent);
 }
 .logoText { font-weight: 700; font-size: 16.5px; letter-spacing: -0.01em; color: var(--color-text-primary); }
@@ -302,7 +308,7 @@
 }
 .chatAvatar {
   width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
-  background: radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, #8328f9 78%);
+  background: radial-gradient(circle at 32% 28%, #ffffff, var(--color-accent-light) 35%, var(--color-accent-purple) 78%);
   box-shadow: 0 0 12px var(--shadow-accent);
 }
 .chatName { font-weight: 600; font-size: 14px; color: var(--color-text-primary); }

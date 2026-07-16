@@ -22,7 +22,7 @@ export default function SignupPage() {
 
       <div className="w-full max-w-[400px] relative z-10">
         <div className="flex items-center justify-center gap-2.5 mb-12">
-          <span className="w-7 h-7 shrink-0 rounded-full shadow-[var(--shadow-glow-sm)]" style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, var(--color-accent-purple) 78%)' }} />
+          <span className="w-7 h-7 shrink-0 rounded-full shadow-[var(--shadow-glow-sm)] avatar-gradient"  />
           <span className="font-bold text-lg tracking-tight text-text-primary">Shadow Shelf</span>
         </div>
 

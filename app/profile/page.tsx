@@ -159,7 +159,7 @@ export default async function ProfilePage() {
 
             <div className="bg-white border border-border rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] p-6 flex-grow">
               <h3 className="text-text-primary font-semibold flex items-center gap-2 mb-4">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span className="w-2 h-2 rounded-full bg-[var(--color-status)]" />
                 Knowledge Domains
               </h3>
               <div className="flex flex-wrap gap-2">

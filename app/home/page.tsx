@@ -30,7 +30,7 @@ export default async function HomePage() {
         
         {/* Soft Radial Gradient Background */}
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-100/50 rounded-full blur-[100px] opacity-60" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--color-accent-purple)]/20 rounded-full blur-[100px] opacity-60" />
         </div>
 
         {/* Top Header */}
@@ -56,7 +56,7 @@ export default async function HomePage() {
           </div>
 
           <h1 className="text-[40px] md:text-[48px] font-semibold tracking-tight mb-5 text-text-primary animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            How can we <span className="text-purple-600">assist</span> you today, {name}?
+            How can we <span className="text-[var(--color-accent-purple)]">assist</span> you today, {name}?
           </h1>
           <p className="text-base text-text-muted mb-16 max-w-2xl mx-auto leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
             Get expert guidance powered by cognitive AI agents specializing in deep introspection, 

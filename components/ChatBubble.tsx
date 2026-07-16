@@ -27,7 +27,7 @@ export default function ChatBubble({ role, content, mode, name, isTyping, thinki
   const cleanContent = tagMatch ? content.slice(tagMatch[0].length) : content
 
   const tagStyles: Record<string, { bg: string; border: string; text: string; label: string }> = {
-    GROUNDED: { bg: 'bg-emerald-950/50', border: 'border-emerald-700/40', text: 'text-emerald-400', label: '◆ Grounded' },
+    GROUNDED: { bg: 'bg-[var(--color-status)]/10', border: 'border-[var(--color-status)]/30', text: 'text-[var(--color-status)]', label: '◆ Grounded' },
     INFERRED: { bg: 'bg-amber-950/50', border: 'border-amber-700/40', text: 'text-amber-400', label: '◇ Inferred' },
     REFUSED:  { bg: 'bg-red-950/50', border: 'border-red-700/40', text: 'text-red-400', label: '✕ Refused' },
   }
@@ -45,7 +45,7 @@ export default function ChatBubble({ role, content, mode, name, isTyping, thinki
   return (
     <div className="ssMessage group flex gap-4 mb-12 max-w-[95%]">
       {/* Avatar */}
-      <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-1 shadow-sm" style={{ background: 'radial-gradient(circle at 32% 28%, #ffffff, #c084fc 35%, var(--color-accent) 78%)' }}>
+      <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-1 shadow-sm avatar-gradient" >
         <span className="text-[11px] text-white font-bold tracking-tighter">◈</span>
       </div>
 
@@ -110,8 +110,8 @@ export default function ChatBubble({ role, content, mode, name, isTyping, thinki
                           {children}
                         </code>
                       ) : (
-                        <div className="my-4 rounded-xl overflow-hidden border border-border bg-[#1a1b26]">
-                          <div className="flex items-center px-4 py-2 bg-[#16161e] border-b border-white/5">
+                        <div className="my-4 rounded-xl overflow-hidden border border-border bg-[var(--color-sidebar-bg)]">
+                          <div className="flex items-center px-4 py-2 bg-[var(--color-sidebar-surface)] border-b border-white/5">
                             <span className="text-xs text-text-muted font-mono">{match[1]}</span>
                           </div>
                           <div className="p-4 overflow-x-auto text-[13px] font-mono text-gray-300 leading-relaxed">

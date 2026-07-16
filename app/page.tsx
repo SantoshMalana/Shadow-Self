@@ -247,7 +247,7 @@ export default function HomePage() {
       </section>
 
       {/* JARVIS MODE — VS Code Extension Download */}
-      <section className="ssSection" style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(99,102,241,0.05) 100%)' }}>
+      <section className="ssSection" style={{ background: 'linear-gradient(135deg, rgba(131, 40, 249, 0.08) 0%, rgba(76, 21, 148, 0.05) 100%)' }}>
         <div className="wrap">
           <div className="sectionHead">
             <span className="sectionLabel">Jarvis Mode</span>
