@@ -79,7 +79,7 @@ export default function HomePage() {
       <header className="heroSection" style={{ opacity: mounted ? 1 : 0, transition: 'opacity 1s' }}>
         <div className="wrap">
           <span className="eyebrow">For Engineers Who Think For a Living</span>
-          <h1 className="gradientHeading" style={{ maxWidth: 900 }}>Stop settling for the lowest common denominator.</h1>
+          <h1 className="gradientHeading" style={{ maxWidth: 900 }}>Your reasoning took years to build. Don&apos;t let a generic AI flatten it.</h1>
           <p className="heroSub">
             Generic AI is trained by crowds to be harmless and boring. Shadow Shelf is a cognitive clone trained by <i>you</i>. We capture your precise reasoning, debate style, and actual expertise — so you don't have to explain yourself twice.
           </p>
@@ -156,8 +156,8 @@ export default function HomePage() {
             {[
               { 
                 icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, 
-                title: 'Mixture of Clones', 
-                desc: 'Why wake up the whole brain for a knee problem? Route queries directly to specialized expert clones based on context. Infinite depth, zero bloat.' 
+                title: 'Dynamic Clone Routing', 
+                desc: 'Why rely on a single generic model? Route specific architectural queries directly to a specialized Senior Engineer clone. Infinite depth, zero bloat.' 
               },
               { 
                 icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>, 
