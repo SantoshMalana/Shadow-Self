@@ -370,16 +370,45 @@
 
 /* Glass Card Utility (Landing) */
 .glassCard {
-  background: #FFFFFF;
-  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.04);
   border-radius: var(--radius-xl);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03), 0 0 0 1px rgba(0,0,0,0.02);
 }
 .glassCard:hover {
   border-color: rgba(131, 40, 249, 0.15);
   transform: translateY(-4px);
-  box-shadow: 0 16px 32px -12px rgba(131, 40, 249, 0.12), 0 0 24px rgba(131, 40, 249, 0.04);
+  box-shadow: 0 16px 32px -12px rgba(131, 40, 249, 0.15), 0 0 24px rgba(131, 40, 249, 0.06);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.glow-button {
+  position: relative;
+  background: linear-gradient(135deg, var(--color-accent-purple), var(--color-accent-deep));
+  color: white;
+  border-radius: var(--radius-pill);
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+.glow-button::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: inherit;
+  background: inherit;
+  filter: blur(12px);
+  opacity: 0.6;
+  z-index: -1;
+  transition: opacity 0.2s ease;
+}
+.glow-button:hover {
+  transform: translateY(-1px);
+}
+.glow-button:hover::before {
+  opacity: 0.9;
 }
 
 /* Steps */

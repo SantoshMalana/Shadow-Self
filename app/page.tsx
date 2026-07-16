@@ -79,12 +79,12 @@ export default function HomePage() {
       <header className="heroSection" style={{ opacity: mounted ? 1 : 0, transition: 'opacity 1s' }}>
         <div className="wrap">
           <span className="eyebrow">For Engineers Who Think For a Living</span>
-          <h1 className="gradientHeading">Your debugging instinct took years to build. Don&apos;t let it disappear.</h1>
+          <h1 className="gradientHeading" style={{ maxWidth: 900 }}>Stop settling for the lowest common denominator.</h1>
           <p className="heroSub">
-            Shadow Shelf captures the reasoning journey behind your decisions — not just the final answer. Through daily conversations, it builds a cognitive clone that thinks like you, debates like you, and remembers what you&apos;d forget.
+            Generic AI is trained by crowds to be harmless and boring. Shadow Shelf is a cognitive clone trained by <i>you</i>. We capture your precise reasoning, debate style, and actual expertise — so you don't have to explain yourself twice.
           </p>
           <div className="heroActions">
-            <Link href="/signup" className="btnPrimaryLg">Create your clone →</Link>
+            <Link href="/signup" className="btnPrimaryLg glow-button" style={{ padding: '12px 28px', fontSize: '15px' }}>Create your clone →</Link>
             <Link href="/login" className="btnGhost">Sign in</Link>
           </div>
 
@@ -97,16 +97,16 @@ export default function HomePage() {
             </div>
             <div className="chatBody">
               {chatStep >= 1 && (
-                <div className={`bubble user`}>What would you tell me about taking the riskier job offer?</div>
+                <div className={`bubble user`}>Hey, the new microservice is throwing intermittent 502s under load. Thoughts?</div>
               )}
               {chatStep === 2 && (
                 <div className={`bubble clone typing`}>...</div>
               )}
               {chatStep >= 3 && (
-                <div className={`bubble clone`}>Take it. You always regret the safe choice more once the boring version is actually living in front of you.</div>
+                <div className={`bubble clone`}>We saw this in Q3 last year. Before you dig into the ingress logs, check if the connection pool on the db side is maxing out. It usually cascades from there.</div>
               )}
               {chatStep >= 4 && (
-                <div className={`bubble user2`}>That&apos;s exactly what I&apos;d say.</div>
+                <div className={`bubble user2`}>Spot on. It was the db pool.</div>
               )}
             </div>
             <div className="chatInputMock">
@@ -155,24 +155,24 @@ export default function HomePage() {
           <div className="featuresGrid">
             {[
               { 
-                icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, 
-                title: 'Zero-Trust Architecture', 
-                desc: 'Your data is siloed to your account. We use vector embeddings — numerical representations, not raw text — for memory retrieval. You can delete everything at any time.' 
+                icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, 
+                title: 'Mixture of Clones', 
+                desc: 'Why wake up the whole brain for a knee problem? Route queries directly to specialized expert clones based on context. Infinite depth, zero bloat.' 
               },
               { 
                 icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>, 
-                title: 'Learns the journey', 
-                desc: 'Captures the reasoning process behind decisions — the wrong turns, the tradeoffs, the intuition — not just the polished final answer.' 
+                title: 'Deep Intuition Training', 
+                desc: 'We don\'t rely on simple Yes/No RLHF. Our Track B training pipeline captures the exact intuition, edge cases, and reasoning frameworks of your domain experts.' 
               },
               { 
-                icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>, 
-                title: 'Your real voice', 
-                desc: 'Speaks in your cadence and phrasing. Debates in your style. Uses your actual vocabulary, not a generic AI tone.' 
+                icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>, 
+                title: 'Infinite Vector Memory', 
+                desc: 'Every meaningful conversation is embedded into a high-dimensional vector space. Your clone never forgets a project detail, a preferred tool, or a past mistake.' 
               },
               { 
-                icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>, 
-                title: 'Gets smarter daily', 
-                desc: 'Every conversation deepens the cognitive profile. There is no final version — your clone evolves as you do.' 
+                icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, 
+                title: 'Zero-Trust Data', 
+                desc: 'Your data is strictly siloed. Train on your internal knowledge base without leaking intellectual property to public models. Delete everything instantly.' 
               },
             ].map((f, i) => (
               <div key={i} className={`featureCard glassCard`}>
@@ -318,7 +318,7 @@ export default function HomePage() {
             <h2 className="sectionTitle" style={{ maxWidth: 460, margin: '0 auto 28px' }}>
               Your first entry takes about four minutes.
             </h2>
-            <Link href="/signup" className="btnPrimaryLg">Create your clone →</Link>
+            <Link href="/signup" className="btnPrimaryLg glow-button" style={{ padding: '12px 28px', fontSize: '15px' }}>Create your clone →</Link>
           </div>
         </div>
       </section>
