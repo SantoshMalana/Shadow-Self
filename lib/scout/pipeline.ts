@@ -10,7 +10,7 @@ import { prisma } from '@/lib/prisma'
 
 export async function handleFrictionPing(ping: FrictionPing) {
   // STAGE 1: Collection
-  const isAnomalous = await processFrictionPing(ping)
+  const { isAnomalous, zScore } = await processFrictionPing(ping)
 
   // STAGE 2: Personal Anomaly Filter
   if (!isAnomalous) {
@@ -30,7 +30,7 @@ export async function handleFrictionPing(ping: FrictionPing) {
     userId: ping.userId,
     signalType: ping.signalType,
     stage1Raw: ping,
-    stage2AnomalyScore: 2.1, // Mock score for tracking
+    stage2AnomalyScore: zScore ?? undefined, 
     finalOutcome: 'queued',
   })
 }

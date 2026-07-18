@@ -9,7 +9,6 @@ import Sidebar from '@/components/Sidebar'
 import { getCloneCompleteness } from '@/lib/personality-client'
 import { getDailyQuestion } from '@/lib/questions'
 import { getUserState, updateUserName } from '@/app/actions/user'
-import { createParser } from 'eventsource-parser'
 
 const THINKING_LABELS = [
   'Recalling memories…',
@@ -233,7 +232,6 @@ export default function ChatInterface({ mode, chatId }: ChatInterfaceProps) {
     setInput('')
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
     setLoading(true)
-    
     // Start cycling through thinking labels
     let labelIndex = 0
     setThinkingLabel(THINKING_LABELS[0])
@@ -241,67 +239,27 @@ export default function ChatInterface({ mode, chatId }: ChatInterfaceProps) {
       labelIndex = (labelIndex + 1) % THINKING_LABELS.length
       setThinkingLabel(THINKING_LABELS[labelIndex])
     }, 1800)
-    
     try {
       const res = await fetch('/api/chat', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: [...messages, userMsg], mode, question: currentQuestion, chatId: activeChatIdRef.current })
       })
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
       
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.error || `API Error: ${res.status}`)
-      }
+      setMessages(prev => [...prev, { role: 'assistant', content: data.response, turnGoal: data.turnGoal, messageId: data.messageId, memoriesUsed: data.memoriesUsed }])
       
-      const reader = res.body?.getReader()
-      if (!reader) throw new Error('No response stream')
-      
-      const tempId = Date.now().toString()
-      let assistantMsg: Message = { role: 'assistant', content: '', messageId: tempId }
-      setMessages(prev => [...prev, assistantMsg])
-      
-      let fullContent = ''
-      let isFirstChunk = true
-      
-      const parser = createParser({
-        onEvent: (event: any) => {
-          if (event.type === 'event') {
-            try {
-              const data = JSON.parse(event.data)
-              if (data.type === 'metadata') {
-                if (data.chatId && !activeChatIdRef.current) {
-                  activeChatIdRef.current = data.chatId
-                  const pathSegment = mode === 'onboarding' ? 'train' : mode
-                  router.replace(`/${pathSegment}/${data.chatId}`)
-                }
-                assistantMsg = { ...assistantMsg, turnGoal: data.turnGoal, memoriesUsed: data.memoriesUsed }
-                setMessages(prev => prev.map(m => m.messageId === tempId ? assistantMsg : m))
-              } else if (data.type === 'content') {
-                if (isFirstChunk) {
-                  isFirstChunk = false
-                  if (thinkingIntervalRef.current) clearInterval(thinkingIntervalRef.current)
-                  setThinkingLabel('')
-                }
-                fullContent += data.text
-                assistantMsg = { ...assistantMsg, content: fullContent }
-                setMessages(prev => prev.map(m => m.messageId === tempId ? assistantMsg : m))
-              }
-            } catch (e) {
-              console.error('SSE parse error', e)
-            }
-          }
-        }
-      })
-      
-      const decoder = new TextDecoder()
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        parser.feed(decoder.decode(value, { stream: true }))
+      // If a new chat was created on the backend, update URL and ref
+      if (data.chatId && !activeChatIdRef.current) {
+        activeChatIdRef.current = data.chatId
+        const pathSegment = mode === 'onboarding' ? 'train' : mode
+        router.replace(`/${pathSegment}/${data.chatId}`)
       }
 
       setLoading(false)
-      if (voiceEnabled) speakText(fullContent, personality?.voiceId)
+      if (thinkingIntervalRef.current) clearInterval(thinkingIntervalRef.current)
+      setThinkingLabel('')
+      if (voiceEnabled) speakText(data.response, personality?.voiceId)
       
       // Non-blocking background refresh of user state + personality
       ;(async () => {

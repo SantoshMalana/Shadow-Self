@@ -28,10 +28,10 @@
   --color-sidebar-text: #F4F4F5;
   --color-sidebar-muted: #A1A1AA;
 
-  /* ── Accent (Soft Green for buttons) ── */
-  --color-accent: #d1f5b5;
-  --color-accent-text: #111111;
-  --color-accent-hover: #bde49c;
+  /* ── Accent (Black & White for buttons) ── */
+  --color-accent: #111827;
+  --color-accent-text: #FFFFFF;
+  --color-accent-hover: #000000;
 
   /* ── Purple Accent (for landing, badges, avatar glow) ── */
   --color-accent-purple: #8328f9;
@@ -54,9 +54,9 @@
   /* Shadows */
   --shadow-input: 0 8px 30px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0,0,0,0.02);
   --shadow-card: 0 4px 14px rgba(0, 0, 0, 0.03), 0 0 0 1px rgba(0,0,0,0.02);
-  --shadow-glow-sm: 0 0 8px rgba(131, 40, 249, 0.25);
-  --shadow-glow-md: 0 4px 16px -4px rgba(131, 40, 249, 0.35);
-  --shadow-glow-lg: 0 10px 34px -10px rgba(131, 40, 249, 0.45);
+  --shadow-glow-sm: 0 0 8px rgba(0, 0, 0, 0.05);
+  --shadow-glow-md: 0 4px 16px -4px rgba(0, 0, 0, 0.10);
+  --shadow-glow-lg: 0 10px 34px -10px rgba(0, 0, 0, 0.15);
 
   /* Glass (for landing page only) */
   --glass-bg: rgba(0, 0, 0, 0.02);

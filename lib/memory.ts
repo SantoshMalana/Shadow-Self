@@ -12,13 +12,15 @@ export async function storeMemory(userId: string, content: string, category: str
   
   // 2. Insert via raw SQL to handle Unsupported("vector")
   // Using Prisma's parameterized query syntax for safety
+  // Cast string to vector for pgvector
+  const vectorStr = `[${embedding.join(',')}]`
   await prisma.$executeRaw`
     INSERT INTO memories (user_id, content, category, embedding)
     VALUES (
       ${userId}::uuid, 
       ${content}, 
       ${category}, 
-      ${embedding}::vector
+      ${vectorStr}::vector
     )
   `
   
@@ -35,8 +37,9 @@ export async function recallMemories(userId: string, query: string, limit = 5): 
   const queryEmbedding = await getEmbedding(query)
   
   // 2. Search using pgvector cosine distance operator (<=>)
+  const vectorStr = `[${queryEmbedding.join(',')}]`
   const results = await prisma.$queryRaw<{ content: string; distance: number }[]>`
-    SELECT content, embedding <=> ${queryEmbedding}::vector AS distance
+    SELECT content, embedding <=> ${vectorStr}::vector AS distance
     FROM memories
     WHERE user_id = ${userId}::uuid
     ORDER BY distance ASC

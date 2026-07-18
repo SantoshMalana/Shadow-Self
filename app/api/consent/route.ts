@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getDbUser } from '@/lib/auth'
 
-const VALID_STREAMS = ['voice', 'text', 'memory', 'personality']
+const VALID_STREAMS = ['voice', 'text', 'memory', 'personality', 'scout', 'distillation']
 
 /**
  * GET /api/consent — returns the latest consent state for each stream.

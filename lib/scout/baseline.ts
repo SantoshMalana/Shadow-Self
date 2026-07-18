@@ -1,10 +1,10 @@
 import { prisma as db } from '@/lib/prisma'
 import { FrictionPing, MIN_SAMPLES_FOR_BASELINE, ANOMALY_Z_SCORE_THRESHOLD } from './types'
 
-export async function processFrictionPing(ping: FrictionPing): Promise<boolean> {
+export async function processFrictionPing(ping: FrictionPing): Promise<{ isAnomalous: boolean; zScore: number | null }> {
   // We only do anomaly detection for numeric signals
   if (typeof ping.value !== 'number') {
-    return true // discrete signals like error_class pass through to pipeline automatically
+    return { isAnomalous: true, zScore: null } // discrete signals like error_class pass through to pipeline automatically
   }
 
   const baseline = await db.personalBaseline.findUnique({
@@ -20,14 +20,14 @@ export async function processFrictionPing(ping: FrictionPing): Promise<boolean> 
   await updateBaseline(ping.userId, ping.signalType, ping.value, baseline)
 
   if (!baseline || baseline.sampleCount < MIN_SAMPLES_FOR_BASELINE) {
-    return false // Cold start - not enough data yet
+    return { isAnomalous: false, zScore: null } // Cold start - not enough data yet
   }
 
   // Calculate Z-Score
   const stddev = baseline.stddev || 1 // prevent division by zero
   const zScore = Math.abs(ping.value - baseline.mean) / stddev
 
-  return zScore > ANOMALY_Z_SCORE_THRESHOLD
+  return { isAnomalous: zScore > ANOMALY_Z_SCORE_THRESHOLD, zScore }
 }
 
 async function updateBaseline(userId: string, signalType: string, newValue: number, currentBaseline: any) {

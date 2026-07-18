@@ -1,5 +1,5 @@
 /**
- * Zero Knowledge Distillation Pipeline
+ * Distillation Pipeline
  * 
  * Stage 1 Architecture: Extracts anonymous cognitive metadata from user conversations
  * without retaining any personally identifiable information.
@@ -7,7 +7,7 @@
  * Pipeline:
  *   1. sanitizeText()  — Strips PII, company names, proprietary code, specific tech
  *   2. extractInsight() — Distills the underlying problem-solving framework
- *   3. processAndStoreZeroKnowledge() — Orchestrates pipeline, embeds, and stores anonymously
+ *   3. distillAndStoreAnonymousInsight() — Orchestrates pipeline, embeds, and stores anonymously
  * 
  * The resulting insights are stored in the `AnonymousCognitiveModel` table,
  * which has NO foreign key to the User table — zero traceability by design.
@@ -80,7 +80,7 @@ export async function sanitizeText(content: string): Promise<string | null> {
     if (trimmed === 'SKIP' || trimmed.length < 20) return null
     return trimmed
   } catch (err) {
-    console.error('[ZeroKnowledge] Sanitization failed:', err)
+    console.error('[Distillation] Sanitization failed:', err)
     return null
   }
 }
@@ -116,7 +116,7 @@ export async function extractInsight(
 
     return { insight: insightText, domain }
   } catch (err) {
-    console.error('[ZeroKnowledge] Extraction failed:', err)
+    console.error('[Distillation] Extraction failed:', err)
     return null
   }
 }
@@ -156,7 +156,7 @@ export function verifySanitization(text: string): boolean {
  * 
  * Returns true if an insight was successfully stored, false otherwise.
  */
-export async function processAndStoreZeroKnowledge(rawContent: string): Promise<boolean> {
+export async function distillAndStoreAnonymousInsight(rawContent: string): Promise<boolean> {
   try {
     // Step 1: Strip all PII
     const sanitized = await sanitizeText(rawContent)
@@ -164,7 +164,7 @@ export async function processAndStoreZeroKnowledge(rawContent: string): Promise<
 
     // Step 2: Verify sanitization via second-pass heuristic
     if (!verifySanitization(sanitized)) {
-      console.warn('[ZeroKnowledge] Sanitization verification failed, dropping text.')
+      console.warn('[Distillation] Sanitization verification failed, dropping text.')
       return false
     }
 
@@ -178,7 +178,7 @@ export async function processAndStoreZeroKnowledge(rawContent: string): Promise<
       embeddingVector = await getEmbedding(extracted.insight)
     } catch (err) {
       // Embedding failure is non-fatal — store the insight without it
-      console.error('[ZeroKnowledge] Embedding failed, storing without vector:', err)
+      console.error('[Distillation] Embedding failed, storing without vector:', err)
     }
 
     // Step 4: Store anonymously — NO userId, NO foreign key
@@ -197,7 +197,7 @@ export async function processAndStoreZeroKnowledge(rawContent: string): Promise<
 
     return true
   } catch (err) {
-    console.error('[ZeroKnowledge] Pipeline error:', err)
+    console.error('[Distillation] Pipeline error:', err)
     return false
   }
 }
