@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createHash } from 'crypto'
 import { prisma } from '@/lib/prisma'
 
 // Validates API key and returns userId + name
@@ -15,8 +16,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid API key format' }, { status: 401 })
     }
 
+    const apiKeyHash = createHash('sha256').update(apiKey).digest('hex')
+
     const user = await prisma.user.findUnique({
-      where: { apiKey },
+      where: { apiKeyHash },
       select: { id: true, name: true, email: true }
     })
 

@@ -31,7 +31,7 @@ model User {
   name      String?
   depthRung Int      @default(1) @map("depth_rung") // Trust depth 1–5 (§5 of spec)
   daysKnown Int      @default(0) @map("days_known")
-  apiKey    String?  @unique @map("api_key")         // For VS Code extension auth
+  apiKeyHash String?  @unique @map("api_key_hash")         // For VS Code extension auth
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

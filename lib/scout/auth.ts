@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { createHash } from 'crypto'
 
 /**
  * Resolves and validates an API key from the Authorization header.
@@ -20,8 +21,9 @@ export async function resolveApiKey(req: NextRequest): Promise<string | null> {
   }
 
   try {
+    const apiKeyHash = createHash('sha256').update(apiKey).digest('hex')
     const user = await prisma.user.findUnique({
-      where: { apiKey },
+      where: { apiKeyHash },
       select: { id: true }
     })
     return user?.id ?? null
