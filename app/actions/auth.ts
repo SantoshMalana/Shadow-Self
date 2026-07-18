@@ -20,7 +20,7 @@ export async function login(formData: FormData) {
   }
 
   const ip = await getClientIp()
-  const rate = checkRateLimit(`login:${ip}`, 10, 5 * 60_000)
+  const rate = await checkRateLimit(`login:${ip}`, 10, 5 * 60_000)
   if (!rate.allowed) {
     return { error: 'Too many login attempts. Please wait a few minutes and try again.' }
   }
@@ -56,7 +56,7 @@ export async function signup(formData: FormData) {
   }
 
   const ip = await getClientIp()
-  const rate = checkRateLimit(`signup:${ip}`, 5, 15 * 60_000)
+  const rate = await checkRateLimit(`signup:${ip}`, 5, 15 * 60_000)
   if (!rate.allowed) {
     return { error: 'Too many signup attempts from this network. Please try again shortly.' }
   }
@@ -93,7 +93,7 @@ export async function resetPassword(formData: FormData) {
   }
 
   const ip = await getClientIp()
-  const rate = checkRateLimit(`reset:${ip}`, 3, 15 * 60_000)
+  const rate = await checkRateLimit(`reset:${ip}`, 3, 15 * 60_000)
   if (!rate.allowed) {
     return { error: 'Too many reset attempts. Please try again later.' }
   }

@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     }
 
     // 2. Strict rate limiting for TTS API
-    const rateCheck = checkRateLimit(`synthesize:${user.id}`, 20, 60_000)
+    const rateCheck = await checkRateLimit(`synthesize:${user.id}`, 20, 60_000)
     if (!rateCheck.allowed) {
       return new NextResponse('Too many voice generations. Please wait a minute.', { status: 429 })
     }

@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
     // 2. Strict rate limiting for expensive external API calls
     // Allow 15 voice inputs per minute per user
-    const rateCheck = checkRateLimit(`transcribe:${user.id}`, 15, 60_000)
+    const rateCheck = await checkRateLimit(`transcribe:${user.id}`, 15, 60_000)
     if (!rateCheck.allowed) {
       return NextResponse.json(
         { error: 'Too many voice recordings. Please wait a minute.' },
