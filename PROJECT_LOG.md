@@ -213,3 +213,12 @@ All 23 tasks on the master fix list are now successfully integrated and the buil
 - **Database Schema Updates:** Added `ChatSession` model and migrated `Message` to include `chatSessionId` (with forced DB reset as approved).
 - **API Overhaul:** Updated `/api/chat` to auto-generate session titles via LLM and handle `chatId` routing. Added `/api/chats` for fetching history.
 - **UI Architecture:** The global `Sidebar` now polls and displays isolated chat threads per mode. Added `/[mode]/[chatId]` dynamic Next.js routing.
+
+### July 19, 2026 - Aesthetic Pivot (Qubi Light/Dark Split)
+- **CSS Architecture:** Refactored `globals.css` away from the monolithic dark theme to a premium `color-scheme: light` base with a split-theme architecture.
+- **Ambient Elements:** Created and deployed an `.ambient-mesh` class for soft, high-fidelity radial glows (lavender/pink) across the application background.
+- **Component Styling (`ChatInterface.tsx` & `page.tsx`):**
+  - Converted the main chat area and landing page cards to a floating, white-surface aesthetic with deep, soft drop shadows (`--shadow-card`).
+  - Implemented pill-shaped inputs (`rounded-full`) and lime green action buttons (`#D9F99D`).
+- **Sidebar Contrast:** Retained the deep dark (`#18181B`) sidebar and injected an absolute cyan accent strip (`#67E8F9`) for active state visibility, creating the desired airy contrast.
+- **Settings Overhaul (`app/settings/page.tsx`):** Updated layout to use ultra-rounded (`24px`) white cards floating on the light mesh background.

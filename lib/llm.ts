@@ -110,24 +110,30 @@ export async function generateChatStream(messages: any[], systemPrompt?: string,
   }
   formattedMessages.push(...messages.map((m: any) => ({ role: m.role, content: m.content })))
 
-  const response = await fetch(`${baseUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${llmKeys.split(',')[0].trim()}`,
-      'Content-Type': 'application/json',
+  return withKeyRotation(
+    llmKeys,
+    async (key) => {
+      const response = await fetch(`${baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${key}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          messages: formattedMessages,
+          stream: true,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`[LLM Stream] API error:`, errorText)
+        throw new Error(`LLM API error: ${response.status}`)
+      }
+
+      return response.body as ReadableStream
     },
-    body: JSON.stringify({
-      model,
-      messages: formattedMessages,
-      stream: true,
-    }),
-  })
-
-  if (!response.ok) {
-    const errorText = await response.text()
-    console.error(`[LLM Stream] API error:`, errorText)
-    throw new Error(`LLM API error: ${response.status}`)
-  }
-
-  return response.body as ReadableStream
+    'LLM Stream'
+  )
 }

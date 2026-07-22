@@ -65,10 +65,10 @@ function Toggle({ on, onToggle, disabled }: { on: boolean; onToggle: () => void;
       aria-checked={on}
       onClick={onToggle}
       disabled={disabled}
-      className={`relative w-10 h-5.5 h-[22px] rounded-full transition-colors duration-200 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-purple)] ${on ? 'bg-[var(--color-accent-purple)]' : 'bg-border'} ${disabled ? 'opacity-50' : ''}`}
+      className={`relative w-10 h-[22px] rounded-[2px] transition-colors duration-200 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${on ? 'bg-white' : 'bg-border'} ${disabled ? 'opacity-50' : ''}`}
     >
       <span
-        className="absolute top-[2px] left-[2px] w-[18px] h-[18px] bg-white rounded-full shadow transition-transform duration-200"
+        className={`absolute top-[2px] left-[2px] w-[18px] h-[18px] rounded-[1px] shadow transition-transform duration-200 ${on ? 'bg-black' : 'bg-white'}`}
         style={{ transform: on ? 'translateX(18px)' : 'translateX(0)' }}
       />
     </button>
@@ -77,9 +77,9 @@ function Toggle({ on, onToggle, disabled }: { on: boolean; onToggle: () => void;
 
 function SectionCard({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="bg-white border border-border rounded-2xl p-6">
+    <div className="bg-[var(--color-surface)] border border-border rounded-[var(--radius-xl)] p-6 shadow-card">
       <div className="flex items-center gap-2.5 mb-5">
-        <div className="w-8 h-8 rounded-lg bg-[var(--color-surface)] flex items-center justify-center text-text-muted">
+        <div className="w-8 h-8 rounded-lg bg-[var(--color-secondary-btn)] border border-border flex items-center justify-center text-text-muted">
           {icon}
         </div>
         <h2 className="font-semibold text-text-primary">{title}</h2>
@@ -222,9 +222,10 @@ export default function SettingsPage() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto relative bg-bg">
+          <div className="absolute inset-0 pointer-events-none z-0 ambient-mesh" />
           {/* Top header */}
-          <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-border px-8 h-[60px] flex items-center justify-between">
+          <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-border px-8 h-[60px] flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h1 className="font-semibold text-text-primary text-sm">
                 {sections.find(s => s.id === activeSection)?.label}
@@ -241,14 +242,14 @@ export default function SettingsPage() {
             )}
           </header>
 
-          <div className="max-w-2xl mx-auto px-8 py-8 flex flex-col gap-5">
+          <div className="max-w-2xl mx-auto px-8 py-8 flex flex-col gap-5 relative z-10">
 
             {/* ── Profile ── */}
             {activeSection === 'profile' && (
               <>
                 <SectionCard title="Your Profile" icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}>
                   <div className="flex items-center gap-4 mb-5">
-                    <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0"
+                    <div className="w-14 h-14 rounded-[var(--radius-md)] border border-border bg-[var(--color-secondary-btn)] flex items-center justify-center text-text-primary font-bold text-lg shrink-0"
                       >
                       {userName ? userName.charAt(0).toUpperCase() : '?'}
                     </div>
@@ -306,7 +307,7 @@ export default function SettingsPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={generateApiKey}
-                        className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] transition-colors"
+                        className="flex-1 py-2.5 rounded-full text-sm font-medium bg-[var(--color-accent-lime)] text-[#064E3B] hover:bg-[var(--color-accent-lime-hover)] transition-colors"
                       >
                         {apiKey ? 'Regenerate Key' : 'Generate Key'}
                       </button>
@@ -421,13 +422,13 @@ export default function SettingsPage() {
                   <p className="text-sm text-red-700">The actions on this page are permanent and cannot be undone. Proceed with extreme caution.</p>
                 </div>
 
-                <div className="bg-white border border-red-200 rounded-2xl p-6">
+                <div className="bg-[var(--color-surface)] border border-border hover:border-red-500/50 transition-colors rounded-[var(--radius-xl)] p-6 shadow-card">
                   <h3 className="font-semibold text-text-primary mb-1">Delete Account</h3>
                   <p className="text-sm text-text-muted mb-5">Permanently delete your account and all associated cognitive data, memories, and personality profiles. This action is irreversible.</p>
                   {!deleteConfirm ? (
                     <button
                       onClick={() => setDeleteConfirm(true)}
-                      className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-white border border-red-300 text-red-600 hover:bg-red-50 transition-colors"
+                      className="px-4 py-2.5 rounded-full text-sm font-semibold bg-transparent border border-red-500/50 text-red-500 hover:bg-red-500/10 transition-colors"
                     >
                       Delete My Account
                     </button>

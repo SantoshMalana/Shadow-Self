@@ -39,9 +39,11 @@ async function fetchRelevantMemory(userId: string, ping: FrictionPing): Promise<
     const query = `Developer is struggling with: ${ping.signalType} ${ping.context ? JSON.stringify(ping.context) : ''}`
     const queryEmbedding = await getEmbedding(query)
 
+    const vectorStr = `[${queryEmbedding.join(',')}]`
+
     // Search personal memories
     const personalResults = await prisma.$queryRaw<{ content: string; distance: number }[]>`
-      SELECT content, embedding <=> ${queryEmbedding}::vector AS distance
+      SELECT content, embedding <=> ${vectorStr}::vector AS distance
       FROM memories
       WHERE user_id = ${userId}::uuid
       ORDER BY distance ASC
@@ -50,7 +52,7 @@ async function fetchRelevantMemory(userId: string, ping: FrictionPing): Promise<
 
     // Search zero-knowledge aggregate models
     const globalResults = await prisma.$queryRaw<{ content: string; distance: number }[]>`
-      SELECT insight AS content, embedding <=> ${queryEmbedding}::vector AS distance
+      SELECT insight AS content, embedding <=> ${vectorStr}::vector AS distance
       FROM anonymous_cognitive_model
       ORDER BY distance ASC
       LIMIT 1
