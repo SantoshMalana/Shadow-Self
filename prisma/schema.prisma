@@ -49,9 +49,6 @@ model User {
   pipelineAuditLogs    PipelineAuditLog[]
   scoutDeliveries      ScoutDelivery[]
 
-  // Validation
-  pairwiseTests        PairwiseTest[]
-
   // Safety
 
 
@@ -281,29 +278,4 @@ model ScoutDelivery {
 
   @@index([userId, read])
   @@map("scout_deliveries")
-}
-
-// ─── Pairwise Validation ────────────────────────────────────────────────────────
-// Stage 0/1: Empirical validation loop
-model PairwiseTest {
-  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId        String    @map("user_id") @db.Uuid
-  scenario      String
-  userAnswer    String    @map("user_answer")
-  cloneAnswer   String    @map("clone_answer")
-  
-  optionA       String    @map("option_a")
-  optionB       String    @map("option_b")
-  correctOption String    @map("correct_option") // 'A' or 'B' (which one was 'user')
-  
-  votedOption   String?   @map("voted_option")   // 'A' or 'B'
-  votedBy       String?   @map("voted_by")       // Could be anonymous
-  
-  createdAt     DateTime  @default(now()) @map("created_at")
-  resolvedAt    DateTime? @map("resolved_at")
-
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, resolvedAt])
-  @@map("pairwise_tests")
 }
